@@ -1,21 +1,3 @@
 {
-  "expo": {
-    "name": "DK Fitt Movil",
-    "slug": "dk-fitt-movil",
-    "version": "1.0.0",
-    "orientation": "portrait",
-    "userInterfaceStyle": "light",
-    "splash": {
-      "backgroundColor": "#fffaf0"
-    },
-    "assetBundlePatterns": ["**/*"],
-    "ios": {
-      "supportsTablet": true
-    },
-    "android": {
-      "adaptiveIcon": {
-        "backgroundColor": "#fffaf0"
-      }
-    }
-  }
+  "expo": { "name": "DK-FITT", "slug": "dk-fitt-movil", "version": "1.0.0", "orientation": "portrait", "userInterfaceStyle": "light", "plugins": ["expo-secure-store"] }
 }
