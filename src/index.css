@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #eab308; /* Yellow 500 */
+  --color-primary-hover: #ca8a04; /* Yellow 600 */
+  --color-background: #fefce8; /* Yellow 50 warm background */
+  --color-text: #1f2937;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: var(--color-background);
+  color: var(--color-text);
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+}
