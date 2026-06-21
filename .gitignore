@@ -1,0 +1,5 @@
+movil/node_modules/
+movil/.expo/
+.env
+.env.*
+!.env.example
