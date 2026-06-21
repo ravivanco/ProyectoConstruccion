@@ -1,87 +1,21 @@
-# Movil - DK Fitt
+# DK-FITT Móvil
 
-Documento de trabajo para el módulo móvil. Este alcance incluye solo historias HUM y sigue los mockups compartidos.
+Aplicación Expo + React Native + TypeScript para las historias HUM-01 a HUM-11 del Sprint 1.
 
-## Rama por historia
+## Arquitectura
 
-- HUM-01 -> feature/HUM-01-registro-usuario
-- HUM-02 -> feature/HUM-02-inicio-sesion
-- HUM-03 -> feature/HUM-03-inicio-formulario-perfil
-- HUM-04 -> feature/HUM-04-actividad-fisica
-- HUM-05 -> feature/HUM-05-condiciones-medicas
-- HUM-06 -> feature/HUM-06-alergias-intolerancias
-- HUM-07 -> feature/HUM-07-objetivo-nutricional
-- HUM-08 -> feature/HUM-08-deporte-actividad
-- HUM-09 -> feature/HUM-09-preferencias-alimenticias
-- HUM-10 -> feature/HUM-10-restricciones-alimenticias
-- HUM-11 -> feature/HUM-11-sincronizacion-formulario
+- `src/domain`: modelos y contratos independientes de frameworks.
+- `src/application`: casos de uso de registro, login y perfil.
+- `src/infrastructure`: consumo HTTP y almacenamiento seguro del token.
+- `src/presentation`: estado, componentes y pantallas móviles.
 
-## HUM-01 Registro de usuario
+## Configuración
 
-Como paciente, quiero registrarme en la app movil con mis datos personales para crear mi cuenta y comenzar el proceso.
+Define `EXPO_PUBLIC_API_URL` con la URL del backend. Si no existe, se utiliza `http://localhost:3000`.
 
-Mockup base: pantalla de registro con nombre, apellido, fecha de nacimiento, sexo, correo y contrasena.
+```powershell
+npm install
+npm run typecheck
+```
 
-## HUM-02 Inicio de sesion
-
-Como paciente, quiero iniciar sesion con mi correo y contrasena para entrar a mi cuenta y continuar mi flujo.
-
-Mockup base: pantalla de login con correo, contrasena, acceso y enlace de registro.
-
-## HUM-03 Inicio del formulario inicial de perfil
-
-Como paciente, quiero iniciar el formulario de perfil para completar mis datos antes de recibir mi seguimiento.
-
-Mockup base: flujo por pasos con barra de progreso y navegacion por pantalla.
-
-## HUM-04 Registro de actividad fisica
-
-Como paciente, quiero seleccionar mi nivel de actividad fisica para que la app considere mi rutina.
-
-Mockup base: paso 1/7 con opciones tipo tarjeta para sedentario, bajo, mediano y alto.
-
-## HUM-05 Registro de condiciones medicas
-
-Como paciente, quiero indicar si tengo condiciones medicas para personalizar mejor mi informacion.
-
-Mockup base: paso 2/7 con opciones tipo tarjeta y la alternativa de ninguna condicion.
-
-## HUM-06 Registro de alergias e intolerancias
-
-Como paciente, quiero escribir mis alergias o intolerancias para evitar alimentos que me afecten.
-
-Mockup base: paso 3/7 con un campo de texto amplio para describir alergias o intolerancias.
-
-## HUM-07 Registro de objetivo nutricional
-
-Como paciente, quiero elegir mi objetivo nutricional para orientar mi proceso.
-
-Mockup base: paso 4/7 con opciones tipo tarjeta como reducir peso, ganar musculo o mejorar habitos.
-
-## HUM-08 Registro de deporte o actividad habitual
-
-Como paciente, quiero seleccionar el deporte que practico o el que quiero empezar para registrar mi rutina.
-
-Mockup base: paso 7/7 con opciones tipo tarjeta como gimnasio, running, futbol, basquet, ciclismo y natacion.
-
-## HUM-09 Registro de preferencias alimenticias
-
-Como paciente, quiero elegir los alimentos que consumo con frecuencia para que mis recomendaciones se adapten a mis gustos.
-
-Mockup base: pantalla de seleccion multiple por categorias como proteinas, carbohidratos, lacteos y vegetales.
-
-## HUM-10 Registro de restricciones alimenticias
-
-Como paciente, quiero indicar alimentos que prefiero evitar para que no aparezcan en mi plan.
-
-Mockup base: paso 6/7 con un campo de texto grande para describir restricciones o alimentos a evitar.
-
-## HUM-11 Sincronizacion del formulario inicial
-
-Como paciente, quiero que todo el formulario quede guardado y sincronizado para continuar mi proceso sin perder datos.
-
-Mockup base: pantalla final de confirmacion del onboarding con cierre del flujo y guardado del perfil.
-
-## Nota
-
-Este documento esta enfocado unicamente en movil. No incluye historias de web ni de API.
+No se incluye implementación web ni API.
