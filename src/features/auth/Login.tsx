@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { authAPI } from './services/authApi';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -16,16 +17,12 @@ export default function Login() {
     setIsLoading(true);
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      
-      if (email === 'correo@dkfitt.com' && password === '123456') {
-        localStorage.setItem('auth_token', 'mock-token-nutritionist-123');
-        navigate('/dashboard');
-      } else {
-        setError('Credenciales inválidas. Intente con correo@dkfitt.com / 123456');
-      }
-    } catch (err) {
-      setError('Ocurrió un error en el servidor. Intente más tarde.');
+      const response = await authAPI.login(email, password);
+      localStorage.setItem('auth_token', response.token);
+      navigate('/dashboard');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Credenciales inválidas. Intente con correo@dkfitt.com / 123456';
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
