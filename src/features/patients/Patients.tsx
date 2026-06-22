@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Search, Filter, MoreHorizontal, User } from 'lucide-react';
 import { patientsAPI } from './services/patientsApi';
 import type { Patient } from '../../shared/types';
 
 export default function Patients() {
+  const navigate = useNavigate();
   const [patients, setPatients] = useState<Patient[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -112,7 +114,11 @@ export default function Patients() {
               </thead>
               <tbody className="divide-y divide-border">
                 {filteredPatients.map((patient) => (
-                  <tr key={patient.id} className="hover:bg-surface-hover transition-colors group">
+                  <tr 
+                    key={patient.id} 
+                    onClick={() => navigate(`/patients/${patient.id}`)}
+                    className="hover:bg-surface-hover transition-colors group cursor-pointer"
+                  >
                     <td className="py-3 px-6">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm">
