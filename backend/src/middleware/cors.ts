@@ -1,8 +1,10 @@
 import cors from 'cors';
 import { RequestHandler } from 'express';
-
-const origin = process.env.CORS_ORIGIN ?? '*';
+import { env } from '../config/env.js';
 
 export const corsMiddleware: RequestHandler = cors({
-  origin: origin === '*' ? '*' : origin.split(',').map((value) => value.trim()),
+  origin:
+    env.corsOrigin === '*'
+      ? '*'
+      : env.corsOrigin.split(',').map((value) => value.trim()),
 });

@@ -1,7 +1,8 @@
+import './loadEnv.js';
 import { createApp } from './app.js';
+import { env } from './config/env.js';
 import { checkDbConnection, closePool } from './db/pool.js';
 
-const port = Number(process.env.PORT) || 3000;
 const app = createApp();
 
 async function start() {
@@ -12,8 +13,8 @@ async function start() {
     console.warn('PostgreSQL no disponible');
   }
 
-  app.listen(port, () => {
-    console.log(`DK-FITT API escuchando en http://localhost:${port}`);
+  app.listen(env.port, () => {
+    console.log(`DK-FITT API escuchando en http://localhost:${env.port}`);
   });
 }
 

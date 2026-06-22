@@ -1,12 +1,9 @@
 import pg from 'pg';
+import { env } from '../config/env.js';
 
 const { Pool } = pg;
 
-const databaseUrl =
-  process.env.DATABASE_URL ??
-  'postgresql://dkfitt:dkfitt@localhost:5432/dkfitt';
-
-export const pool = new Pool({ connectionString: databaseUrl });
+export const pool = new Pool({ connectionString: env.databaseUrl });
 
 export async function checkDbConnection(): Promise<boolean> {
   try {

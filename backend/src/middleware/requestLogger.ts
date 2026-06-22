@@ -1,7 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
+import { env } from '../config/env.js';
 
 export function requestLogger(req: Request, _res: Response, next: NextFunction) {
-  if (process.env.NODE_ENV !== 'production') {
+  if (!env.isProduction) {
     console.log(`${req.method} ${req.path}`);
   }
   next();
