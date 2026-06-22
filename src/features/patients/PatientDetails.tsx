@@ -12,6 +12,16 @@ export function PatientDetails() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const getTreatmentColor = (state?: string) => {
+    switch(state) {
+      case 'Activo': return 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400';
+      case 'Pendiente': return 'bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400';
+      case 'Suspendido': return 'bg-orange-100 dark:bg-orange-500/20 text-orange-700 dark:text-orange-400';
+      case 'Finalizado': return 'bg-slate-100 dark:bg-slate-500/20 text-slate-700 dark:text-slate-400';
+      default: return 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300';
+    }
+  };
+
   useEffect(() => {
     const fetchPatient = async () => {
       if (!id) return;
@@ -95,13 +105,18 @@ export function PatientDetails() {
                 {patient.name.charAt(0)}
               </div>
               <h2 className="text-xl font-bold text-foreground">{patient.name}</h2>
-              <span className={`mt-2 inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold ${
-                patient.generalState === 'Alta Adherencia' ? 'bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400' :
-                patient.generalState === 'Media Adherencia' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-500/20 dark:text-yellow-400' :
-                'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400'
-              }`}>
-                {patient.generalState}
-              </span>
+              <div className="flex items-center gap-2 mt-3">
+                <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold ${
+                  patient.generalState === 'Alta Adherencia' ? 'bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400' :
+                  patient.generalState === 'Media Adherencia' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-500/20 dark:text-yellow-400' :
+                  'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400'
+                }`}>
+                  {patient.generalState}
+                </span>
+                <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold border ${getTreatmentColor(patient.treatmentState).replace('bg-', 'border-').replace('text-', 'border-').split(' ')[0]} ${getTreatmentColor(patient.treatmentState)}`}>
+                  {patient.treatmentState || 'Pendiente'}
+                </span>
+              </div>
             </div>
 
             <div className="space-y-4">

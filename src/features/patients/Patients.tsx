@@ -40,6 +40,16 @@ export default function Patients() {
     }
   };
 
+  const getTreatmentColor = (state?: string) => {
+    switch(state) {
+      case 'Activo': return 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400';
+      case 'Pendiente': return 'bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400';
+      case 'Suspendido': return 'bg-orange-100 dark:bg-orange-500/20 text-orange-700 dark:text-orange-400';
+      case 'Finalizado': return 'bg-slate-100 dark:bg-slate-500/20 text-slate-700 dark:text-slate-400';
+      default: return 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300';
+    }
+  };
+
   return (
     <>
       <div className="mb-6 flex justify-between items-end">
@@ -108,6 +118,7 @@ export default function Patients() {
                   <th className="py-3 px-6 text-[12px] font-semibold text-muted uppercase tracking-wider">Paciente</th>
                   <th className="py-3 px-6 text-[12px] font-semibold text-muted uppercase tracking-wider">Correo Electrónico</th>
                   <th className="py-3 px-6 text-[12px] font-semibold text-muted uppercase tracking-wider">Estado General</th>
+                  <th className="py-3 px-6 text-[12px] font-semibold text-muted uppercase tracking-wider">Tratamiento</th>
                   <th className="py-3 px-6 text-[12px] font-semibold text-muted uppercase tracking-wider">Última Visita</th>
                   <th className="py-3 px-6 text-center text-[12px] font-semibold text-muted uppercase tracking-wider">Acciones</th>
                 </tr>
@@ -133,6 +144,11 @@ export default function Patients() {
                     <td className="py-3 px-6">
                       <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${getAdherenceColor(patient.generalState)}`}>
                         {patient.generalState}
+                      </span>
+                    </td>
+                    <td className="py-3 px-6">
+                      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border ${getTreatmentColor(patient.treatmentState).replace('bg-', 'border-').replace('text-', 'border-').split(' ')[0]} ${getTreatmentColor(patient.treatmentState)}`}>
+                        {patient.treatmentState || 'Pendiente'}
                       </span>
                     </td>
                     <td className="py-3 px-6">

@@ -5,7 +5,8 @@ export interface Patient {
   id: string;
   name: string;
   email: string;
-  generalState: GeneralState;
+  generalState: GeneralState | 'Pendiente';
+  treatmentState?: 'Pendiente' | 'Activo' | 'Suspendido' | 'Finalizado';
   lastVisit: string;
 }
 

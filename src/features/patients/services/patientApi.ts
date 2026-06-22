@@ -13,6 +13,7 @@ const mockPatientsDb: PatientDetail[] = [
     weight: 65,
     height: 165,
     isProfileCompleted: true,
+    treatmentState: 'Activo',
     notes: 'Paciente con buena evolución física y adaptación a la dieta.'
   },
   {
@@ -26,6 +27,7 @@ const mockPatientsDb: PatientDetail[] = [
     weight: 82,
     height: 178,
     isProfileCompleted: true,
+    treatmentState: 'Suspendido',
     notes: 'Le cuesta seguir los horarios, pero mantiene las porciones.'
   },
   {
@@ -39,6 +41,7 @@ const mockPatientsDb: PatientDetail[] = [
     weight: 70,
     height: 160,
     isProfileCompleted: false, // ¡PERFIL INCOMPLETO PARA TESTEAR REQUERIMIENTO!
+    treatmentState: 'Pendiente'
   }
 ];
 
