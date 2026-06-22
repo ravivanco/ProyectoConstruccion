@@ -1,11 +1,7 @@
-import express from 'express';
+import { createApp } from './app.js';
 
-const app = express();
 const port = Number(process.env.PORT) || 3000;
-
-app.get('/', (_req, res) => {
-  res.json({ message: 'DK-FITT API' });
-});
+const app = createApp();
 
 app.listen(port, () => {
   console.log(`DK-FITT API escuchando en http://localhost:${port}`);
