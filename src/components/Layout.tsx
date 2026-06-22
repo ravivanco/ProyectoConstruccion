@@ -2,6 +2,8 @@ import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { Users, FileText, Activity, Apple, Bell, LogOut, Calendar, BarChart2, AlertCircle, Menu, Sun, Moon, Monitor } from 'lucide-react';
 
+type Theme = 'light' | 'dark' | 'system';
+
 export default function Layout() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -23,7 +25,7 @@ export default function Layout() {
 
   const [isPinned, setIsPinned] = useState(true);
   const [isExpanded, setIsExpanded] = useState(false);
-  const [theme, setTheme] = useState<'light' | 'dark' | 'system'>('light');
+  const [theme, setTheme] = useState<Theme>('light');
   
   const expanded = isPinned || isExpanded;
 
@@ -112,7 +114,7 @@ export default function Layout() {
                 ].map(({ value, icon, label }) => (
                   <button
                     key={value}
-                    onClick={() => setTheme(value as any)}
+                    onClick={() => setTheme(value as Theme)}
                     title={label}
                     className={`flex-1 flex flex-col items-center gap-0.5 py-1.5 rounded text-[10px] transition-colors ${theme === value ? 'bg-primary/20 text-foreground border border-primary/30' : 'text-muted border border-transparent hover:bg-surface-hover'}`}
                   >
