@@ -306,10 +306,24 @@ export function PatientDetails() {
                             <Calendar size={14} className="text-muted" />
                             {new Date(evalItem.date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
                           </td>
-                          <td className="py-4 px-6 text-sm text-foreground">{evalItem.weight}</td>
-                          <td className="py-4 px-6 text-sm text-foreground">{evalItem.height}</td>
-                          <td className="py-4 px-6 text-sm text-foreground">{evalItem.bodyFat}</td>
-                          <td className="py-4 px-6 text-sm text-foreground">{evalItem.muscleMass}</td>
+                          <td className="py-4 px-6">
+                            <span className="inline-flex items-center justify-center bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400 text-xs px-2.5 py-1 rounded-lg font-bold">
+                              {evalItem.weight.toFixed(1)} kg
+                            </span>
+                          </td>
+                          <td className="py-4 px-6 text-sm font-medium text-muted">
+                            {evalItem.height} cm
+                          </td>
+                          <td className="py-4 px-6">
+                            <span className="inline-flex items-center justify-center bg-orange-100 dark:bg-orange-500/20 text-orange-700 dark:text-orange-400 text-xs px-2.5 py-1 rounded-lg font-bold">
+                              {evalItem.bodyFat.toFixed(1)}%
+                            </span>
+                          </td>
+                          <td className="py-4 px-6">
+                            <span className="inline-flex items-center justify-center bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-400 text-xs px-2.5 py-1 rounded-lg font-bold">
+                              {evalItem.muscleMass.toFixed(1)}%
+                            </span>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
