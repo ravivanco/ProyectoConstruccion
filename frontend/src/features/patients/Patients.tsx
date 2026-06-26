@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Filter, MoreHorizontal, User } from 'lucide-react';
+import { Search, Filter, MoreHorizontal, User, X } from 'lucide-react';
 import { patientsAPI } from './services/patientsApi';
 import type { Patient } from '../../shared/types';
 
@@ -75,8 +75,17 @@ export default function Patients() {
               placeholder="Buscar por nombre o correo..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-surface border border-border text-foreground rounded-xl text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-muted"
+              className="w-full pl-10 pr-10 py-2 bg-surface border border-border text-foreground rounded-xl text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-muted"
             />
+            {searchTerm && (
+              <button 
+                onClick={() => setSearchTerm('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-foreground transition-colors"
+                title="Limpiar búsqueda"
+              >
+                <X size={16} />
+              </button>
+            )}
           </div>
           <button className="flex items-center gap-2 text-muted hover:text-foreground px-4 py-2 border border-border rounded-xl bg-surface hover:bg-surface-hover text-sm font-medium transition-colors">
             <Filter size={16} /> Filtros
