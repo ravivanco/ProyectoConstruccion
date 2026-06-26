@@ -25,11 +25,15 @@ export default function Layout() {
 
   const [isPinned, setIsPinned] = useState(true);
   const [isExpanded, setIsExpanded] = useState(false);
-  const [theme, setTheme] = useState<Theme>('light');
+  const [theme, setTheme] = useState<Theme>(() => {
+    const saved = localStorage.getItem('theme');
+    return (saved as Theme) || 'light';
+  });
   
   const expanded = isPinned || isExpanded;
 
   useEffect(() => {
+    localStorage.setItem('theme', theme);
     const root = window.document.documentElement;
     root.classList.remove('light', 'dark');
 

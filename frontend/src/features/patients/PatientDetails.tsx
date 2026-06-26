@@ -346,10 +346,15 @@ export function PatientDetails() {
         isOpen={isEvaluationModalOpen} 
         onClose={() => setIsEvaluationModalOpen(false)} 
         onSave={async (data) => {
-          // PROYEC-456: Esta simulación mockea el guardado hasta que el backend esté listo
           return new Promise(resolve => {
             setTimeout(() => {
-              console.log("Evaluación guardada:", data);
+              if (patient) {
+                const newEval = { ...data, id: 'ev_' + Date.now() };
+                setPatient({
+                  ...patient,
+                  evaluations: [newEval, ...(patient.evaluations || [])]
+                });
+              }
               resolve();
             }, 1000);
           });
