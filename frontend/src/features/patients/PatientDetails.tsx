@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, User, Activity, AlertCircle, Phone, Mail, Weight, Ruler, FileText, HeartPulse, Ban, Apple, Target } from 'lucide-react';
+import { ArrowLeft, User, Activity, AlertCircle, Phone, Mail, Weight, Ruler, FileText, HeartPulse, Ban, Apple, Target, Plus } from 'lucide-react';
 import { patientAPI } from './services/patientApi';
 import type { PatientDetail } from './types';
+import { ClinicalEvaluationModal } from './components/ClinicalEvaluationModal';
 
 export function PatientDetails() {
   const { id } = useParams<{ id: string }>();
@@ -11,6 +12,7 @@ export function PatientDetails() {
   const [patient, setPatient] = useState<PatientDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isEvaluationModalOpen, setIsEvaluationModalOpen] = useState(false);
 
   const getTreatmentColor = (state?: string) => {
     switch(state) {
@@ -70,17 +72,25 @@ export function PatientDetails() {
   return (
     <div className="max-w-5xl mx-auto pb-10">
       {/* Header */}
-      <div className="flex items-center gap-4 mb-8">
-        <button 
-          onClick={() => navigate('/patients')}
-          className="p-2 text-muted hover:text-foreground hover:bg-surface rounded-full transition-colors"
-        >
-          <ArrowLeft size={20} />
-        </button>
-        <div>
-          <h1 className="text-[28px] font-bold text-foreground transition-colors">Ficha de Paciente</h1>
-          <p className="text-muted text-[13px] mt-1 transition-colors">ID: {patient.id} • Última visita: {patient.lastVisit}</p>
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={() => navigate('/patients')}
+            className="p-2 text-muted hover:text-foreground hover:bg-surface rounded-full transition-colors"
+          >
+            <ArrowLeft size={20} />
+          </button>
+          <div>
+            <h1 className="text-[28px] font-bold text-foreground transition-colors">Ficha de Paciente</h1>
+            <p className="text-muted text-[13px] mt-1 transition-colors">ID: {patient.id} • Última visita: {patient.lastVisit}</p>
+          </div>
         </div>
+        <button 
+          onClick={() => setIsEvaluationModalOpen(true)}
+          className="flex items-center gap-2 bg-[#eab308] hover:bg-[#d97706] text-gray-900 font-semibold py-2.5 px-6 rounded-full transition-all text-sm shadow-sm active:scale-95"
+        >
+          <Plus size={18} /> Nueva Evaluación
+        </button>
       </div>
 
       {/* Warning Alert if profile is incomplete */}
@@ -273,6 +283,21 @@ export function PatientDetails() {
         </div>
 
       </div>
+      
+      <ClinicalEvaluationModal 
+        isOpen={isEvaluationModalOpen} 
+        onClose={() => setIsEvaluationModalOpen(false)} 
+        onSave={async (data) => {
+          // PROYEC-456: Esta simulación mockea el guardado hasta que el backend esté listo
+          return new Promise(resolve => {
+            setTimeout(() => {
+              console.log("Evaluación guardada:", data);
+              alert("Evaluación registrada con éxito (Modo Mock)");
+              resolve();
+            }, 1000);
+          });
+        }} 
+      />
     </div>
   );
 }
