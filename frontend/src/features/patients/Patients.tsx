@@ -9,6 +9,7 @@ export default function Patients() {
   const [patients, setPatients] = useState<Patient[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState<string>('Todos');
 
   useEffect(() => {
     loadPatients();
@@ -26,10 +27,15 @@ export default function Patients() {
     }
   };
 
-  const filteredPatients = patients.filter(p => 
-    p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    p.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredPatients = patients.filter(p => {
+    const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          p.email.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const currentState = p.treatmentState || 'Pendiente';
+    const matchesFilter = filterStatus === 'Todos' || currentState === filterStatus;
+    
+    return matchesSearch && matchesFilter;
+  });
 
   const getAdherenceColor = (state: string) => {
     switch(state) {
@@ -87,9 +93,25 @@ export default function Patients() {
               </button>
             )}
           </div>
-          <button className="flex items-center gap-2 text-muted hover:text-foreground px-4 py-2 border border-border rounded-xl bg-surface hover:bg-surface-hover text-sm font-medium transition-colors">
-            <Filter size={16} /> Filtros
-          </button>
+          <div className="relative">
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted pointer-events-none">
+              <Filter size={16} />
+            </div>
+            <select
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+              className="appearance-none pl-10 pr-8 py-2 bg-surface border border-border text-foreground rounded-xl text-sm font-medium focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors cursor-pointer hover:bg-surface-hover"
+            >
+              <option value="Todos">Todos los estados</option>
+              <option value="Activo">🟢 Activos</option>
+              <option value="Pendiente">🟡 Pendientes</option>
+              <option value="Suspendido">🟠 Suspendidos</option>
+              <option value="Finalizado">⚪ Finalizados</option>
+            </select>
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-muted">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+            </div>
+          </div>
         </div>
 
         {isLoading && (
