@@ -17,4 +17,9 @@ export interface PatientDetail extends Patient {
   height: number; // cm
   isProfileCompleted: boolean;
   notes?: string;
+  medicalConditions?: string[];
+  allergies?: string[];
+  preferences?: string[];
+  restrictions?: string[];
+  objective?: string;
 }

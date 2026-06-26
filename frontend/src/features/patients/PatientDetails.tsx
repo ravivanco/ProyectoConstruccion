@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, User, Activity, AlertCircle, Phone, Mail, Weight, Ruler } from 'lucide-react';
+import { ArrowLeft, User, Activity, AlertCircle, Phone, Mail, Weight, Ruler, FileText, HeartPulse, Ban, Apple, Target } from 'lucide-react';
 import { patientAPI } from './services/patientApi';
 import type { PatientDetail } from './types';
 
@@ -152,36 +152,110 @@ export function PatientDetails() {
             </h3>
 
             {patient.isProfileCompleted ? (
-              <div className="grid grid-cols-3 gap-4 mb-8">
-                <div className="bg-surface-hover p-4 rounded-2xl border border-border transition-colors">
-                  <div className="flex items-center gap-2 text-muted mb-2">
-                    <User size={16} />
-                    <span className="text-xs font-semibold">Edad</span>
+              <div className="space-y-6 mb-8">
+                {/* Métricas base */}
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="bg-surface-hover p-4 rounded-2xl border border-border transition-colors">
+                    <div className="flex items-center gap-2 text-muted mb-2">
+                      <User size={16} />
+                      <span className="text-xs font-semibold">Edad</span>
+                    </div>
+                    <p className="text-2xl font-bold text-foreground">{patient.age} <span className="text-sm font-normal text-muted">años</span></p>
                   </div>
-                  <p className="text-2xl font-bold text-foreground">{patient.age} <span className="text-sm font-normal text-muted">años</span></p>
-                </div>
-                
-                <div className="bg-surface-hover p-4 rounded-2xl border border-border transition-colors">
-                  <div className="flex items-center gap-2 text-muted mb-2">
-                    <Weight size={16} />
-                    <span className="text-xs font-semibold">Peso Inicial</span>
+                  
+                  <div className="bg-surface-hover p-4 rounded-2xl border border-border transition-colors">
+                    <div className="flex items-center gap-2 text-muted mb-2">
+                      <Weight size={16} />
+                      <span className="text-xs font-semibold">Peso Inicial</span>
+                    </div>
+                    <p className="text-2xl font-bold text-foreground">{patient.weight} <span className="text-sm font-normal text-muted">kg</span></p>
                   </div>
-                  <p className="text-2xl font-bold text-foreground">{patient.weight} <span className="text-sm font-normal text-muted">kg</span></p>
+
+                  <div className="bg-surface-hover p-4 rounded-2xl border border-border transition-colors">
+                    <div className="flex items-center gap-2 text-muted mb-2">
+                      <Ruler size={16} />
+                      <span className="text-xs font-semibold">Estatura</span>
+                    </div>
+                    <p className="text-2xl font-bold text-foreground">{patient.height} <span className="text-sm font-normal text-muted">cm</span></p>
+                  </div>
                 </div>
 
-                <div className="bg-surface-hover p-4 rounded-2xl border border-border transition-colors">
-                  <div className="flex items-center gap-2 text-muted mb-2">
-                    <Ruler size={16} />
-                    <span className="text-xs font-semibold">Estatura</span>
+                {/* Formulario Inicial: Secciones */}
+                <div className="bg-surface-hover rounded-2xl border border-border p-5 space-y-5">
+                  <h4 className="text-[14px] font-bold text-foreground border-b border-border pb-2 mb-3 flex items-center gap-2">
+                    <FileText size={16} className="text-primary" />
+                    Datos del Formulario de Ingreso
+                  </h4>
+
+                  <div className="grid grid-cols-2 gap-5">
+                    {/* Condiciones y Alergias */}
+                    <div className="space-y-4">
+                      <div>
+                        <p className="text-xs font-bold text-muted uppercase tracking-wider mb-2 flex items-center gap-1.5"><HeartPulse size={14}/> Condiciones Médicas</p>
+                        {patient.medicalConditions && patient.medicalConditions.length > 0 ? (
+                          <div className="flex flex-wrap gap-2">
+                            {patient.medicalConditions.map((cond, idx) => (
+                              <span key={idx} className="bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400 text-xs px-2.5 py-1 rounded-lg font-medium">{cond}</span>
+                            ))}
+                          </div>
+                        ) : <p className="text-sm text-muted">Ninguna registrada</p>}
+                      </div>
+
+                      <div>
+                        <p className="text-xs font-bold text-muted uppercase tracking-wider mb-2 flex items-center gap-1.5"><Ban size={14} className="text-red-500"/> Alergias / Intolerancias</p>
+                        {patient.allergies && patient.allergies.length > 0 ? (
+                          <div className="flex flex-wrap gap-2">
+                            {patient.allergies.map((alg, idx) => (
+                              <span key={idx} className="bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400 text-xs px-2.5 py-1 rounded-lg font-medium">{alg}</span>
+                            ))}
+                          </div>
+                        ) : <p className="text-sm text-muted">Ninguna registrada</p>}
+                      </div>
+                    </div>
+
+                    {/* Preferencias y Restricciones */}
+                    <div className="space-y-4">
+                      <div>
+                        <p className="text-xs font-bold text-muted uppercase tracking-wider mb-2 flex items-center gap-1.5"><Apple size={14} className="text-green-500"/> Preferencias</p>
+                        {patient.preferences && patient.preferences.length > 0 ? (
+                          <div className="flex flex-wrap gap-2">
+                            {patient.preferences.map((pref, idx) => (
+                              <span key={idx} className="bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400 text-xs px-2.5 py-1 rounded-lg font-medium">{pref}</span>
+                            ))}
+                          </div>
+                        ) : <p className="text-sm text-muted">Ninguna registrada</p>}
+                      </div>
+
+                      <div>
+                        <p className="text-xs font-bold text-muted uppercase tracking-wider mb-2 flex items-center gap-1.5"><Ban size={14} className="text-orange-500"/> Restricciones</p>
+                        {patient.restrictions && patient.restrictions.length > 0 ? (
+                          <div className="flex flex-wrap gap-2">
+                            {patient.restrictions.map((rest, idx) => (
+                              <span key={idx} className="bg-orange-100 dark:bg-orange-500/20 text-orange-700 dark:text-orange-400 text-xs px-2.5 py-1 rounded-lg font-medium">{rest}</span>
+                            ))}
+                          </div>
+                        ) : <p className="text-sm text-muted">Ninguna registrada</p>}
+                      </div>
+                    </div>
                   </div>
-                  <p className="text-2xl font-bold text-foreground">{patient.height} <span className="text-sm font-normal text-muted">cm</span></p>
+
+                  {/* Objetivo */}
+                  <div className="pt-2">
+                    <p className="text-xs font-bold text-muted uppercase tracking-wider mb-2 flex items-center gap-1.5"><Target size={14} className="text-purple-500"/> Objetivo del Paciente</p>
+                    <p className="text-sm text-foreground bg-surface p-3 rounded-xl border border-border">
+                      {patient.objective || <span className="text-muted italic">No especificado</span>}
+                    </p>
+                  </div>
                 </div>
               </div>
             ) : (
-              <div className="py-12 flex flex-col items-center justify-center border-2 border-dashed border-border rounded-2xl mb-8">
-                <User size={40} className="text-muted mb-4 opacity-50" />
-                <p className="text-muted font-medium">No hay métricas iniciales disponibles</p>
-                <p className="text-muted text-sm mt-1">El paciente debe completar su evaluación de ingreso.</p>
+              <div className="py-12 flex flex-col items-center justify-center border-2 border-dashed border-border bg-surface-hover/50 rounded-2xl mb-8">
+                <FileText size={40} className="text-muted mb-4 opacity-50" />
+                <p className="text-foreground font-bold">Formulario Inicial Pendiente</p>
+                <p className="text-muted text-sm mt-1 max-w-sm text-center">El paciente aún no ha completado su evaluación de ingreso. Las condiciones, alergias y métricas no están disponibles.</p>
+                <button className="mt-4 px-4 py-2 bg-primary/10 text-primary hover:bg-primary/20 rounded-lg text-sm font-semibold transition-colors">
+                  Enviar recordatorio
+                </button>
               </div>
             )}
 

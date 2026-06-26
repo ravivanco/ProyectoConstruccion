@@ -14,7 +14,12 @@ const mockPatientsDb: PatientDetail[] = [
     height: 165,
     isProfileCompleted: true,
     treatmentState: 'Activo',
-    notes: 'Paciente con buena evolución física y adaptación a la dieta.'
+    notes: 'Paciente con buena evolución física y adaptación a la dieta.',
+    medicalConditions: ['Hipertensión leve', 'Resistencia a la insulina'],
+    allergies: ['Penicilina', 'Mariscos'],
+    preferences: ['Dieta Mediterránea', 'Desayunos ligeros'],
+    restrictions: ['Bajo en sodio', 'Sin azúcar refinada'],
+    objective: 'Reducir índice de masa corporal y controlar niveles de glucosa en sangre a través de una alimentación balanceada y sostenible.'
   },
   {
     id: '2',
