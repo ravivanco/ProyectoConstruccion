@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, User, Activity, AlertCircle, Phone, Mail, Weight, Ruler, FileText, HeartPulse, Ban, Apple, Target, Plus } from 'lucide-react';
+import { ArrowLeft, User, Activity, AlertCircle, Phone, Mail, Weight, Ruler, FileText, HeartPulse, Ban, Apple, Target, Plus, Calendar, History } from 'lucide-react';
 import { patientAPI } from './services/patientApi';
 import type { PatientDetail } from './types';
 import { ClinicalEvaluationModal } from './components/ClinicalEvaluationModal';
@@ -279,6 +279,50 @@ export function PatientDetails() {
                 <p className="text-sm text-muted italic">Sin notas registradas.</p>
               )}
             </div>
+
+            {/* Historial de Evaluaciones Clínicas (PROYEC-459) */}
+            <div className="mt-8 pt-8 border-t border-border">
+              <h3 className="text-lg font-bold text-foreground mb-6 flex items-center gap-2">
+                <History size={20} className="text-primary" />
+                Historial de Evaluaciones Clínicas
+              </h3>
+              
+              {patient.evaluations && patient.evaluations.length > 0 ? (
+                <div className="bg-surface border border-border rounded-2xl overflow-hidden">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="bg-surface-hover border-b border-border text-xs uppercase tracking-wider text-muted font-bold">
+                        <th className="py-4 px-6 font-semibold">Fecha</th>
+                        <th className="py-4 px-6 font-semibold">Peso (kg)</th>
+                        <th className="py-4 px-6 font-semibold">Talla (cm)</th>
+                        <th className="py-4 px-6 font-semibold">Grasa Corporal (%)</th>
+                        <th className="py-4 px-6 font-semibold">Masa Muscular (%)</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border">
+                      {patient.evaluations.map((evalItem) => (
+                        <tr key={evalItem.id} className="hover:bg-surface-hover/50 transition-colors">
+                          <td className="py-4 px-6 text-sm font-medium text-foreground flex items-center gap-2">
+                            <Calendar size={14} className="text-muted" />
+                            {new Date(evalItem.date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
+                          </td>
+                          <td className="py-4 px-6 text-sm text-foreground">{evalItem.weight}</td>
+                          <td className="py-4 px-6 text-sm text-foreground">{evalItem.height}</td>
+                          <td className="py-4 px-6 text-sm text-foreground">{evalItem.bodyFat}</td>
+                          <td className="py-4 px-6 text-sm text-foreground">{evalItem.muscleMass}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div className="py-12 flex flex-col items-center justify-center border-2 border-dashed border-border bg-surface-hover/50 rounded-2xl">
+                  <History size={40} className="text-muted mb-4 opacity-50" />
+                  <p className="text-foreground font-bold">Sin evaluaciones previas</p>
+                  <p className="text-muted text-sm mt-1 max-w-sm text-center">Aún no se ha registrado ninguna evaluación clínica para este paciente.</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -292,7 +336,6 @@ export function PatientDetails() {
           return new Promise(resolve => {
             setTimeout(() => {
               console.log("Evaluación guardada:", data);
-              alert("Evaluación registrada con éxito (Modo Mock)");
               resolve();
             }, 1000);
           });

@@ -19,7 +19,12 @@ const mockPatientsDb: PatientDetail[] = [
     allergies: ['Penicilina', 'Mariscos'],
     preferences: ['Dieta Mediterránea', 'Desayunos ligeros'],
     restrictions: ['Bajo en sodio', 'Sin azúcar refinada'],
-    objective: 'Reducir índice de masa corporal y controlar niveles de glucosa en sangre a través de una alimentación balanceada y sostenible.'
+    objective: 'Reducir índice de masa corporal y controlar niveles de glucosa en sangre a través de una alimentación balanceada y sostenible.',
+    evaluations: [
+      { id: 'ev1', date: '2026-06-10T10:00:00Z', weight: 75.0, height: 175, bodyFat: 20.5, muscleMass: 45.0 },
+      { id: 'ev2', date: '2026-05-15T09:30:00Z', weight: 76.2, height: 175, bodyFat: 21.0, muscleMass: 44.5 },
+      { id: 'ev3', date: '2026-04-10T11:15:00Z', weight: 78.5, height: 175, bodyFat: 22.5, muscleMass: 44.0 }
+    ]
   },
   {
     id: '2',

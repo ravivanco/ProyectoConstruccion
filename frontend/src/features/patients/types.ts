@@ -1,4 +1,3 @@
-// Tipos específicos del módulo de Patients
 export type GeneralState = 'Alta Adherencia' | 'Media Adherencia' | 'Baja Adherencia';
 
 export interface Patient {
@@ -10,7 +9,22 @@ export interface Patient {
   lastVisit: string;
 }
 
-export interface PatientDetail extends Patient {
+export interface ClinicalEvaluation {
+  id: string;
+  date: string;
+  weight: number;
+  height: number;
+  bodyFat: number;
+  muscleMass: number;
+}
+
+export interface PatientDetail {
+  id: string;
+  name: string;
+  email: string;
+  generalState: GeneralState | 'Pendiente';
+  treatmentState: 'Pendiente' | 'Activo' | 'Suspendido' | 'Finalizado';
+  lastVisit: string;
   phone: string;
   age: number;
   weight: number; // kg
@@ -22,4 +36,5 @@ export interface PatientDetail extends Patient {
   preferences?: string[];
   restrictions?: string[];
   objective?: string;
+  evaluations?: ClinicalEvaluation[];
 }
