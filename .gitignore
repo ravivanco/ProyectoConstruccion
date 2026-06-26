@@ -1,5 +1,17 @@
+# Dependencies and builds
+node_modules/
+dist/
+dist-ssr/
+movil/.expo/
+
+# Environment files
+.env
+.env.*
+!.env.example
+*.local
+
 # Logs
-logs
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -7,15 +19,13 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
+# Generated files
+vite.config.ts.timestamp-*.mjs
 
-# Editor directories and files
+# Editors and operating systems
 .vscode/*
 !.vscode/extensions.json
-.idea
+.idea/
 .DS_Store
 *.suo
 *.ntvs*
@@ -23,5 +33,5 @@ dist-ssr
 *.sln
 *.sw?
 
-# Archivos de referencia
+# Reference material
 SOLO_REFERENCIA/
