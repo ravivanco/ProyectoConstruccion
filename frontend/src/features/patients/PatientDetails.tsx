@@ -4,6 +4,7 @@ import { ArrowLeft, User, Activity, AlertCircle, Phone, Mail, Weight, Ruler, Fil
 import { patientAPI } from './services/patientApi';
 import type { PatientDetail } from './types';
 import { ClinicalEvaluationModal } from './components/ClinicalEvaluationModal';
+import { ActivatePlanModal } from './components/ActivatePlanModal';
 
 export function PatientDetails() {
   const { id } = useParams<{ id: string }>();
@@ -13,7 +14,7 @@ export function PatientDetails() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isEvaluationModalOpen, setIsEvaluationModalOpen] = useState(false);
-  const [isActivating, setIsActivating] = useState(false);
+  const [isActivateModalOpen, setIsActivateModalOpen] = useState(false);
 
   const getTreatmentColor = (state?: string) => {
     switch(state) {
@@ -43,20 +44,20 @@ export function PatientDetails() {
     fetchPatient();
   }, [id]);
 
-  const handleActivatePlan = async () => {
+  const handleActivatePlan = async (startDate: string) => {
     if (!patient) return;
     
-    setIsActivating(true);
     try {
-      await patientAPI.activatePlan(patient.id);
+      // Pasamos la fecha al API mock para poder simularlo
+      // PROYEC-468 y PROYEC-469
+      await patientAPI.activatePlan(patient.id, startDate);
       setPatient({
         ...patient,
         treatmentState: 'Activo'
       });
     } catch (err) {
       console.error(err);
-    } finally {
-      setIsActivating(false);
+      throw err;
     }
   };
 
@@ -150,18 +151,12 @@ export function PatientDetails() {
               {patient.treatmentState === 'Pendiente' && (
                 <div className="mt-5 w-full">
                   <button 
-                    onClick={handleActivatePlan}
-                    disabled={isActivating || !patient.isProfileCompleted}
-                    className={`w-full flex justify-center items-center gap-2 font-semibold py-2.5 px-4 rounded-xl transition-all shadow-sm ${!patient.isProfileCompleted ? 'bg-surface-hover text-muted cursor-not-allowed border border-border' : 'bg-emerald-500 hover:bg-emerald-600 text-white disabled:opacity-70 disabled:cursor-not-allowed'}`}
+                    onClick={() => setIsActivateModalOpen(true)}
+                    disabled={!patient.isProfileCompleted}
+                    className={`w-full flex justify-center items-center gap-2 font-semibold py-2.5 px-4 rounded-xl transition-all shadow-sm ${!patient.isProfileCompleted ? 'bg-surface-hover text-muted cursor-not-allowed border border-border' : 'bg-emerald-500 hover:bg-emerald-600 text-white'}`}
                   >
-                    {isActivating ? (
-                      <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                    ) : (
-                      <>
-                        <PlayCircle size={18} />
-                        Activar Plan Nutricional
-                      </>
-                    )}
+                    <PlayCircle size={18} />
+                    Activar Plan Nutricional
                   </button>
                   <p className="text-[10px] text-muted text-center mt-2">
                     {!patient.isProfileCompleted ? 'El paciente debe completar el formulario inicial.' : 'Esto habilitará el plan en la app móvil del paciente.'}
@@ -401,6 +396,15 @@ export function PatientDetails() {
           });
         }} 
       />
+      
+      {patient && (
+        <ActivatePlanModal 
+          isOpen={isActivateModalOpen}
+          onClose={() => setIsActivateModalOpen(false)}
+          onConfirm={handleActivatePlan}
+          patientName={patient.name}
+        />
+      )}
     </div>
   );
 }

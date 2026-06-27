@@ -121,12 +121,14 @@ export const patientAPI = {
     });
   },
   
-  activatePlan: async (id: string): Promise<void> => {
+  activatePlan: async (id: string, startDate?: string): Promise<void> => {
     return new Promise((resolve, reject) => {
       setTimeout(() => {
         const patientIndex = mockPatientsDb.findIndex(p => p.id === id);
         if (patientIndex !== -1) {
           mockPatientsDb[patientIndex].treatmentState = 'Activo';
+          // console.log(`Activando plan para paciente ${id} con fecha de inicio ${startDate}`); (PROYEC-468)
+          if (startDate) console.log(startDate);
           resolve();
         } else {
           reject(new Error('Patient not found'));
