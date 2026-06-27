@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Filter, MoreHorizontal, User, X } from 'lucide-react';
-import { patientsAPI } from './services/patientsApi';
+import { patientAPI } from './services/patientApi';
 import type { Patient } from '../../shared/types';
 
 export default function Patients() {
@@ -18,7 +18,7 @@ export default function Patients() {
   async function loadPatients() {
     setIsLoading(true);
     try {
-      const data = await patientsAPI.getPatients();
+      const data = await patientAPI.getPatients();
       setPatients(data);
     } catch (error) {
       console.error("Error al cargar pacientes", error);

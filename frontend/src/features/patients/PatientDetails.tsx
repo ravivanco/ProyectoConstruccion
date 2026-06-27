@@ -47,15 +47,17 @@ export function PatientDetails() {
     if (!patient) return;
     
     setIsActivating(true);
-    // Simulación de la petición PATCH /nutrition-plans/:id/activate
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    // Actualizamos el estado local
-    setPatient({
-      ...patient,
-      treatmentState: 'Activo'
-    });
-    setIsActivating(false);
+    try {
+      await patientAPI.activatePlan(patient.id);
+      setPatient({
+        ...patient,
+        treatmentState: 'Activo'
+      });
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsActivating(false);
+    }
   };
 
   if (isLoading) {
@@ -149,8 +151,8 @@ export function PatientDetails() {
                 <div className="mt-5 w-full">
                   <button 
                     onClick={handleActivatePlan}
-                    disabled={isActivating}
-                    className="w-full flex justify-center items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2.5 px-4 rounded-xl transition-all shadow-sm disabled:opacity-70 disabled:cursor-not-allowed"
+                    disabled={isActivating || !patient.isProfileCompleted}
+                    className={`w-full flex justify-center items-center gap-2 font-semibold py-2.5 px-4 rounded-xl transition-all shadow-sm ${!patient.isProfileCompleted ? 'bg-surface-hover text-muted cursor-not-allowed border border-border' : 'bg-emerald-500 hover:bg-emerald-600 text-white disabled:opacity-70 disabled:cursor-not-allowed'}`}
                   >
                     {isActivating ? (
                       <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
@@ -162,7 +164,7 @@ export function PatientDetails() {
                     )}
                   </button>
                   <p className="text-[10px] text-muted text-center mt-2">
-                    Esto habilitará el plan en la app móvil del paciente.
+                    {!patient.isProfileCompleted ? 'El paciente debe completar el formulario inicial.' : 'Esto habilitará el plan en la app móvil del paciente.'}
                   </p>
                 </div>
               )}

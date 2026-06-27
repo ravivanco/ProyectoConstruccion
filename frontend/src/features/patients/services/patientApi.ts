@@ -1,4 +1,4 @@
-import type { PatientDetail } from '../types';
+import type { Patient, PatientDetail } from '../types';
 
 // Simulamos una base de datos de pacientes en memoria
 const mockPatientsDb: PatientDetail[] = [
@@ -55,7 +55,7 @@ const mockPatientsDb: PatientDetail[] = [
     age: 28,
     weight: 90,
     height: 180,
-    isProfileCompleted: false, // ¡PERFIL INCOMPLETO PARA VER ESTADO VACÍO!
+    isProfileCompleted: false, // ¡PERFIL INCOMPLETO!
     treatmentState: 'Pendiente'
   },
   {
@@ -63,19 +63,20 @@ const mockPatientsDb: PatientDetail[] = [
     name: 'María Fernanda Salas',
     email: 'mafer.salas@gmail.com',
     generalState: 'Alta Adherencia',
-    lastVisit: '14 Jun 2026',
-    phone: '+1 555-0155',
-    age: 31,
-    weight: 60,
+    lastVisit: '20 Jun 2026',
+    phone: '+593 98 765 4323',
+    age: 25,
+    weight: 62.0,
     height: 165,
     isProfileCompleted: true,
-    treatmentState: 'Finalizado',
-    notes: 'Excelente progreso, alcanzó su peso ideal.',
-    medicalConditions: [],
-    allergies: ['Nueces'],
-    preferences: ['Vegetariana'],
-    restrictions: ['Carnes rojas'],
-    objective: 'Mantenimiento de peso actual.'
+    treatmentState: 'Pendiente',
+    notes: 'Paciente lista para iniciar plan.',
+    medicalConditions: ['Ninguna'],
+    allergies: ['Ninguna'],
+    preferences: ['Comida vegetariana'],
+    restrictions: ['Sin lactosa'],
+    objective: 'Aumentar masa muscular',
+    evaluations: []
   },
   {
     id: '5',
@@ -87,13 +88,26 @@ const mockPatientsDb: PatientDetail[] = [
     age: 45,
     weight: 95,
     height: 170,
-    isProfileCompleted: false, // ¡PERFIL INCOMPLETO PARA VER ESTADO VACÍO!
-    treatmentState: 'Pendiente'
+    isProfileCompleted: false,
+    treatmentState: 'Pendiente',
+    evaluations: []
   }
 ];
 
 export const patientAPI = {
-  // Simulamos una llamada asíncrona a un backend real
+  getPatients: async (): Promise<Patient[]> => {
+    return new Promise((resolve) => {
+      setTimeout(() => resolve(mockPatientsDb.map(p => ({
+        id: p.id,
+        name: p.name,
+        email: p.email,
+        generalState: p.generalState,
+        lastVisit: p.lastVisit,
+        treatmentState: p.treatmentState
+      }))), 800);
+    });
+  },
+
   getPatientById: async (id: string): Promise<PatientDetail> => {
     return new Promise((resolve, reject) => {
       setTimeout(() => {
@@ -101,9 +115,23 @@ export const patientAPI = {
         if (patient) {
           resolve(patient);
         } else {
-          reject(new Error('Paciente no encontrado'));
+          reject(new Error('Patient not found'));
         }
-      }, 800); // Simulamos 800ms de latencia de red
+      }, 500);
+    });
+  },
+  
+  activatePlan: async (id: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        const patientIndex = mockPatientsDb.findIndex(p => p.id === id);
+        if (patientIndex !== -1) {
+          mockPatientsDb[patientIndex].treatmentState = 'Activo';
+          resolve();
+        } else {
+          reject(new Error('Patient not found'));
+        }
+      }, 1500);
     });
   }
 };
