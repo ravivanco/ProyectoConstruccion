@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, User, Activity, AlertCircle, Phone, Mail, Weight, Ruler, FileText, HeartPulse, Ban, Apple, Target, Plus, Calendar, History } from 'lucide-react';
+import { ArrowLeft, User, Activity, AlertCircle, Phone, Mail, Weight, Ruler, FileText, HeartPulse, Ban, Apple, Target, Plus, Calendar, History, PlayCircle } from 'lucide-react';
 import { patientAPI } from './services/patientApi';
 import type { PatientDetail } from './types';
 import { ClinicalEvaluationModal } from './components/ClinicalEvaluationModal';
@@ -13,6 +13,7 @@ export function PatientDetails() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isEvaluationModalOpen, setIsEvaluationModalOpen] = useState(false);
+  const [isActivating, setIsActivating] = useState(false);
 
   const getTreatmentColor = (state?: string) => {
     switch(state) {
@@ -41,6 +42,21 @@ export function PatientDetails() {
 
     fetchPatient();
   }, [id]);
+
+  const handleActivatePlan = async () => {
+    if (!patient) return;
+    
+    setIsActivating(true);
+    // Simulación de la petición PATCH /nutrition-plans/:id/activate
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    // Actualizamos el estado local
+    setPatient({
+      ...patient,
+      treatmentState: 'Activo'
+    });
+    setIsActivating(false);
+  };
 
   if (isLoading) {
     return (
@@ -127,6 +143,29 @@ export function PatientDetails() {
                   {patient.treatmentState || 'Pendiente'}
                 </span>
               </div>
+              
+              {/* PROYEC-463: Botón para Activar Plan */}
+              {patient.treatmentState === 'Pendiente' && (
+                <div className="mt-5 w-full">
+                  <button 
+                    onClick={handleActivatePlan}
+                    disabled={isActivating}
+                    className="w-full flex justify-center items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2.5 px-4 rounded-xl transition-all shadow-sm disabled:opacity-70 disabled:cursor-not-allowed"
+                  >
+                    {isActivating ? (
+                      <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                    ) : (
+                      <>
+                        <PlayCircle size={18} />
+                        Activar Plan Nutricional
+                      </>
+                    )}
+                  </button>
+                  <p className="text-[10px] text-muted text-center mt-2">
+                    Esto habilitará el plan en la app móvil del paciente.
+                  </p>
+                </div>
+              )}
             </div>
 
             <div className="space-y-4">
