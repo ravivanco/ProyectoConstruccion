@@ -37,4 +37,5 @@ export interface PatientDetail {
   restrictions?: string[];
   objective?: string;
   evaluations?: ClinicalEvaluation[];
+  isPlanLocked?: boolean;
 }

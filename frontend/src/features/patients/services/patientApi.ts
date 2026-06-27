@@ -43,7 +43,8 @@ const mockPatientsDb: PatientDetail[] = [
     allergies: [],
     preferences: ['Dietas altas en proteína'],
     restrictions: ['Lácteos enteros'],
-    objective: 'Aumentar masa muscular y acelerar metabolismo.'
+    objective: 'Aumentar masa muscular y acelerar metabolismo.',
+    isPlanLocked: true
   },
   {
     id: '3',
@@ -134,6 +135,34 @@ export const patientAPI = {
           reject(new Error('Patient not found'));
         }
       }, 1500);
+    });
+  },
+  
+  lockPlan: async (id: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        const patientIndex = mockPatientsDb.findIndex(p => p.id === id);
+        if (patientIndex !== -1) {
+          mockPatientsDb[patientIndex].isPlanLocked = true;
+          resolve();
+        } else {
+          reject(new Error('Patient not found'));
+        }
+      }, 1000);
+    });
+  },
+
+  unlockPlan: async (id: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        const patientIndex = mockPatientsDb.findIndex(p => p.id === id);
+        if (patientIndex !== -1) {
+          mockPatientsDb[patientIndex].isPlanLocked = false;
+          resolve();
+        } else {
+          reject(new Error('Patient not found'));
+        }
+      }, 1000);
     });
   }
 };

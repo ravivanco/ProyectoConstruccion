@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, User, Activity, AlertCircle, Phone, Mail, Weight, Ruler, FileText, HeartPulse, Ban, Apple, Target, Plus, Calendar, History, PlayCircle } from 'lucide-react';
+import { ArrowLeft, User, Activity, AlertCircle, Phone, Mail, Weight, Ruler, FileText, HeartPulse, Ban, Apple, Target, Plus, Calendar, History, PlayCircle, Lock, Unlock } from 'lucide-react';
 import { patientAPI } from './services/patientApi';
 import type { PatientDetail } from './types';
 import { ClinicalEvaluationModal } from './components/ClinicalEvaluationModal';
@@ -15,6 +15,7 @@ export function PatientDetails() {
   const [error, setError] = useState<string | null>(null);
   const [isEvaluationModalOpen, setIsEvaluationModalOpen] = useState(false);
   const [isActivateModalOpen, setIsActivateModalOpen] = useState(false);
+  const [isTogglingLock, setIsTogglingLock] = useState(false);
 
   const getTreatmentColor = (state?: string) => {
     switch(state) {
@@ -58,6 +59,25 @@ export function PatientDetails() {
     } catch (err) {
       console.error(err);
       throw err;
+    }
+  };
+
+  const handleToggleLock = async () => {
+    if (!patient) return;
+    
+    setIsTogglingLock(true);
+    try {
+      if (patient.isPlanLocked) {
+        await patientAPI.unlockPlan(patient.id);
+        setPatient({ ...patient, isPlanLocked: false });
+      } else {
+        await patientAPI.lockPlan(patient.id);
+        setPatient({ ...patient, isPlanLocked: true });
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsTogglingLock(false);
     }
   };
 
@@ -184,6 +204,33 @@ export function PatientDetails() {
                   <p className="text-[11px] text-muted">Teléfono</p>
                   <p className="text-[13px] font-medium text-foreground">{patient.phone}</p>
                 </div>
+              </div>
+            </div>
+
+            {/* PROYEC-471: Acceso a la App Móvil */}
+            <div className="pt-6 border-t border-border mt-6">
+              <h3 className="text-[11px] font-bold text-muted uppercase tracking-wider mb-4">Acceso a la App Móvil</h3>
+              <div className="flex items-center justify-between p-4 rounded-xl border border-border bg-surface-hover">
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${patient.isPlanLocked ? 'bg-red-500/20 text-red-500' : 'bg-emerald-500/20 text-emerald-500'}`}>
+                    {patient.isPlanLocked ? <Lock size={18} /> : <Unlock size={18} />}
+                  </div>
+                  <div>
+                    <p className="text-[13px] font-bold text-foreground">{patient.isPlanLocked ? 'Plan Bloqueado' : 'Plan Desbloqueado'}</p>
+                    <p className="text-[11px] text-muted">{patient.isPlanLocked ? 'El paciente no puede ver su plan' : 'Acceso normal habilitado'}</p>
+                  </div>
+                </div>
+                
+                {/* Toggle Switch */}
+                <button 
+                  onClick={handleToggleLock}
+                  disabled={isTogglingLock}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface ${patient.isPlanLocked ? 'bg-red-500' : 'bg-emerald-500'} disabled:opacity-50 disabled:cursor-not-allowed`}
+                >
+                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${patient.isPlanLocked ? 'translate-x-6' : 'translate-x-1'} flex items-center justify-center`}>
+                    {isTogglingLock && <span className="w-3 h-3 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></span>}
+                  </span>
+                </button>
               </div>
             </div>
           </div>
