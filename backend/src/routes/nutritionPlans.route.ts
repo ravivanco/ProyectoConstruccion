@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { authenticate, requireRole } from '../middleware/authenticate.js';
 import { setNutritionPlanStartDate } from '../repositories/nutritionPlanRepository.js';
+import { validateStartDate } from '../utils/validateStartDate.js';
 
 export const nutritionPlansRouter = Router();
 
@@ -18,6 +19,11 @@ nutritionPlansRouter.patch(
       }
       if (!startDate) {
         return res.status(400).json({ message: 'startDate es requerido' });
+      }
+
+      const validation = validateStartDate(startDate);
+      if (!validation.valid) {
+        return res.status(400).json({ message: validation.message });
       }
 
       const plan = await setNutritionPlanStartDate(id, startDate);
