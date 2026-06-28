@@ -2,6 +2,7 @@ import './loadEnv.js';
 import { createApp } from './app.js';
 import { env } from './config/env.js';
 import { checkDbConnection, closePool } from './db/pool.js';
+import { runMigrations } from './db/migrate.js';
 
 const app = createApp();
 
@@ -9,6 +10,7 @@ async function start() {
   const dbConnected = await checkDbConnection();
   if (dbConnected) {
     console.log('PostgreSQL conectado');
+    await runMigrations();
   } else {
     console.warn('PostgreSQL no disponible');
   }
