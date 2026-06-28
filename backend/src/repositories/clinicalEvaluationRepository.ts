@@ -49,3 +49,16 @@ export async function createClinicalEvaluation(
 
   return mapRow(result.rows[0]);
 }
+
+export async function listClinicalEvaluationsByPatient(
+  patientId: string,
+): Promise<ClinicalEvaluation[]> {
+  const result = await pool.query(
+    `SELECT * FROM clinical_evaluations
+     WHERE patient_id = $1
+     ORDER BY evaluation_date DESC, created_at DESC`,
+    [patientId],
+  );
+
+  return result.rows.map(mapRow);
+}

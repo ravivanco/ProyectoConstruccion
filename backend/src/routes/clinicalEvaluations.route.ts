@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { authenticate, requireRole } from '../middleware/authenticate.js';
-import { createClinicalEvaluation } from '../repositories/clinicalEvaluationRepository.js';
+import { createClinicalEvaluation, listClinicalEvaluationsByPatient } from '../repositories/clinicalEvaluationRepository.js';
 import { CreateClinicalEvaluationInput } from '../types/clinicalEvaluation.js';
 
 export const clinicalEvaluationsRouter = Router();
@@ -29,6 +29,25 @@ clinicalEvaluationsRouter.post(
       });
 
       res.status(201).json(evaluation);
+    } catch (error) {
+      next(error);
+    }
+  },
+);
+
+clinicalEvaluationsRouter.get(
+  '/clinical-evaluations/patient/:id',
+  authenticate,
+  requireRole('nutricionista'),
+  async (req, res, next) => {
+    try {
+      const patientId = req.params.id?.trim();
+      if (!patientId) {
+        return res.status(400).json({ message: 'id de paciente requerido' });
+      }
+
+      const evaluations = await listClinicalEvaluationsByPatient(patientId);
+      res.json({ patientId, evaluations });
     } catch (error) {
       next(error);
     }
