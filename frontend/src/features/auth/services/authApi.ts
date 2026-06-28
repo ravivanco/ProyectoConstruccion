@@ -1,7 +1,6 @@
 import type { User } from '../../../shared/types';
-
-// TODO: Cambiar API_URL por la URL real del backend cuando Alejandro termine los endpoints
-export const API_URL = 'http://localhost:3000/api';
+import api from '../../../lib/axios';
+import { endpoints } from '../../../lib/endpoints';
 
 export const authAPI = {
   // PROYEC-401: POST /auth/login — Validar credenciales con rol nutricionista.
@@ -17,17 +16,9 @@ export const authAPI = {
     });
   },
 
-  // PROYEC-402: GET /nutritionist-profile/me — Obtener perfil profesional.
+  // PROYEC-402: GET /api/me — Obtener perfil profesional desde el backend
   getProfile: async (): Promise<User> => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({
-          id: 'nutri-1',
-          email: 'correo@dkfitt.com',
-          role: 'nutricionista',
-          name: 'dkfitt nutricionista'
-        });
-      }, 500);
-    });
+    const response = await api.get(endpoints.auth.me);
+    return response.data;
   }
 };
