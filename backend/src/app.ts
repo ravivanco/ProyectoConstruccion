@@ -7,6 +7,7 @@ import { healthRouter } from './routes/health.route.js';
 import { meRouter } from './routes/me.route.js';
 import { clinicalEvaluationsRouter } from './routes/clinicalEvaluations.route.js';
 import { nutritionPlansRouter } from './routes/nutritionPlans.route.js';
+import { calorieControlRouter } from './routes/calorieControl.route.js';
 import { setupSwagger } from './swagger/swagger.js';
 
 export function createApp() {
@@ -21,6 +22,7 @@ export function createApp() {
   app.use(meRouter);
   app.use(clinicalEvaluationsRouter);
   app.use(nutritionPlansRouter);
+  app.use(calorieControlRouter);
 
   setupSwagger(app);
 
