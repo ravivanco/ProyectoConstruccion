@@ -16,13 +16,19 @@ nutritionPlansRouter.patch(
       }
 
       const startDate = typeof req.body?.startDate === 'string' ? req.body.startDate : undefined;
-      const plan = await activateNutritionPlan(id, startDate);
+      const result = await activateNutritionPlan(id, startDate);
 
-      if (!plan) {
+      if (!result) {
         return res.status(404).json({ message: 'Plan nutricional no encontrado' });
       }
 
-      res.json(plan);
+      res.json({
+        plan: result.plan,
+        statusChange: {
+          from: result.previousStatus,
+          to: result.plan.status,
+        },
+      });
     } catch (error) {
       next(error);
     }

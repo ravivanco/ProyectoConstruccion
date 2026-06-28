@@ -22,7 +22,11 @@ function mapRow(row: Record<string, unknown>): NutritionPlan {
 export async function activateNutritionPlan(
   id: string,
   startDate?: string,
-): Promise<NutritionPlan | null> {
+): Promise<{ plan: NutritionPlan; previousStatus: string } | null> {
+  const existing = await pool.query('SELECT status FROM nutrition_plans WHERE id = $1', [id]);
+  if (!existing.rowCount) return null;
+
+  const previousStatus = String(existing.rows[0].status);
   const date = startDate ?? new Date().toISOString().slice(0, 10);
   const result = await pool.query(
     `UPDATE nutrition_plans
@@ -35,6 +39,5 @@ export async function activateNutritionPlan(
      RETURNING *`,
     [id, date],
   );
-  if (!result.rowCount) return null;
-  return mapRow(result.rows[0]);
+  return { plan: mapRow(result.rows[0]), previousStatus };
 }
