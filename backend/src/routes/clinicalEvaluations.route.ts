@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { authenticate, requireRole } from '../middleware/authenticate.js';
 import { createClinicalEvaluation, listClinicalEvaluationsByPatient } from '../repositories/clinicalEvaluationRepository.js';
 import { CreateClinicalEvaluationInput } from '../types/clinicalEvaluation.js';
+import { calculateMetabolism } from '../utils/metabolism.js';
 
 export const clinicalEvaluationsRouter = Router();
 
@@ -28,7 +29,18 @@ clinicalEvaluationsRouter.post(
         patientId: body.patientId.trim(),
       });
 
-      res.status(201).json(evaluation);
+      const metabolism =
+        body.age && body.sex
+          ? calculateMetabolism({
+              weightKg: body.weightKg,
+              heightCm: body.heightCm,
+              age: body.age,
+              sex: body.sex,
+              activityLevel: body.activityLevel,
+            })
+          : undefined;
+
+      res.status(201).json({ evaluation, metabolism });
     } catch (error) {
       next(error);
     }

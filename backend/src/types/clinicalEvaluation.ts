@@ -20,6 +20,9 @@ export interface CreateClinicalEvaluationInput {
   waistCm?: number;
   notes?: string;
   evaluationDate?: string;
+  age?: number;
+  sex?: 'male' | 'female';
+  activityLevel?: 'sedentary' | 'light' | 'moderate' | 'high';
 }
 
 export function calculateBmi(weightKg: number, heightCm: number): number {

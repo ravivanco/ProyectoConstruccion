@@ -1,5 +1,10 @@
 import { pool } from '../db/pool.js';
-import { NutritionPlan } from '../types/nutritionPlan.js';
+import {
+  ActivePlanForPatient,
+  NutritionPlan,
+  PlanStatusView,
+  resolvePlanStatus,
+} from '../types/nutritionPlan.js';
 
 function mapRow(row: Record<string, unknown>): NutritionPlan {
   return {
@@ -28,7 +33,11 @@ export async function findNutritionPlanById(id: string): Promise<NutritionPlan |
 export async function activateNutritionPlan(
   id: string,
   startDate?: string,
-): Promise<NutritionPlan | null> {
+): Promise<{ plan: NutritionPlan; previousStatus: string } | null> {
+  const existing = await pool.query('SELECT status FROM nutrition_plans WHERE id = $1', [id]);
+  if (!existing.rowCount) return null;
+
+  const previousStatus = String(existing.rows[0].status);
   const date = startDate ?? new Date().toISOString().slice(0, 10);
   const result = await pool.query(
     `UPDATE nutrition_plans
@@ -40,6 +49,20 @@ export async function activateNutritionPlan(
      WHERE id = $1
      RETURNING *`,
     [id, date],
+  );
+  return { plan: mapRow(result.rows[0]), previousStatus };
+}
+
+export async function setNutritionPlanStartDate(
+  id: string,
+  startDate: string,
+): Promise<NutritionPlan | null> {
+  const result = await pool.query(
+    `UPDATE nutrition_plans
+     SET start_date = $2, updated_at = NOW()
+     WHERE id = $1
+     RETURNING *`,
+    [id, startDate],
   );
   if (!result.rowCount) return null;
   return mapRow(result.rows[0]);
@@ -58,6 +81,36 @@ export async function setNutritionPlanModuleLock(
   );
   if (!result.rowCount) return null;
   return mapRow(result.rows[0]);
+}
+
+export async function getActivePlanForPatient(
+  patientId: string,
+): Promise<ActivePlanForPatient | null> {
+  const result = await pool.query(
+    `SELECT * FROM nutrition_plans
+     WHERE patient_id = $1 AND status = 'active'
+     ORDER BY activated_at DESC NULLS LAST
+     LIMIT 1`,
+    [patientId],
+  );
+  if (!result.rowCount) return null;
+
+  const plan = mapRow(result.rows[0]);
+  return { ...plan, moduloHabilitado: !plan.moduleLocked };
+}
+
+export async function getPlanStatusForPatient(patientId: string): Promise<PlanStatusView | null> {
+  const result = await pool.query(
+    `SELECT * FROM nutrition_plans
+     WHERE patient_id = $1 AND status IN ('active', 'draft')
+     ORDER BY
+       CASE WHEN status = 'active' THEN 0 ELSE 1 END,
+       activated_at DESC NULLS LAST
+     LIMIT 1`,
+    [patientId],
+  );
+  if (!result.rowCount) return null;
+  return resolvePlanStatus(mapRow(result.rows[0]));
 }
 
 export async function createNutritionPlanSeed(
