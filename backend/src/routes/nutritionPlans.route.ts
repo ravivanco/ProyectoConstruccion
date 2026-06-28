@@ -27,3 +27,27 @@ nutritionPlansRouter.patch(
     }
   },
 );
+
+nutritionPlansRouter.patch(
+  '/nutrition-plans/:id/unlock-module',
+  authenticate,
+  requireRole('nutricionista'),
+  async (req, res, next) => {
+    try {
+      const id = String(req.params.id ?? '').trim();
+      if (!id) {
+        return res.status(400).json({ message: 'id del plan requerido' });
+      }
+
+      const plan = await setNutritionPlanModuleLock(id, false);
+
+      if (!plan) {
+        return res.status(404).json({ message: 'Plan nutricional no encontrado' });
+      }
+
+      res.json(plan);
+    } catch (error) {
+      next(error);
+    }
+  },
+);
