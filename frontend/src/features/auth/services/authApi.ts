@@ -5,15 +5,8 @@ import { endpoints } from '../../../lib/endpoints';
 export const authAPI = {
   // PROYEC-401: POST /auth/login — Validar credenciales con rol nutricionista.
   login: async (email: string, password: string): Promise<{ token: string }> => {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        if (email === 'correo@dkfitt.com' && password === '123456') {
-          resolve({ token: 'mock-token-nutritionist-123' });
-        } else {
-          reject(new Error('Credenciales inválidas'));
-        }
-      }, 1000);
-    });
+    const response = await api.post('/auth/login', { email, password });
+    return response.data;
   },
 
   // PROYEC-402: GET /api/me — Obtener perfil profesional desde el backend
