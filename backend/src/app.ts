@@ -5,6 +5,7 @@ import { requestLogger } from './middleware/requestLogger.js';
 import { indexRouter } from './routes/index.route.js';
 import { healthRouter } from './routes/health.route.js';
 import { meRouter } from './routes/me.route.js';
+import { patientsRouter } from './routes/patients.route.js';
 import { setupSwagger } from './swagger/swagger.js';
 
 export function createApp() {
@@ -17,6 +18,7 @@ export function createApp() {
   app.use(indexRouter);
   app.use(healthRouter);
   app.use(meRouter);
+  app.use(patientsRouter);
 
   setupSwagger(app);
 
