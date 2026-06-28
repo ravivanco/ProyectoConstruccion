@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, User, Activity, AlertCircle, Phone, Mail, Weight, Ruler, FileText, HeartPulse, Ban, Apple, Target, Plus, Calendar, History, PlayCircle, Lock, Unlock } from 'lucide-react';
-import { patientAPI } from './services/patientApi';
-import type { PatientDetail } from './types';
+import { usePatientProfile } from './hooks/usePatientProfile';
+import { useActivatePlan } from './hooks/useActivatePlan';
 import { ClinicalEvaluationModal } from './components/ClinicalEvaluationModal';
 import { ActivatePlanModal } from './components/ActivatePlanModal';
 
@@ -10,12 +10,11 @@ export function PatientDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   
-  const [patient, setPatient] = useState<PatientDetail | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { patient, isLoading, error } = usePatientProfile(id);
+  const { activatePlan, isActivating, lockPlan, isLocking, unlockPlan, isUnlocking } = useActivatePlan(id || '');
+
   const [isEvaluationModalOpen, setIsEvaluationModalOpen] = useState(false);
   const [isActivateModalOpen, setIsActivateModalOpen] = useState(false);
-  const [isTogglingLock, setIsTogglingLock] = useState(false);
 
   const getTreatmentColor = (state?: string) => {
     switch(state) {
@@ -27,57 +26,25 @@ export function PatientDetails() {
     }
   };
 
-  useEffect(() => {
-    const fetchPatient = async () => {
-      if (!id) return;
-      try {
-        setIsLoading(true);
-        setError(null);
-        const data = await patientAPI.getPatientById(id);
-        setPatient(data);
-      } catch (err: any) {
-        setError(err.message || 'Error al cargar el paciente');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchPatient();
-  }, [id]);
-
   const handleActivatePlan = async (startDate: string) => {
-    if (!patient) return;
-    
     try {
-      // Pasamos la fecha al API mock para poder simularlo
-      // PROYEC-468 y PROYEC-469
-      await patientAPI.activatePlan(patient.id, startDate);
-      setPatient({
-        ...patient,
-        treatmentState: 'Activo'
-      });
+      await activatePlan(startDate);
+      setIsActivateModalOpen(false);
     } catch (err) {
       console.error(err);
-      throw err;
     }
   };
 
   const handleToggleLock = async () => {
     if (!patient) return;
-    
-    setIsTogglingLock(true);
     try {
       if (patient.isPlanLocked) {
-        await patientAPI.unlockPlan(patient.id);
-        setPatient({ ...patient, isPlanLocked: false });
+        await unlockPlan();
       } else {
-        await patientAPI.lockPlan(patient.id);
-        setPatient({ ...patient, isPlanLocked: true });
+        await lockPlan();
       }
     } catch (err) {
       console.error(err);
-    } finally {
-      setIsTogglingLock(false);
     }
   };
 
@@ -97,7 +64,7 @@ export function PatientDetails() {
           <AlertCircle size={32} className="text-red-500" />
         </div>
         <h3 className="text-xl font-bold text-foreground mb-2">Paciente no encontrado</h3>
-        <p className="text-muted text-sm max-w-md mb-6">{error}</p>
+        <p className="text-muted text-sm max-w-md mb-6">{error?.message || 'Error al cargar el paciente'}</p>
         <button 
           onClick={() => navigate('/patients')}
           className="flex items-center gap-2 bg-primary hover:bg-primary-hover text-gray-900 font-semibold py-2 px-6 rounded-full transition-all text-sm"
@@ -172,11 +139,11 @@ export function PatientDetails() {
                 <div className="mt-5 w-full">
                   <button 
                     onClick={() => setIsActivateModalOpen(true)}
-                    disabled={!patient.isProfileCompleted}
-                    className={`w-full flex justify-center items-center gap-2 font-semibold py-2.5 px-4 rounded-xl transition-all shadow-sm ${!patient.isProfileCompleted ? 'bg-surface-hover text-muted cursor-not-allowed border border-border' : 'bg-emerald-500 hover:bg-emerald-600 text-white'}`}
+                    disabled={!patient.isProfileCompleted || isActivating}
+                    className={`w-full flex justify-center items-center gap-2 font-semibold py-2.5 px-4 rounded-xl transition-all shadow-sm ${(!patient.isProfileCompleted || isActivating) ? 'bg-surface-hover text-muted cursor-not-allowed border border-border' : 'bg-emerald-500 hover:bg-emerald-600 text-white'}`}
                   >
                     <PlayCircle size={18} />
-                    Activar Plan Nutricional
+                    {isActivating ? 'Activando...' : 'Activar Plan Nutricional'}
                   </button>
                   <p className="text-[10px] text-muted text-center mt-2">
                     {!patient.isProfileCompleted ? 'El paciente debe completar el formulario inicial.' : 'Esto habilitará el plan en la app móvil del paciente.'}
@@ -224,11 +191,11 @@ export function PatientDetails() {
                 {/* Toggle Switch */}
                 <button 
                   onClick={handleToggleLock}
-                  disabled={isTogglingLock}
+                  disabled={isLocking || isUnlocking}
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface ${patient.isPlanLocked ? 'bg-red-500' : 'bg-emerald-500'} disabled:opacity-50 disabled:cursor-not-allowed`}
                 >
                   <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${patient.isPlanLocked ? 'translate-x-6' : 'translate-x-1'} flex items-center justify-center`}>
-                    {isTogglingLock && <span className="w-3 h-3 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></span>}
+                    {(isLocking || isUnlocking) && <span className="w-3 h-3 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></span>}
                   </span>
                 </button>
               </div>
@@ -428,16 +395,10 @@ export function PatientDetails() {
       <ClinicalEvaluationModal 
         isOpen={isEvaluationModalOpen} 
         onClose={() => setIsEvaluationModalOpen(false)} 
-        onSave={async (data) => {
+        onSave={async () => {
+          // TODO: Mover esto a useMutation cuando el endpoint POST esté listo
           return new Promise(resolve => {
             setTimeout(() => {
-              if (patient) {
-                const newEval = { ...data, id: 'ev_' + Date.now() };
-                setPatient({
-                  ...patient,
-                  evaluations: [newEval, ...(patient.evaluations || [])]
-                });
-              }
               resolve();
             }, 1000);
           });
