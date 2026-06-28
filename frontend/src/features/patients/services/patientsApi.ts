@@ -1,21 +1,11 @@
 import type { Patient } from '../../../shared/types';
-
-// TODO: Cambiar API_URL por la URL real del backend cuando Alejandro termine los endpoints
-export const API_URL = 'http://localhost:3000/api';
+import api from '../../../lib/axios';
+import { endpoints } from '../../../lib/endpoints';
 
 export const patientsAPI = {
   // PROYEC-407: GET /patients — Retornar listado de pacientes.
   getPatients: async (): Promise<Patient[]> => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve([
-          { id: '1', name: 'Carlos Mendoza', email: 'carlos.m@gmail.com', generalState: 'Alta Adherencia', lastVisit: '10 Jun 2026', treatmentState: 'Activo' },
-          { id: '2', name: 'Ana Gutiérrez', email: 'ana.g@hotmail.com', generalState: 'Media Adherencia', lastVisit: '12 Jun 2026', treatmentState: 'Suspendido' },
-          { id: '3', name: 'Luis Ramírez', email: 'luis.ramirez@yahoo.com', generalState: 'Baja Adherencia', lastVisit: '05 Jun 2026', treatmentState: 'Pendiente' },
-          { id: '4', name: 'María Fernanda Salas', email: 'mafer.salas@gmail.com', generalState: 'Alta Adherencia', lastVisit: '14 Jun 2026', treatmentState: 'Finalizado' },
-          { id: '5', name: 'Jorge Villalobos', email: 'jorgev89@outlook.com', generalState: 'Pendiente', lastVisit: '16 Jun 2026', treatmentState: 'Pendiente' },
-        ]);
-      }, 800);
-    });
+    const response = await api.get(endpoints.patients.list);
+    return response.data;
   }
 };
