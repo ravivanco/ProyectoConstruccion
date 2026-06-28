@@ -6,6 +6,7 @@ import { indexRouter } from './routes/index.route.js';
 import { healthRouter } from './routes/health.route.js';
 import { meRouter } from './routes/me.route.js';
 import { clinicalEvaluationsRouter } from './routes/clinicalEvaluations.route.js';
+import { nutritionPlansRouter } from './routes/nutritionPlans.route.js';
 import { setupSwagger } from './swagger/swagger.js';
 
 export function createApp() {
@@ -19,6 +20,7 @@ export function createApp() {
   app.use(healthRouter);
   app.use(meRouter);
   app.use(clinicalEvaluationsRouter);
+  app.use(nutritionPlansRouter);
 
   setupSwagger(app);
 

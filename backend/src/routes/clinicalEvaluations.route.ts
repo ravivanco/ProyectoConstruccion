@@ -41,7 +41,7 @@ clinicalEvaluationsRouter.get(
   requireRole('nutricionista'),
   async (req, res, next) => {
     try {
-      const patientId = req.params.id?.trim();
+      const patientId = String(req.params.id ?? '').trim();
       if (!patientId) {
         return res.status(400).json({ message: 'id de paciente requerido' });
       }
