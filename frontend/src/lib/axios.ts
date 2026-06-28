@@ -10,11 +10,11 @@ export const api = axios.create({
 // Interceptor para inyectar el Token JWT en todas las peticiones automáticamente
 api.interceptors.request.use(
   (config) => {
-    // Si tuviéramos un sistema de login real, aquí leeríamos el token del localStorage
-    // const token = localStorage.getItem('token');
-    // if (token) {
-    //   config.headers.Authorization = `Bearer ${token}`;
-    // }
+    // Ya tenemos un sistema de login real, leemos el token del localStorage
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
     return config;
   },
   (error) => {
