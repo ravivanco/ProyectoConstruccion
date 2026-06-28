@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { X, Activity, Weight, Ruler, Save, CheckCircle } from 'lucide-react';
+import type { ClinicalEvaluation } from '../types';
 
 interface ClinicalEvaluationModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (data: any) => Promise<void>;
+  onSave: (data: Omit<ClinicalEvaluation, 'id'>) => Promise<void>;
 }
 
 export function ClinicalEvaluationModal({ isOpen, onClose, onSave }: ClinicalEvaluationModalProps) {
@@ -20,8 +21,10 @@ export function ClinicalEvaluationModal({ isOpen, onClose, onSave }: ClinicalEva
   // Resetear estados al abrir/cerrar
   useEffect(() => {
     if (!isOpen) {
-      setIsSuccess(false);
-      setErrors({});
+      setTimeout(() => {
+        setIsSuccess(false);
+        setErrors({});
+      }, 0);
     }
   }, [isOpen]);
 

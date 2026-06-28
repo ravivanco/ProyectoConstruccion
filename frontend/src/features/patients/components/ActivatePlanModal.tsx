@@ -17,12 +17,14 @@ export function ActivatePlanModal({ isOpen, onClose, onConfirm, patientName }: A
   // Set today's date as default formatted as YYYY-MM-DD
   useEffect(() => {
     if (isOpen) {
-      const today = new Date();
-      // Ajustar zona horaria local para evitar problemas con UTC
-      today.setMinutes(today.getMinutes() - today.getTimezoneOffset());
-      setStartDate(today.toISOString().split('T')[0]);
-      setError('');
-      setIsSuccess(false);
+      setTimeout(() => {
+        const today = new Date();
+        // Ajustar zona horaria local para evitar problemas con UTC
+        today.setMinutes(today.getMinutes() - today.getTimezoneOffset());
+        setStartDate(today.toISOString().split('T')[0]);
+        setError('');
+        setIsSuccess(false);
+      }, 0);
     }
   }, [isOpen]);
 
@@ -65,7 +67,7 @@ export function ActivatePlanModal({ isOpen, onClose, onConfirm, patientName }: A
         setIsActivating(false);
         onClose();
       }, 1000);
-    } catch (err) {
+    } catch {
       setError('Ocurrió un error al activar el plan.');
       setIsActivating(false);
     }
