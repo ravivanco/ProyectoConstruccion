@@ -1,5 +1,5 @@
 import { AuthSession, LoginInput, RegisterInput } from '../../domain/models/Auth';
-import { NutritionPlanStatus } from '../../domain/models/NutritionPlan';
+import { ActiveNutritionPlan, NutritionPlanStatus } from '../../domain/models/NutritionPlan';
 import { PatientProfile } from '../../domain/models/Profile';
 import { AuthRepository } from '../../domain/repositories/AuthRepository';
 import { NutritionPlanRepository } from '../../domain/repositories/NutritionPlanRepository';
@@ -20,6 +20,10 @@ export class NutritionPlanApiRepository implements NutritionPlanRepository {
   constructor(private readonly client: HttpClient) {}
   async getStatus(): Promise<NutritionPlanStatus | null> {
     try { return await this.client.request<NutritionPlanStatus>('/nutrition-plans/status/me'); }
+    catch (error) { if (error instanceof ApiError && error.status === 404) return null; throw error; }
+  }
+  async getActive(): Promise<ActiveNutritionPlan | null> {
+    try { return await this.client.request<ActiveNutritionPlan>('/nutrition-plans/active/me'); }
     catch (error) { if (error instanceof ApiError && error.status === 404) return null; throw error; }
   }
 }

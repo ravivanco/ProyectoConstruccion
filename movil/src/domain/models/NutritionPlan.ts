@@ -8,3 +8,16 @@ export interface NutritionPlanStatus {
   moduloHabilitado: boolean;
   startDate?: string;
 }
+
+export interface ActiveNutritionPlan {
+  id: string;
+  status: 'active';
+  moduleLocked: boolean;
+  moduloHabilitado: boolean;
+  startDate?: string;
+  dailyCalories: number;
+  proteinG: number;
+  carbsG: number;
+  fatG: number;
+  activatedAt?: string;
+}
