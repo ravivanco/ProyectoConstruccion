@@ -1,14 +1,10 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { NutritionPlanStatus } from '../../domain/models/NutritionPlan';
+import { PlanStatusCard } from '../components/PlanStatusCard';
 import { Button, Card } from '../components/ui';
 import { useApp } from '../context/AppContext';
 import { colors } from '../theme';
-
-function formatStartDate(date?: string) {
-  if (!date) return 'la fecha indicada por tu nutricionista';
-  return new Intl.DateTimeFormat('es-EC', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${date}T00:00:00Z`));
-}
 
 export function MyPlanScreen({ onBack }: { onBack(): void }) {
   const { getPlanStatus } = useApp();
@@ -29,9 +25,7 @@ export function MyPlanScreen({ onBack }: { onBack(): void }) {
     {loading ? <Card><ActivityIndicator color={colors.primary} /><Text style={styles.centerText}>Consultando tu plan…</Text></Card> : null}
     {!loading && error ? <Card><Text style={styles.icon}>!</Text><Text style={styles.cardTitle}>No pudimos consultar tu plan</Text><Text style={styles.centerText}>{error}</Text><Button label="Reintentar" onPress={loadStatus} /></Card> : null}
     {!loading && !error && !status ? <Card><Text style={styles.icon}>○</Text><Text style={styles.cardTitle}>Aún no tienes un plan</Text><Text style={styles.centerText}>Tu nutricionista te avisará cuando exista una planificación disponible.</Text></Card> : null}
-    {!loading && !error && status?.effectiveStatus === 'scheduled' ? <Card><Text style={styles.icon}>🗓️</Text><Text style={styles.cardTitle}>Tu plan aún no inicia</Text><Text style={styles.centerText}>Podrás consultar tu planificación desde {formatStartDate(status.startDate)}. Hasta entonces, el contenido permanecerá protegido.</Text></Card> : null}
-    {!loading && !error && status && status.effectiveStatus !== 'scheduled' && !status.moduloHabilitado ? <Card><Text style={styles.icon}>🔒</Text><Text style={styles.cardTitle}>Mi Plan está bloqueado</Text><Text style={styles.centerText}>Tu nutricionista habilitará este módulo cuando el plan esté listo. Por ahora no puedes acceder a su contenido.</Text></Card> : null}
-    {!loading && !error && status?.moduloHabilitado ? <Card><Text style={styles.icon}>✓</Text><Text style={styles.cardTitle}>Mi Plan está habilitado</Text><Text style={styles.centerText}>Ya puedes consultar tu planificación nutricional.</Text></Card> : null}
+    {!loading && !error && status ? <PlanStatusCard status={status} /> : null}
     <Button secondary label="Volver al inicio" onPress={onBack} />
   </View>;
 }
