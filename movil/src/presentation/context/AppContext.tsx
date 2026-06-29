@@ -2,13 +2,13 @@ import React, { createContext, PropsWithChildren, useContext, useMemo, useState 
 import { LoginPatient, RegisterPatient } from '../../application/auth/authUseCases';
 import { CompleteProfile } from '../../application/profile/CompleteProfile';
 import { LoginInput, RegisterInput } from '../../domain/models/Auth';
-import { NutritionPlanStatus } from '../../domain/models/NutritionPlan';
+import { ActiveNutritionPlan, NutritionPlanStatus } from '../../domain/models/NutritionPlan';
 import { emptyProfile, PatientProfile } from '../../domain/models/Profile';
 import { AuthApiRepository, NutritionPlanApiRepository, ProfileApiRepository } from '../../infrastructure/api/ApiRepositories';
 import { HttpClient } from '../../infrastructure/api/HttpClient';
 import { SecureTokenStorage } from '../../infrastructure/storage/SecureTokenStorage';
 
-interface AppContextValue { session: { authenticated: boolean; completed: boolean }; profile: PatientProfile; register(input: RegisterInput): Promise<void>; login(input: LoginInput): Promise<void>; updateProfile(changes: Partial<PatientProfile>): void; completeProfile(): Promise<void>; getPlanStatus(): Promise<NutritionPlanStatus | null>; reset(): void; }
+interface AppContextValue { session: { authenticated: boolean; completed: boolean }; profile: PatientProfile; register(input: RegisterInput): Promise<void>; login(input: LoginInput): Promise<void>; updateProfile(changes: Partial<PatientProfile>): void; completeProfile(): Promise<void>; getPlanStatus(): Promise<NutritionPlanStatus | null>; getActivePlan(): Promise<ActiveNutritionPlan | null>; reset(): void; }
 const AppContext = createContext<AppContextValue | null>(null);
 
 export function AppProvider({ children }: PropsWithChildren) {
@@ -22,6 +22,7 @@ export function AppProvider({ children }: PropsWithChildren) {
     updateProfile: (changes) => setProfile((current) => ({ ...current, ...changes })),
     completeProfile: async () => { await services.complete.execute(profile); setSession({ authenticated: true, completed: true }); },
     getPlanStatus: () => services.plans.getStatus(),
+    getActivePlan: () => services.plans.getActive(),
     reset: () => { setProfile(emptyProfile); setSession({ authenticated: false, completed: false }); },
   };
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
