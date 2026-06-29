@@ -1,7 +1,9 @@
 import { AuthSession, LoginInput, RegisterInput } from '../../domain/models/Auth';
+import { CalorieDashboard } from '../../domain/models/CalorieDashboard';
 import { ActiveNutritionPlan, NutritionPlanStatus } from '../../domain/models/NutritionPlan';
 import { PatientProfile } from '../../domain/models/Profile';
 import { AuthRepository } from '../../domain/repositories/AuthRepository';
+import { CalorieControlRepository } from '../../domain/repositories/CalorieControlRepository';
 import { NutritionPlanRepository } from '../../domain/repositories/NutritionPlanRepository';
 import { ProfileRepository } from '../../domain/repositories/ProfileRepository';
 import { ApiError, HttpClient } from './HttpClient';
@@ -24,6 +26,13 @@ export class NutritionPlanApiRepository implements NutritionPlanRepository {
   }
   async getActive(): Promise<ActiveNutritionPlan | null> {
     try { return await this.client.request<ActiveNutritionPlan>('/nutrition-plans/active/me'); }
+    catch (error) { if (error instanceof ApiError && error.status === 404) return null; throw error; }
+  }
+}
+export class CalorieControlApiRepository implements CalorieControlRepository {
+  constructor(private readonly client: HttpClient) {}
+  async getDashboard(): Promise<CalorieDashboard | null> {
+    try { return await this.client.request<CalorieDashboard>('/calorie-control/dashboard'); }
     catch (error) { if (error instanceof ApiError && error.status === 404) return null; throw error; }
   }
 }
