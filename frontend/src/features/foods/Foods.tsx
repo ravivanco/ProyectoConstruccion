@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Search, Plus, Apple, Activity, Flame, Edit2, CheckCircle2, XCircle, Filter } from 'lucide-react';
-import { Food, FoodCategory } from './types';
+import { Search, Plus, Apple, Flame, Edit2, CheckCircle2, Filter } from 'lucide-react';
+import type { Food, FoodCategory, CreateFoodInput } from './types';
 import { INITIAL_FOODS } from './services/mockFoods';
+import { FoodFormModal } from './components/FoodFormModal';
 
 const CATEGORIES: ('Todos' | FoodCategory)[] = [
   'Todos',
@@ -31,6 +32,9 @@ export function Foods() {
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingFood, setEditingFood] = useState<Food | null>(null);
+
   useEffect(() => {
     localStorage.setItem('dkfitt_foods', JSON.stringify(foods));
   }, [foods]);
@@ -54,11 +58,31 @@ export function Foods() {
   };
 
   const handleOpenCreateModal = () => {
-    alert('🟢 Tarea 1: Tabla completada. El Formulario/Modal de Creación y Edición se implementará en el siguiente paso (Tarea 2 — PROYEC-517).');
+    setEditingFood(null);
+    setIsModalOpen(true);
   };
 
   const handleOpenEditModal = (food: Food) => {
-    alert(`🟢 Tarea 1: Tabla completada. El Formulario/Modal para editar "${food.name}" se implementará en el siguiente paso (Tarea 2 — PROYEC-517).`);
+    setEditingFood(food);
+    setIsModalOpen(true);
+  };
+
+  const handleSaveFood = (foodData: CreateFoodInput | Food) => {
+    if ('id' in foodData) {
+      // Modo Edición
+      setFoods((prev) => prev.map((f) => (f.id === foodData.id ? foodData : f)));
+      showToast(`Alimento "${foodData.name}" actualizado correctamente.`);
+    } else {
+      // Modo Creación
+      const newFood: Food = {
+        ...foodData,
+        id: `f-${Date.now()}`,
+        isActive: true,
+        createdAt: new Date().toISOString(),
+      };
+      setFoods((prev) => [newFood, ...prev]);
+      showToast(`Alimento "${newFood.name}" registrado con éxito.`);
+    }
   };
 
   const filteredFoods = useMemo(() => {
@@ -367,6 +391,14 @@ export function Foods() {
           </div>
         )}
       </div>
+
+      {/* Modal de Creación y Edición */}
+      <FoodFormModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSave={handleSaveFood}
+        initialData={editingFood}
+      />
     </div>
   );
 }

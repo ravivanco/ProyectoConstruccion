@@ -1,4 +1,4 @@
-import type { Patient } from '../../../shared/types';
+import type { Patient } from '../types';
 import api from '../../../lib/axios';
 import { endpoints } from '../../../lib/endpoints';
 
