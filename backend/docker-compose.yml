@@ -4,13 +4,26 @@ services:
     container_name: dkfitt-postgres
     restart: unless-stopped
     ports:
-      - "5432:5432"
+      - "5433:5432"
     environment:
       POSTGRES_USER: dkfitt
       POSTGRES_PASSWORD: dkfitt
       POSTGRES_DB: dkfitt
     volumes:
       - dkfitt_pg_data:/var/lib/postgresql/data
+
+  api:
+    build: .
+    container_name: dkfitt-api
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=postgresql://dkfitt:dkfitt@postgres:5432/dkfitt
 
 volumes:
   dkfitt_pg_data:
