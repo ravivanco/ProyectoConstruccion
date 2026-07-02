@@ -17,7 +17,7 @@ export default function Layout() {
     { name: 'Dashboard', path: '/dashboard', icon: <Activity size={18} /> },
     { name: 'Pacientes', path: '/patients', icon: <Users size={18} /> },
     { name: 'Planes Nutricionales', path: '#', icon: <FileText size={18} /> },
-    { name: 'Alimentos y Recetas', path: '#', icon: <Apple size={18} /> },
+    { name: 'Alimentos y Recetas', path: '/foods', icon: <Apple size={18} /> },
     { name: 'Seguimiento', path: '#', icon: <BarChart2 size={18} /> },
     { name: 'Alertas', path: '#', icon: <AlertCircle size={18} /> },
     { name: 'Citas', path: '#', icon: <Calendar size={18} /> },
