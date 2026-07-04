@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Search, Plus, Apple, Flame, Edit2, CheckCircle2, Filter } from 'lucide-react';
-import type { Food, FoodCategory, CreateFoodInput } from './types';
+import type { Food, FoodCategory, CreateFoodInput, NutritionalFilter } from './types';
 import { INITIAL_FOODS } from './services/mockFoods';
 import { FoodFormModal } from './components/FoodFormModal';
 
@@ -51,6 +51,7 @@ export function Foods() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<'Todos' | FoodCategory>('Todos');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
+  const [nutritionalFilter, setNutritionalFilter] = useState<NutritionalFilter>('all');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -123,9 +124,22 @@ export function Foods() {
           ? food.isActive
           : !food.isActive;
 
-      return matchesSearch && matchesCategory && matchesStatus;
+      const matchesNutritional =
+        nutritionalFilter === 'all'
+          ? true
+          : nutritionalFilter === 'high-protein'
+          ? food.protein >= 15
+          : nutritionalFilter === 'low-carb'
+          ? food.carbs <= 15
+          : nutritionalFilter === 'low-fat'
+          ? food.fat <= 5
+          : nutritionalFilter === 'low-cal'
+          ? food.calories <= 120
+          : true;
+
+      return matchesSearch && matchesCategory && matchesStatus && matchesNutritional;
     });
-  }, [foods, searchQuery, selectedCategory, statusFilter]);
+  }, [foods, searchQuery, selectedCategory, statusFilter, nutritionalFilter]);
 
   const getCategoryBadgeStyle = (category: FoodCategory) => {
     switch (category) {
@@ -270,6 +284,60 @@ export function Foods() {
               </button>
             );
           })}
+        </div>
+
+        {/* Quick Nutritional Filters (Chips WOW) */}
+        <div className="flex items-center justify-between flex-wrap gap-3 pt-3 border-t border-border">
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+            <span className="text-[11px] font-extrabold text-muted uppercase tracking-wider shrink-0 flex items-center gap-1">
+              <span>⚡ Filtros Nutricionales:</span>
+            </span>
+            {[
+              { id: 'all', label: 'Todos los macros', color: 'bg-surface-hover text-foreground' },
+              { id: 'high-protein', label: '⚡ Alto en Proteína (>15g)', color: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20' },
+              { id: 'low-carb', label: '🍃 Bajo en Carbos (≤15g)', color: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20' },
+              { id: 'low-fat', label: '🥑 Bajo en Grasa (≤5g)', color: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20' },
+              { id: 'low-cal', label: '🔥 Bajo en Calorías (≤120 kcal)', color: 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20' },
+            ].map((chip) => {
+              const isActive = nutritionalFilter === chip.id;
+              return (
+                <button
+                  key={chip.id}
+                  onClick={() => setNutritionalFilter(chip.id as NutritionalFilter)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
+                    isActive
+                      ? 'bg-primary text-gray-900 border-primary shadow-sm font-extrabold'
+                      : `${chip.color} border-border hover:border-muted`
+                  }`}
+                >
+                  {chip.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Active Filters Counter & Clear Button */}
+          {(searchQuery || selectedCategory !== 'Todos' || statusFilter !== 'all' || nutritionalFilter !== 'all') && (
+            <button
+              onClick={() => {
+                setSearchQuery('');
+                setSelectedCategory('Todos');
+                setStatusFilter('all');
+                setNutritionalFilter('all');
+              }}
+              className="text-xs font-bold text-rose-500 hover:text-rose-600 dark:text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 ml-auto"
+            >
+              <span>Limpiar Filtros Activos</span>
+              <span className="w-4 h-4 rounded-full bg-rose-500 text-white flex items-center justify-center text-[10px]">
+                {[
+                  searchQuery ? 1 : 0,
+                  selectedCategory !== 'Todos' ? 1 : 0,
+                  statusFilter !== 'all' ? 1 : 0,
+                  nutritionalFilter !== 'all' ? 1 : 0,
+                ].reduce((a, b) => a + b, 0)}
+              </span>
+            </button>
+          )}
         </div>
       </div>
 
