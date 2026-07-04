@@ -7,6 +7,7 @@ const Dashboard = lazy(() => import('./features/dashboard').then(module => ({ de
 const Patients = lazy(() => import('./features/patients').then(module => ({ default: module.Patients })));
 const PatientDetails = lazy(() => import('./features/patients').then(module => ({ default: module.PatientDetails })));
 const Foods = lazy(() => import('./features/foods').then(module => ({ default: module.Foods })));
+const Plans = lazy(() => import('./features/plans').then(module => ({ default: module.Plans })));
 const Layout = lazy(() => import('./components/Layout'));
 
 const FallbackLoader = () => (
@@ -39,6 +40,7 @@ function App() {
             <Route path="/patients" element={<Patients />} />
             <Route path="/patients/:id" element={<PatientDetails />} />
             <Route path="/foods" element={<Foods />} />
+            <Route path="/plans" element={<Plans />} />
           </Route>
           
           <Route path="/" element={<Navigate to="/dashboard" replace />} />

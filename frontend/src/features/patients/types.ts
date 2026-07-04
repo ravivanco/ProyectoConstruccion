@@ -6,7 +6,7 @@ export interface Patient {
   email: string;
   generalState: GeneralState | 'Pendiente';
   treatmentState?: 'Pendiente' | 'Activo' | 'Suspendido' | 'Finalizado';
-  lastVisit: string;
+  lastVisit?: string;
 }
 
 export interface ClinicalEvaluation {
