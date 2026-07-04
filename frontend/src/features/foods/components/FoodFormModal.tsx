@@ -7,6 +7,7 @@ interface FoodFormModalProps {
   onClose: () => void;
   onSave: (data: CreateFoodInput | Food) => void;
   initialData?: Food | null;
+  prefillName?: string;
 }
 
 const CATEGORIES: FoodCategory[] = [
@@ -18,7 +19,7 @@ const CATEGORIES: FoodCategory[] = [
   'Lácteos',
 ];
 
-export function FoodFormModal({ isOpen, onClose, onSave, initialData }: FoodFormModalProps) {
+export function FoodFormModal({ isOpen, onClose, onSave, initialData, prefillName }: FoodFormModalProps) {
   const [name, setName] = useState('');
   const [category, setCategory] = useState<FoodCategory>('Proteínas');
   const [servingSize, setServingSize] = useState('100g');
@@ -38,7 +39,7 @@ export function FoodFormModal({ isOpen, onClose, onSave, initialData }: FoodForm
       setCarbs(initialData.carbs);
       setFat(initialData.fat);
     } else {
-      setName('');
+      setName(prefillName || '');
       setCategory('Proteínas');
       setServingSize('100g');
       setCalories(0);
@@ -47,7 +48,7 @@ export function FoodFormModal({ isOpen, onClose, onSave, initialData }: FoodForm
       setFat(0);
     }
     setError(null);
-  }, [initialData, isOpen]);
+  }, [initialData, isOpen, prefillName]);
 
   if (!isOpen) return null;
 

@@ -56,6 +56,7 @@ export function Foods() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingFood, setEditingFood] = useState<Food | null>(null);
+  const [prefillFoodName, setPrefillFoodName] = useState('');
 
   useEffect(() => {
     localStorage.setItem('dkfitt_foods', JSON.stringify(foods));
@@ -79,13 +80,15 @@ export function Foods() {
     );
   };
 
-  const handleOpenCreateModal = () => {
+  const handleOpenCreateModal = (prefill?: string) => {
     setEditingFood(null);
+    setPrefillFoodName(typeof prefill === 'string' ? prefill : '');
     setIsModalOpen(true);
   };
 
   const handleOpenEditModal = (food: Food) => {
     setEditingFood(food);
+    setPrefillFoodName('');
     setIsModalOpen(true);
   };
 
@@ -206,7 +209,7 @@ export function Foods() {
           </div>
 
           <button
-            onClick={handleOpenCreateModal}
+            onClick={() => handleOpenCreateModal()}
             className="flex items-center gap-2 bg-primary hover:bg-primary-hover text-gray-900 font-semibold py-3 px-6 rounded-2xl transition-all text-sm shadow-md hover:shadow-lg active:scale-95 shrink-0"
           >
             <Plus size={18} /> Nuevo Alimento
@@ -464,34 +467,48 @@ export function Foods() {
             </table>
           </div>
         ) : (
-          /* Empty State */
+          /* Smart Empty State (PROYEC-524) */
           <div className="py-16 flex flex-col items-center justify-center text-center px-4">
-            <div className="w-16 h-16 rounded-full bg-surface-hover flex items-center justify-center text-muted mb-4 border border-border">
-              <Apple size={28} className="opacity-50" />
+            <div className="w-16 h-16 rounded-full bg-surface-hover flex items-center justify-center text-muted mb-4 border border-border shadow-inner">
+              <Apple size={28} className="opacity-50 text-primary" />
             </div>
-            <h3 className="text-lg font-bold text-foreground">No se encontraron alimentos</h3>
-            <p className="text-muted text-sm max-w-md mt-1 mb-6">
-              No hay alimentos que coincidan con tu búsqueda o filtros actuales en la biblioteca.
+            <h3 className="text-xl font-extrabold text-foreground">
+              {searchQuery ? `No encontramos "${searchQuery.trim()}" en la biblioteca` : 'No se encontraron alimentos'}
+            </h3>
+            <p className="text-muted text-sm max-w-md mt-1.5 mb-6">
+              {searchQuery
+                ? `No existe ningún alimento registrado con ese término. ¿Deseas crearlo ahora mismo o limpiar los filtros activos?`
+                : `No hay alimentos que coincidan con la combinación actual de filtros en la biblioteca.`}
             </p>
-            <div className="flex items-center gap-3">
-              {(searchQuery || selectedCategory !== 'Todos' || statusFilter !== 'all') && (
+            <div className="flex items-center justify-center flex-wrap gap-3">
+              {(searchQuery || selectedCategory !== 'Todos' || statusFilter !== 'all' || nutritionalFilter !== 'all') && (
                 <button
                   onClick={() => {
                     setSearchQuery('');
                     setSelectedCategory('Todos');
                     setStatusFilter('all');
+                    setNutritionalFilter('all');
                   }}
                   className="px-5 py-2.5 bg-surface-hover hover:bg-border text-foreground rounded-xl text-xs font-bold transition-all border border-border"
                 >
-                  Limpiar Filtros
+                  Limpiar Filtros Activos
                 </button>
               )}
-              <button
-                onClick={handleOpenCreateModal}
-                className="px-5 py-2.5 bg-primary hover:bg-primary-hover text-gray-900 rounded-xl text-xs font-bold transition-all shadow-sm"
-              >
-                + Nuevo Alimento
-              </button>
+              {searchQuery ? (
+                <button
+                  onClick={() => handleOpenCreateModal(searchQuery.trim())}
+                  className="px-6 py-2.5 bg-primary hover:bg-primary-hover text-gray-900 rounded-xl text-xs font-extrabold transition-all shadow-md flex items-center gap-1.5"
+                >
+                  <Plus size={16} /> Crear "{searchQuery.trim()}" como nuevo alimento
+                </button>
+              ) : (
+                <button
+                  onClick={() => handleOpenCreateModal()}
+                  className="px-5 py-2.5 bg-primary hover:bg-primary-hover text-gray-900 rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-1.5"
+                >
+                  <Plus size={16} /> Nuevo Alimento
+                </button>
+              )}
             </div>
           </div>
         )}
@@ -503,6 +520,7 @@ export function Foods() {
         onClose={() => setIsModalOpen(false)}
         onSave={handleSaveFood}
         initialData={editingFood}
+        prefillName={prefillFoodName}
       />
     </div>
   );
