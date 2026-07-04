@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
-import { FileText, Calendar, Clock, Flame, Plus, Copy, Save, Sparkles, User, Target, Check, Trash2 } from 'lucide-react';
+import { FileText, Calendar, Clock, Flame, Plus, Copy, Save, Sparkles, User, Target, Check, Trash2, LayoutGrid, ListFilter } from 'lucide-react';
 import type { WeeklyPlan, DayOfWeek, MealConfig } from './types';
-import { INITIAL_PLANS, createDefaultWeekStructure } from './services/mockPlans';
+import { INITIAL_PLANS, createDefaultWeekStructure, DISH_CATALOG } from './services/mockPlans';
+import { WeeklyGrid, MenuSelectorModal } from './components';
 
 export function Plans() {
   const [plans, setPlans] = useState<WeeklyPlan[]>(() => {
@@ -14,6 +15,8 @@ export function Plans() {
 
   const [activePlanId, setActivePlanId] = useState<string>(() => plans[0]?.id || 'plan-101');
   const [selectedDay, setSelectedDay] = useState<DayOfWeek>('Lunes');
+  const [viewMode, setViewMode] = useState<'days' | 'grid'>('grid'); // 'grid' por defecto para ver la matriz
+  const [selectedSlotForMenu, setSelectedSlotForMenu] = useState<{ day: DayOfWeek; meal: MealConfig } | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Estado para crear nuevo plan
@@ -136,6 +139,65 @@ export function Plans() {
       })
     );
     showToast(`⚡ Estructura del ${selectedDay} copiada con éxito a toda la semana.`);
+  };
+
+  const handleRemoveAssignedMenu = (day: DayOfWeek, mealId: string, menuId: string) => {
+    if (!activePlan) return;
+    setPlans((prev) =>
+      prev.map((p) => {
+        if (p.id !== activePlan.id) return p;
+        const updatedDays = p.days.map((dayObj) => {
+          if (dayObj.day !== day) return dayObj;
+          const updatedMeals = dayObj.meals.map((m) => {
+            if (m.id !== mealId) return m;
+            return {
+              ...m,
+              assignedMenus: (m.assignedMenus || []).filter((am) => am.id !== menuId),
+            };
+          });
+          return { ...dayObj, meals: updatedMeals };
+        });
+        return { ...p, days: updatedDays, updatedAt: new Date().toISOString() };
+      })
+    );
+    showToast(`Plato eliminado de la toma.`);
+  };
+
+  const handleAssignDish = (dish: any, portionMultiplier: number, notes?: string) => {
+    if (!activePlan || !selectedSlotForMenu) return;
+    const { day, meal } = selectedSlotForMenu;
+
+    const newAssigned = {
+      id: `ass-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      dishId: dish.id,
+      name: dish.name,
+      portion: portionMultiplier !== 1 ? `${portionMultiplier}x porción (${dish.defaultPortion})` : dish.defaultPortion,
+      calories: Math.round(dish.calories * portionMultiplier),
+      protein: Math.round(dish.protein * portionMultiplier),
+      carbs: Math.round(dish.carbs * portionMultiplier),
+      fat: Math.round(dish.fat * portionMultiplier),
+      category: dish.category,
+      notes,
+    };
+
+    setPlans((prev) =>
+      prev.map((p) => {
+        if (p.id !== activePlan.id) return p;
+        const updatedDays = p.days.map((dayObj) => {
+          if (dayObj.day !== day) return dayObj;
+          const updatedMeals = dayObj.meals.map((m) => {
+            if (m.id !== meal.id) return m;
+            return {
+              ...m,
+              assignedMenus: [...(m.assignedMenus || []), newAssigned],
+            };
+          });
+          return { ...dayObj, meals: updatedMeals };
+        });
+        return { ...p, days: updatedDays, updatedAt: new Date().toISOString() };
+      })
+    );
+    showToast(`✨ Plato "${dish.name}" asignado a ${day} - ${meal.name}`);
   };
 
   const handleSaveConfiguration = () => {
@@ -284,8 +346,52 @@ export function Plans() {
         </div>
       </div>
 
-      {/* Weekly Structure Builder Section */}
-      <div className="bg-surface rounded-3xl border border-border shadow-sm overflow-hidden">
+      {/* View Mode Switcher Tabs */}
+      <div className="flex items-center justify-between flex-wrap gap-4 bg-surface p-2 rounded-2xl border border-border shadow-xs">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setViewMode('grid')}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-extrabold text-xs transition-all ${
+              viewMode === 'grid'
+                ? 'bg-primary text-gray-900 shadow-sm scale-[1.02]'
+                : 'text-muted hover:text-foreground hover:bg-surface-hover'
+            }`}
+          >
+            <LayoutGrid size={16} />
+            <span>📅 Grilla Semanal de Menús (Matriz)</span>
+          </button>
+
+          <button
+            onClick={() => setViewMode('days')}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-extrabold text-xs transition-all ${
+              viewMode === 'days'
+                ? 'bg-primary text-gray-900 shadow-sm scale-[1.02]'
+                : 'text-muted hover:text-foreground hover:bg-surface-hover'
+            }`}
+          >
+            <ListFilter size={16} />
+            <span>📑 Configurar Horarios y Tomas (Por Días)</span>
+          </button>
+        </div>
+
+        <button
+          onClick={handleSaveConfiguration}
+          className="px-5 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold rounded-xl text-xs shadow-md transition-all flex items-center gap-2 active:scale-95 ml-auto"
+        >
+          <Save size={15} /> Guardar Plan
+        </button>
+      </div>
+
+      {/* Conditional Rendering based on View Mode */}
+      {viewMode === 'grid' ? (
+        <WeeklyGrid
+          plan={activePlan}
+          onSelectMealSlot={(day, meal) => setSelectedSlotForMenu({ day, meal })}
+          onRemoveAssignedMenu={handleRemoveAssignedMenu}
+        />
+      ) : (
+        /* Weekly Structure Builder Section */
+        <div className="bg-surface rounded-3xl border border-border shadow-sm overflow-hidden">
         
         {/* Days Navigation Tabs */}
         <div className="flex items-center overflow-x-auto no-scrollbar border-b border-border bg-surface-hover/50 p-2 gap-2">
@@ -454,6 +560,7 @@ export function Plans() {
           </div>
         </div>
       </div>
+      )}
 
       {/* Modal de Creación de Nuevo Plan */}
       {showCreateModal && (
@@ -527,6 +634,18 @@ export function Plans() {
             </form>
           </div>
         </div>
+      )}
+
+      {/* Modal de Selección y Asignación de Platos */}
+      {selectedSlotForMenu && (
+        <MenuSelectorModal
+          isOpen={!!selectedSlotForMenu}
+          onClose={() => setSelectedSlotForMenu(null)}
+          dayName={selectedSlotForMenu.day}
+          mealConfig={selectedSlotForMenu.meal}
+          catalog={DISH_CATALOG}
+          onAssignDish={handleAssignDish}
+        />
       )}
     </div>
   );
