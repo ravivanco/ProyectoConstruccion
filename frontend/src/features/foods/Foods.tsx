@@ -14,6 +14,27 @@ const CATEGORIES: ('Todos' | FoodCategory)[] = [
   'Lácteos',
 ];
 
+function HighlightText({ text, highlight }: { text: string; highlight: string }) {
+  if (!highlight.trim()) return <span>{text}</span>;
+  const parts = text.split(new RegExp(`(${highlight.trim()})`, 'gi'));
+  return (
+    <span>
+      {parts.map((part, i) =>
+        part.toLowerCase() === highlight.trim().toLowerCase() ? (
+          <span
+            key={i}
+            className="bg-amber-300 dark:bg-amber-500/40 text-gray-900 dark:text-white font-extrabold px-1 rounded shadow-sm"
+          >
+            {part}
+          </span>
+        ) : (
+          part
+        )
+      )}
+    </span>
+  );
+}
+
 export function Foods() {
   const [foods, setFoods] = useState<Food[]>(() => {
     const saved = localStorage.getItem('dkfitt_foods');
@@ -87,7 +108,13 @@ export function Foods() {
 
   const filteredFoods = useMemo(() => {
     return foods.filter((food) => {
-      const matchesSearch = food.name.toLowerCase().includes(searchQuery.trim().toLowerCase());
+      const query = searchQuery.trim().toLowerCase();
+      const matchesSearch =
+        query === '' ||
+        food.name.toLowerCase().includes(query) ||
+        food.servingSize.toLowerCase().includes(query) ||
+        food.category.toLowerCase().includes(query);
+
       const matchesCategory = selectedCategory === 'Todos' || food.category === selectedCategory;
       const matchesStatus =
         statusFilter === 'all'
@@ -181,19 +208,27 @@ export function Foods() {
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" size={18} />
             <input
               type="text"
-              placeholder="Buscar por nombre de alimento..."
+              placeholder="Buscar por nombre, ración o categoría..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-surface-hover border border-border rounded-2xl pl-11 pr-4 py-2.5 text-sm text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+              className="w-full bg-surface-hover border border-border rounded-2xl pl-11 pr-24 py-2.5 text-sm text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
             />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted hover:text-foreground bg-surface p-1 rounded-full"
-              >
-                ✕
-              </button>
-            )}
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
+              {searchQuery && (
+                <span className="text-[10px] font-bold bg-primary/20 text-primary px-2 py-0.5 rounded-full whitespace-nowrap">
+                  {filteredFoods.length} efic.
+                </span>
+              )}
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="text-xs font-semibold text-muted hover:text-foreground bg-surface p-1 rounded-full border border-border"
+                  title="Limpiar búsqueda"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Status Filter Toggle */}
@@ -268,7 +303,9 @@ export function Foods() {
                           {food.name.charAt(0)}
                         </div>
                         <div>
-                          <p className="text-sm font-bold text-foreground leading-snug">{food.name}</p>
+                          <p className="text-sm font-bold text-foreground leading-snug">
+                            <HighlightText text={food.name} highlight={searchQuery} />
+                          </p>
                           <span
                             className={`inline-block mt-1 px-2.5 py-0.5 rounded-lg text-[10px] font-extrabold tracking-wide ${getCategoryBadgeStyle(
                               food.category
@@ -283,7 +320,7 @@ export function Foods() {
                     {/* Ración */}
                     <td className="py-4 px-6">
                       <span className="text-sm font-semibold text-foreground bg-surface-hover px-3 py-1.5 rounded-xl border border-border inline-block">
-                        {food.servingSize}
+                        <HighlightText text={food.servingSize} highlight={searchQuery} />
                       </span>
                     </td>
 
