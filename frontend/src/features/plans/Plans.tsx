@@ -1,8 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import { FileText, Calendar, Clock, Flame, Plus, Copy, Save, Sparkles, User, Target, Check, Trash2, LayoutGrid, ListFilter } from 'lucide-react';
 import type { WeeklyPlan, DayOfWeek, MealConfig } from './types';
-import { INITIAL_PLANS, createDefaultWeekStructure } from './services/mockPlans';
-import { WeeklyGrid } from './components';
+import { INITIAL_PLANS, createDefaultWeekStructure, DISH_CATALOG } from './services/mockPlans';
+import { WeeklyGrid, MenuSelectorModal } from './components';
 
 export function Plans() {
   const [plans, setPlans] = useState<WeeklyPlan[]>(() => {
@@ -16,6 +16,7 @@ export function Plans() {
   const [activePlanId, setActivePlanId] = useState<string>(() => plans[0]?.id || 'plan-101');
   const [selectedDay, setSelectedDay] = useState<DayOfWeek>('Lunes');
   const [viewMode, setViewMode] = useState<'days' | 'grid'>('grid'); // 'grid' por defecto para ver la matriz
+  const [selectedSlotForMenu, setSelectedSlotForMenu] = useState<{ day: DayOfWeek; meal: MealConfig } | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Estado para crear nuevo plan
@@ -160,6 +161,43 @@ export function Plans() {
       })
     );
     showToast(`Plato eliminado de la toma.`);
+  };
+
+  const handleAssignDish = (dish: any, portionMultiplier: number, notes?: string) => {
+    if (!activePlan || !selectedSlotForMenu) return;
+    const { day, meal } = selectedSlotForMenu;
+
+    const newAssigned = {
+      id: `ass-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      dishId: dish.id,
+      name: dish.name,
+      portion: portionMultiplier !== 1 ? `${portionMultiplier}x porción (${dish.defaultPortion})` : dish.defaultPortion,
+      calories: Math.round(dish.calories * portionMultiplier),
+      protein: Math.round(dish.protein * portionMultiplier),
+      carbs: Math.round(dish.carbs * portionMultiplier),
+      fat: Math.round(dish.fat * portionMultiplier),
+      category: dish.category,
+      notes,
+    };
+
+    setPlans((prev) =>
+      prev.map((p) => {
+        if (p.id !== activePlan.id) return p;
+        const updatedDays = p.days.map((dayObj) => {
+          if (dayObj.day !== day) return dayObj;
+          const updatedMeals = dayObj.meals.map((m) => {
+            if (m.id !== meal.id) return m;
+            return {
+              ...m,
+              assignedMenus: [...(m.assignedMenus || []), newAssigned],
+            };
+          });
+          return { ...dayObj, meals: updatedMeals };
+        });
+        return { ...p, days: updatedDays, updatedAt: new Date().toISOString() };
+      })
+    );
+    showToast(`✨ Plato "${dish.name}" asignado a ${day} - ${meal.name}`);
   };
 
   const handleSaveConfiguration = () => {
@@ -348,9 +386,7 @@ export function Plans() {
       {viewMode === 'grid' ? (
         <WeeklyGrid
           plan={activePlan}
-          onSelectMealSlot={(day, meal) => {
-            showToast(`Añadiendo plato para ${day} - ${meal.name} (Selector en Tarea 2)...`);
-          }}
+          onSelectMealSlot={(day, meal) => setSelectedSlotForMenu({ day, meal })}
           onRemoveAssignedMenu={handleRemoveAssignedMenu}
         />
       ) : (
@@ -598,6 +634,18 @@ export function Plans() {
             </form>
           </div>
         </div>
+      )}
+
+      {/* Modal de Selección y Asignación de Platos */}
+      {selectedSlotForMenu && (
+        <MenuSelectorModal
+          isOpen={!!selectedSlotForMenu}
+          onClose={() => setSelectedSlotForMenu(null)}
+          dayName={selectedSlotForMenu.day}
+          mealConfig={selectedSlotForMenu.meal}
+          catalog={DISH_CATALOG}
+          onAssignDish={handleAssignDish}
+        />
       )}
     </div>
   );
