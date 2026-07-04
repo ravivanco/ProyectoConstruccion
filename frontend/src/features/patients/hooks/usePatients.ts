@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { patientsAPI } from '../services/patientsApi';
-import type { Patient } from '../types';
+import type { Patient } from '../../../shared/types';
 
 export function usePatients() {
   const query = useQuery<Patient[], Error>({

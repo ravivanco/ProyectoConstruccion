@@ -16,7 +16,7 @@ export default function Layout() {
   const navItems = [
     { name: 'Dashboard', path: '/dashboard', icon: <Activity size={18} /> },
     { name: 'Pacientes', path: '/patients', icon: <Users size={18} /> },
-    { name: 'Planes Nutricionales', path: '#', icon: <FileText size={18} /> },
+    { name: 'Planes Nutricionales', path: '/plans', icon: <FileText size={18} /> },
     { name: 'Alimentos y Recetas', path: '#', icon: <Apple size={18} /> },
     { name: 'Seguimiento', path: '#', icon: <BarChart2 size={18} /> },
     { name: 'Alertas', path: '#', icon: <AlertCircle size={18} /> },
