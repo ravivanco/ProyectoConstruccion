@@ -37,7 +37,16 @@ foodsRouter.get(
   requireRole('nutricionista'),
   async (req, res, next) => {
     try {
-      const foods = await listFoods(req.user!.id);
+      const search = typeof req.query.search === 'string' ? req.query.search : undefined;
+      const categoryRaw = typeof req.query.category === 'string' ? req.query.category : undefined;
+      const category =
+        categoryRaw && isValidFoodCategory(categoryRaw) ? categoryRaw : undefined;
+
+      let isActive: boolean | undefined;
+      if (req.query.isActive === 'true') isActive = true;
+      if (req.query.isActive === 'false') isActive = false;
+
+      const foods = await listFoods(req.user!.id, { search, category, isActive });
       res.json(foods);
     } catch (error) {
       next(error);
