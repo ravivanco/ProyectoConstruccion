@@ -1,10 +1,12 @@
 import { Router } from 'express';
 import { authenticate, requireRole } from '../middleware/authenticate.js';
 import {
+  assignDayMenu,
   createPlanWeek,
+  isMealSlotKey,
   listPlanWeeks,
 } from '../repositories/planWeekRepository.js';
-import { CreatePlanWeekInput } from '../types/planWeek.js';
+import { AssignDayMenuInput, CreatePlanWeekInput } from '../types/planWeek.js';
 
 export const planWeeksRouter = Router();
 
