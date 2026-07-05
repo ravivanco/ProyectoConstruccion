@@ -13,6 +13,9 @@ import { patientProfileRouter } from './routes/patientProfile.route.js';
 import { macroRouter } from './routes/macro.route.js';
 import { foodsRouter } from './routes/foods.route.js';
 import { planWeeksRouter } from './routes/planWeeks.route.js';
+import { dishesRouter } from './routes/dishes.route.js';
+import { menuGenerationRouter } from './routes/menuGeneration.route.js';
+import { mediaRouter } from './routes/media.route.js';
 import { setupSwagger } from './swagger/swagger.js';
 
 export function createApp() {
@@ -33,6 +36,9 @@ export function createApp() {
   app.use(macroRouter);
   app.use(foodsRouter);
   app.use(planWeeksRouter);
+  app.use(dishesRouter);
+  app.use(menuGenerationRouter);
+  app.use(mediaRouter);
 
   setupSwagger(app);
 
