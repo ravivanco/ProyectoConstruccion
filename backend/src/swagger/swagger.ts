@@ -7,8 +7,8 @@ const options: swaggerJsdoc.Options = {
     openapi: '3.0.0',
     info: {
       title: 'DK-FITT API',
-      version: '2.0.0',
-      description: 'API REST de nutrición activa DK-FITT — Sprint 2: evaluaciones, planes y control calórico',
+      version: '3.0.0',
+      description: 'API REST de nutrición activa DK-FITT — Sprint 3: catálogo alimentos, platos, semanas y menús',
     },
     servers: [{ url: 'http://localhost:3000', description: 'Desarrollo local' }],
     components: {
@@ -343,6 +343,81 @@ const options: swaggerJsdoc.Options = {
             401: { description: 'No autenticado' },
             403: { description: 'No autorizado' },
           },
+        },
+      },
+      '/foods': {
+        get: {
+          summary: 'Listar alimentos con filtros opcionales',
+          tags: ['Alimentos'],
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            { name: 'search', in: 'query', schema: { type: 'string' } },
+            { name: 'category', in: 'query', schema: { type: 'string' } },
+            { name: 'isActive', in: 'query', schema: { type: 'boolean' } },
+          ],
+          responses: { 200: { description: 'Listado de alimentos' } },
+        },
+        post: {
+          summary: 'Crear alimento',
+          tags: ['Alimentos'],
+          security: [{ bearerAuth: [] }],
+          responses: { 201: { description: 'Alimento creado' } },
+        },
+      },
+      '/dishes/{id}': {
+        get: {
+          summary: 'Detalle de plato con receta',
+          tags: ['Platos'],
+          security: [{ bearerAuth: [] }],
+          parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+          responses: { 200: { description: 'Plato encontrado' }, 404: { description: 'No encontrado' } },
+        },
+      },
+      '/nutrition-plans/{planId}/weeks': {
+        get: {
+          summary: 'Listar semanas del plan',
+          tags: ['Planes semanales'],
+          security: [{ bearerAuth: [] }],
+          parameters: [{ name: 'planId', in: 'path', required: true, schema: { type: 'string' } }],
+          responses: { 200: { description: 'Semanas del plan' } },
+        },
+        post: {
+          summary: 'Crear semana del plan',
+          tags: ['Planes semanales'],
+          security: [{ bearerAuth: [] }],
+          responses: { 201: { description: 'Semana creada' } },
+        },
+      },
+      '/meal-times': {
+        get: {
+          summary: 'Tiempos de comida ordenados',
+          tags: ['Planes semanales'],
+          security: [{ bearerAuth: [] }],
+          responses: { 200: { description: 'Cinco tiempos de comida' } },
+        },
+      },
+      '/nutrition-plans/{planId}/generate-menus': {
+        post: {
+          summary: 'Generar menús respetando restricciones del paciente',
+          tags: ['Generación de menús'],
+          security: [{ bearerAuth: [] }],
+          responses: { 200: { description: 'Sugerencias generadas' } },
+        },
+      },
+      '/uploads/image': {
+        post: {
+          summary: 'Subir imagen a Cloudinary',
+          tags: ['Medios'],
+          security: [{ bearerAuth: [] }],
+          responses: { 201: { description: 'Imagen subida' } },
+        },
+      },
+      '/dishes/generate-ai': {
+        post: {
+          summary: 'Generar receta con IA',
+          tags: ['Platos'],
+          security: [{ bearerAuth: [] }],
+          responses: { 200: { description: 'Receta generada' } },
         },
       },
     },
