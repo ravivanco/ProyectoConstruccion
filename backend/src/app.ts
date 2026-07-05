@@ -12,6 +12,7 @@ import { patientsRouter } from './routes/patients.route.js';
 import { patientProfileRouter } from './routes/patientProfile.route.js';
 import { macroRouter } from './routes/macro.route.js';
 import { foodsRouter } from './routes/foods.route.js';
+import { planWeeksRouter } from './routes/planWeeks.route.js';
 import { setupSwagger } from './swagger/swagger.js';
 
 export function createApp() {
@@ -31,6 +32,7 @@ export function createApp() {
   app.use(patientProfileRouter);
   app.use(macroRouter);
   app.use(foodsRouter);
+  app.use(planWeeksRouter);
 
   setupSwagger(app);
 
