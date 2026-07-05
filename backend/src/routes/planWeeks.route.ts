@@ -3,6 +3,7 @@ import { authenticate, requireRole } from '../middleware/authenticate.js';
 import {
   assignDayMenu,
   createPlanWeek,
+  getOrderedMealTimes,
   isMealSlotKey,
   listPlanWeeks,
 } from '../repositories/planWeekRepository.js';
@@ -107,3 +108,7 @@ planWeeksRouter.post(
     }
   },
 );
+
+planWeeksRouter.get('/meal-times', authenticate, async (_req, res) => {
+  res.json(getOrderedMealTimes());
+});
