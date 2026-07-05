@@ -54,7 +54,7 @@ planWeeksRouter.get(
         return res.status(404).json({ message: 'Plan nutricional no encontrado' });
       }
 
-      res.json(weeks);
+      res.json({ planId, weeks });
     } catch (error) {
       next(error);
     }
