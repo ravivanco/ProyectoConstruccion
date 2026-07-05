@@ -62,3 +62,48 @@ planWeeksRouter.get(
     }
   },
 );
+
+planWeeksRouter.post(
+  '/nutrition-plans/weeks/:weekId/days/:day/menus',
+  authenticate,
+  requireRole('nutricionista'),
+  async (req, res, next) => {
+    try {
+      const weekId = String(req.params.weekId ?? '').trim();
+      const dayOfWeek = Number(req.params.day);
+
+      if (!weekId || Number.isNaN(dayOfWeek)) {
+        return res.status(400).json({ message: 'weekId y day requeridos' });
+      }
+
+      const body = req.body as Record<string, unknown>;
+      const mealSlot = typeof body.mealSlot === 'string' ? body.mealSlot : '';
+      const dishName = typeof body.dishName === 'string' ? body.dishName.trim() : '';
+
+      if (!isMealSlotKey(mealSlot) || !dishName) {
+        return res.status(400).json({ message: 'mealSlot y dishName son requeridos' });
+      }
+
+      const input: AssignDayMenuInput = {
+        mealSlot,
+        dishId: typeof body.dishId === 'string' ? body.dishId : undefined,
+        dishName,
+        portion: typeof body.portion === 'string' ? body.portion : undefined,
+        calories: Number(body.calories ?? 0),
+        protein: Number(body.protein ?? 0),
+        carbs: Number(body.carbs ?? 0),
+        fat: Number(body.fat ?? 0),
+        notes: typeof body.notes === 'string' ? body.notes : undefined,
+      };
+
+      const result = await assignDayMenu(weekId, dayOfWeek, req.user!.id, input);
+      if (!result) {
+        return res.status(404).json({ message: 'Semana o día no encontrado' });
+      }
+
+      res.status(201).json(result);
+    } catch (error) {
+      next(error);
+    }
+  },
+);
