@@ -5,6 +5,7 @@ import { useApp } from '../context/AppContext';
 import { colors } from '../theme';
 import { Button, Card } from './ui';
 import { MealTimeCard } from './MealTimeCard';
+import { DishDetailModal } from './DishDetailModal';
 
 const mealSchedule: Array<{ key: MealSlotKey; name: string; time: string }> = [
   { key: 'desayuno', name: 'Desayuno', time: '07:00' },
@@ -25,6 +26,7 @@ export function WeeklyMenuView({ planId }: { planId: string }) {
   const { getPlanWeeks } = useApp();
   const [weeks, setWeeks] = useState<PlanWeek[]>([]);
   const [selectedDay, setSelectedDay] = useState(1);
+  const [selectedDishId, setSelectedDishId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const loadWeeks = useCallback(async () => {
@@ -52,8 +54,9 @@ export function WeeklyMenuView({ planId }: { planId: string }) {
     </ScrollView>
     <View style={styles.dayContent}>
       <Text style={styles.dayTitle}>{day?.day}</Text>
-      {day ? completeMealSchedule(day.meals).map((meal) => <MealTimeCard key={meal.mealSlot} meal={meal} />) : null}
+      {day ? completeMealSchedule(day.meals).map((meal) => <MealTimeCard key={meal.mealSlot} meal={meal} onOpenDish={setSelectedDishId} />) : null}
     </View>
+    <DishDetailModal dishId={selectedDishId} onClose={() => setSelectedDishId(null)} />
   </Card>;
 }
 

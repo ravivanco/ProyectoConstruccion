@@ -1,9 +1,9 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { MealConfig } from '../../domain/models/WeeklyMenu';
 import { colors } from '../theme';
 
-export function MealTimeCard({ meal }: { meal: MealConfig }) {
+export function MealTimeCard({ meal, onOpenDish }: { meal: MealConfig; onOpenDish?(dishId: string): void }) {
   const totalCalories = meal.assignedMenus.reduce((total, menu) => total + menu.calories, 0);
   return <View style={styles.card}>
     <View style={styles.header}>
@@ -11,7 +11,7 @@ export function MealTimeCard({ meal }: { meal: MealConfig }) {
       <Text style={styles.calories}>{Math.round(totalCalories)} kcal</Text>
     </View>
     {meal.assignedMenus.length
-      ? meal.assignedMenus.map((menu) => <View key={menu.id} style={styles.menu}><Text style={styles.menuName}>{menu.name}</Text><Text style={styles.menuMeta}>{menu.portion || 'Porción indicada'} · {Math.round(menu.calories)} kcal</Text></View>)
+      ? meal.assignedMenus.map((menu) => <View key={menu.id} style={styles.menu}><Text style={styles.menuName}>{menu.name}</Text><Text style={styles.menuMeta}>{menu.portion || 'Porción indicada'} · {Math.round(menu.calories)} kcal</Text>{menu.dishId && onOpenDish ? <Pressable onPress={() => onOpenDish(menu.dishId!)}><Text style={styles.link}>Ver receta y preparación</Text></Pressable> : null}</View>)
       : <Text style={styles.empty}>Sin comida asignada.</Text>}
   </View>;
 }
@@ -25,5 +25,6 @@ const styles = StyleSheet.create({
   menu: { borderTopWidth: 1, borderTopColor: '#EEF1EC', marginTop: 10, paddingTop: 10 },
   menuName: { color: colors.text, fontWeight: '700' },
   menuMeta: { color: colors.muted, fontSize: 12, marginTop: 3 },
+  link: { color: colors.primaryDark, fontWeight: '800', marginTop: 8 },
   empty: { color: colors.muted, fontStyle: 'italic', marginTop: 10 },
 });

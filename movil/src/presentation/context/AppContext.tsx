@@ -3,18 +3,19 @@ import { LoginPatient, RegisterPatient } from '../../application/auth/authUseCas
 import { CompleteProfile } from '../../application/profile/CompleteProfile';
 import { LoginInput, RegisterInput } from '../../domain/models/Auth';
 import { CalorieDashboard } from '../../domain/models/CalorieDashboard';
+import { Dish } from '../../domain/models/Dish';
 import { ActiveNutritionPlan, NutritionPlanStatus } from '../../domain/models/NutritionPlan';
 import { emptyProfile, PatientProfile } from '../../domain/models/Profile';
 import { PlanWeek } from '../../domain/models/WeeklyMenu';
-import { AuthApiRepository, CalorieControlApiRepository, NutritionPlanApiRepository, ProfileApiRepository } from '../../infrastructure/api/ApiRepositories';
+import { AuthApiRepository, CalorieControlApiRepository, DishApiRepository, NutritionPlanApiRepository, ProfileApiRepository } from '../../infrastructure/api/ApiRepositories';
 import { HttpClient } from '../../infrastructure/api/HttpClient';
 import { SecureTokenStorage } from '../../infrastructure/storage/SecureTokenStorage';
 
-interface AppContextValue { session: { authenticated: boolean; completed: boolean }; profile: PatientProfile; register(input: RegisterInput): Promise<void>; login(input: LoginInput): Promise<void>; updateProfile(changes: Partial<PatientProfile>): void; completeProfile(): Promise<void>; getPlanStatus(): Promise<NutritionPlanStatus | null>; getActivePlan(): Promise<ActiveNutritionPlan | null>; getPlanWeeks(planId: string): Promise<PlanWeek[]>; getCalorieDashboard(): Promise<CalorieDashboard | null>; reset(): void; }
+interface AppContextValue { session: { authenticated: boolean; completed: boolean }; profile: PatientProfile; register(input: RegisterInput): Promise<void>; login(input: LoginInput): Promise<void>; updateProfile(changes: Partial<PatientProfile>): void; completeProfile(): Promise<void>; getPlanStatus(): Promise<NutritionPlanStatus | null>; getActivePlan(): Promise<ActiveNutritionPlan | null>; getPlanWeeks(planId: string): Promise<PlanWeek[]>; getDish(id: string): Promise<Dish | null>; getCalorieDashboard(): Promise<CalorieDashboard | null>; reset(): void; }
 const AppContext = createContext<AppContextValue | null>(null);
 
 export function AppProvider({ children }: PropsWithChildren) {
-  const services = useMemo(() => { const client = new HttpClient(); const auth = new AuthApiRepository(client); const storage = new SecureTokenStorage(); return { register: new RegisterPatient(auth, storage), login: new LoginPatient(auth, storage), complete: new CompleteProfile(new ProfileApiRepository(client)), plans: new NutritionPlanApiRepository(client), calories: new CalorieControlApiRepository(client) }; }, []);
+  const services = useMemo(() => { const client = new HttpClient(); const auth = new AuthApiRepository(client); const storage = new SecureTokenStorage(); return { register: new RegisterPatient(auth, storage), login: new LoginPatient(auth, storage), complete: new CompleteProfile(new ProfileApiRepository(client)), plans: new NutritionPlanApiRepository(client), dishes: new DishApiRepository(client), calories: new CalorieControlApiRepository(client) }; }, []);
   const [session, setSession] = useState({ authenticated: false, completed: false });
   const [profile, setProfile] = useState<PatientProfile>(emptyProfile);
   const value: AppContextValue = {
@@ -26,6 +27,7 @@ export function AppProvider({ children }: PropsWithChildren) {
     getPlanStatus: () => services.plans.getStatus(),
     getActivePlan: () => services.plans.getActive(),
     getPlanWeeks: (planId) => services.plans.getWeeks(planId),
+    getDish: (id) => services.dishes.getById(id),
     getCalorieDashboard: () => services.calories.getDashboard(),
     reset: () => { setProfile(emptyProfile); setSession({ authenticated: false, completed: false }); },
   };

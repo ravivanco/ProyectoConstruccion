@@ -1,10 +1,12 @@
 import { AuthSession, LoginInput, RegisterInput } from '../../domain/models/Auth';
 import { CalorieDashboard } from '../../domain/models/CalorieDashboard';
+import { Dish } from '../../domain/models/Dish';
 import { ActiveNutritionPlan, NutritionPlanStatus } from '../../domain/models/NutritionPlan';
 import { PatientProfile } from '../../domain/models/Profile';
 import { PlanWeeksResponse, PlanWeek } from '../../domain/models/WeeklyMenu';
 import { AuthRepository } from '../../domain/repositories/AuthRepository';
 import { CalorieControlRepository } from '../../domain/repositories/CalorieControlRepository';
+import { DishRepository } from '../../domain/repositories/DishRepository';
 import { NutritionPlanRepository } from '../../domain/repositories/NutritionPlanRepository';
 import { ProfileRepository } from '../../domain/repositories/ProfileRepository';
 import { ApiError, HttpClient } from './HttpClient';
@@ -43,6 +45,13 @@ export class CalorieControlApiRepository implements CalorieControlRepository {
   constructor(private readonly client: HttpClient) {}
   async getDashboard(): Promise<CalorieDashboard | null> {
     try { return await this.client.request<CalorieDashboard>('/calorie-control/dashboard'); }
+    catch (error) { if (error instanceof ApiError && error.status === 404) return null; throw error; }
+  }
+}
+export class DishApiRepository implements DishRepository {
+  constructor(private readonly client: HttpClient) {}
+  async getById(id: string): Promise<Dish | null> {
+    try { return await this.client.request<Dish>(`/dishes/${encodeURIComponent(id)}`); }
     catch (error) { if (error instanceof ApiError && error.status === 404) return null; throw error; }
   }
 }
