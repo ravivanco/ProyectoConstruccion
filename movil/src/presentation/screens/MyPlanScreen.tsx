@@ -42,7 +42,7 @@ export function MyPlanScreen({ onBack }: { onBack(): void }) {
         <Macro label="Grasas" value={plan.fatG} />
       </View>
     </Card> : null}
-    {!loading && !error && status?.moduloHabilitado && plan ? <WeeklyMenuView planId={plan.id} /> : null}
+    {!loading && !error && status?.moduloHabilitado && plan ? <WeeklyMenuView planId={plan.id} dailyCalorieTarget={plan.dailyCalories} /> : null}
     {!loading && !error && status?.moduloHabilitado && !plan ? <Card><Text style={styles.cardTitle}>No hay un plan activo</Text><Text style={styles.centerText}>Tu nutricionista aún no ha publicado una planificación para mostrar.</Text></Card> : null}
     <Button secondary label="Volver al inicio" onPress={onBack} />
   </ScrollView>;
