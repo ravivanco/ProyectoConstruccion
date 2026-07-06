@@ -2,6 +2,7 @@ import { AuthSession, LoginInput, RegisterInput } from '../../domain/models/Auth
 import { CalorieDashboard } from '../../domain/models/CalorieDashboard';
 import { ActiveNutritionPlan, NutritionPlanStatus } from '../../domain/models/NutritionPlan';
 import { PatientProfile } from '../../domain/models/Profile';
+import { PlanWeeksResponse, PlanWeek } from '../../domain/models/WeeklyMenu';
 import { AuthRepository } from '../../domain/repositories/AuthRepository';
 import { CalorieControlRepository } from '../../domain/repositories/CalorieControlRepository';
 import { NutritionPlanRepository } from '../../domain/repositories/NutritionPlanRepository';
@@ -27,6 +28,15 @@ export class NutritionPlanApiRepository implements NutritionPlanRepository {
   async getActive(): Promise<ActiveNutritionPlan | null> {
     try { return await this.client.request<ActiveNutritionPlan>('/nutrition-plans/active/me'); }
     catch (error) { if (error instanceof ApiError && error.status === 404) return null; throw error; }
+  }
+  async getWeeks(planId: string): Promise<PlanWeek[]> {
+    try {
+      const response = await this.client.request<PlanWeeksResponse>(`/nutrition-plans/${encodeURIComponent(planId)}/weeks`);
+      return response.weeks;
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 404) return [];
+      throw error;
+    }
   }
 }
 export class CalorieControlApiRepository implements CalorieControlRepository {

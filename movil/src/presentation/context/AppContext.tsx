@@ -5,11 +5,12 @@ import { LoginInput, RegisterInput } from '../../domain/models/Auth';
 import { CalorieDashboard } from '../../domain/models/CalorieDashboard';
 import { ActiveNutritionPlan, NutritionPlanStatus } from '../../domain/models/NutritionPlan';
 import { emptyProfile, PatientProfile } from '../../domain/models/Profile';
+import { PlanWeek } from '../../domain/models/WeeklyMenu';
 import { AuthApiRepository, CalorieControlApiRepository, NutritionPlanApiRepository, ProfileApiRepository } from '../../infrastructure/api/ApiRepositories';
 import { HttpClient } from '../../infrastructure/api/HttpClient';
 import { SecureTokenStorage } from '../../infrastructure/storage/SecureTokenStorage';
 
-interface AppContextValue { session: { authenticated: boolean; completed: boolean }; profile: PatientProfile; register(input: RegisterInput): Promise<void>; login(input: LoginInput): Promise<void>; updateProfile(changes: Partial<PatientProfile>): void; completeProfile(): Promise<void>; getPlanStatus(): Promise<NutritionPlanStatus | null>; getActivePlan(): Promise<ActiveNutritionPlan | null>; getCalorieDashboard(): Promise<CalorieDashboard | null>; reset(): void; }
+interface AppContextValue { session: { authenticated: boolean; completed: boolean }; profile: PatientProfile; register(input: RegisterInput): Promise<void>; login(input: LoginInput): Promise<void>; updateProfile(changes: Partial<PatientProfile>): void; completeProfile(): Promise<void>; getPlanStatus(): Promise<NutritionPlanStatus | null>; getActivePlan(): Promise<ActiveNutritionPlan | null>; getPlanWeeks(planId: string): Promise<PlanWeek[]>; getCalorieDashboard(): Promise<CalorieDashboard | null>; reset(): void; }
 const AppContext = createContext<AppContextValue | null>(null);
 
 export function AppProvider({ children }: PropsWithChildren) {
@@ -24,6 +25,7 @@ export function AppProvider({ children }: PropsWithChildren) {
     completeProfile: async () => { await services.complete.execute(profile); setSession({ authenticated: true, completed: true }); },
     getPlanStatus: () => services.plans.getStatus(),
     getActivePlan: () => services.plans.getActive(),
+    getPlanWeeks: (planId) => services.plans.getWeeks(planId),
     getCalorieDashboard: () => services.calories.getDashboard(),
     reset: () => { setProfile(emptyProfile); setSession({ authenticated: false, completed: false }); },
   };
