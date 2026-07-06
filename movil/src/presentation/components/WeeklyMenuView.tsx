@@ -1,9 +1,25 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { DayPlan, PlanWeek } from '../../domain/models/WeeklyMenu';
+import { DayPlan, MealConfig, MealSlotKey, PlanWeek } from '../../domain/models/WeeklyMenu';
 import { useApp } from '../context/AppContext';
 import { colors } from '../theme';
 import { Button, Card } from './ui';
+import { MealTimeCard } from './MealTimeCard';
+
+const mealSchedule: Array<{ key: MealSlotKey; name: string; time: string }> = [
+  { key: 'desayuno', name: 'Desayuno', time: '07:00' },
+  { key: 'colacion_matutina', name: 'Media mañana', time: '10:00' },
+  { key: 'almuerzo', name: 'Almuerzo', time: '13:00' },
+  { key: 'colacion_vespertina', name: 'Media tarde', time: '16:00' },
+  { key: 'cena', name: 'Cena', time: '19:00' },
+];
+
+function completeMealSchedule(meals: MealConfig[]): MealConfig[] {
+  return mealSchedule.map((slot, index) => {
+    const meal = meals.find((item) => item.mealSlot === slot.key);
+    return { mealSlot: slot.key, name: slot.name, suggestedTime: meal?.suggestedTime || slot.time, order: index + 1, assignedMenus: meal?.assignedMenus ?? [] };
+  });
+}
 
 export function WeeklyMenuView({ planId }: { planId: string }) {
   const { getPlanWeeks } = useApp();
@@ -36,9 +52,7 @@ export function WeeklyMenuView({ planId }: { planId: string }) {
     </ScrollView>
     <View style={styles.dayContent}>
       <Text style={styles.dayTitle}>{day?.day}</Text>
-      {day && day.meals.flatMap((meal) => meal.assignedMenus).length
-        ? day.meals.flatMap((meal) => meal.assignedMenus).map((menu) => <View key={menu.id} style={styles.menuRow}><Text style={styles.menuName}>{menu.name}</Text><Text style={styles.menuMeta}>{menu.portion || `${Math.round(menu.calories)} kcal`}</Text></View>)
-        : <Text style={styles.empty}>No hay menús asignados para este día.</Text>}
+      {day ? completeMealSchedule(day.meals).map((meal) => <MealTimeCard key={meal.mealSlot} meal={meal} />) : null}
     </View>
   </Card>;
 }
@@ -59,8 +73,4 @@ const styles = StyleSheet.create({
   dayTextSelected: { color: colors.primaryDark },
   dayContent: { borderTopWidth: 1, borderTopColor: colors.border, paddingTop: 14 },
   dayTitle: { color: colors.text, fontSize: 18, fontWeight: '800', marginBottom: 8 },
-  menuRow: { paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#EEF1EC' },
-  menuName: { color: colors.text, fontWeight: '700' },
-  menuMeta: { color: colors.muted, fontSize: 12, marginTop: 3 },
-  empty: { color: colors.muted, textAlign: 'center', paddingVertical: 16 },
 });
