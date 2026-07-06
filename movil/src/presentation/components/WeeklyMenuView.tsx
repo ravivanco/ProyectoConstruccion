@@ -7,6 +7,7 @@ import { Button, Card } from './ui';
 import { MealTimeCard } from './MealTimeCard';
 import { DishDetailModal } from './DishDetailModal';
 import { MenuRecommendationCard } from './MenuRecommendationCard';
+import { MenuSafetyNotice } from './MenuSafetyNotice';
 
 const mealSchedule: Array<{ key: MealSlotKey; name: string; time: string }> = [
   { key: 'desayuno', name: 'Desayuno', time: '07:00' },
@@ -42,6 +43,7 @@ export function WeeklyMenuView({ planId, dailyCalorieTarget }: { planId: string;
   const weekdays = useMemo(() => week?.days.filter((day) => day.dayOfWeek >= 1 && day.dayOfWeek <= 5) ?? [], [week]);
   const day = weekdays.find((item) => item.dayOfWeek === selectedDay) ?? weekdays[0];
   const dayCalories = day?.meals.flatMap((meal) => meal.assignedMenus).reduce((total, menu) => total + menu.calories, 0) ?? 0;
+  const hasMenus = dayCalories > 0;
 
   if (loading) return <Card><ActivityIndicator color={colors.primary} /><Text style={styles.center}>Cargando tu semana…</Text></Card>;
   if (error) return <Card><Text style={styles.title}>No pudimos cargar tu semana</Text><Text style={styles.center}>{error}</Text><Button label="Reintentar" onPress={loadWeeks} /></Card>;
@@ -56,8 +58,9 @@ export function WeeklyMenuView({ planId, dailyCalorieTarget }: { planId: string;
     </ScrollView>
     <View style={styles.dayContent}>
       <Text style={styles.dayTitle}>{day?.day}</Text>
-      {dayCalories > 0 ? <MenuRecommendationCard calories={dayCalories} dailyTarget={dailyCalorieTarget} /> : null}
-      {day ? completeMealSchedule(day.meals).map((meal) => <MealTimeCard key={meal.mealSlot} meal={meal} onOpenDish={setSelectedDishId} />) : null}
+      {hasMenus ? <MenuSafetyNotice /> : null}
+      {hasMenus ? <MenuRecommendationCard calories={dayCalories} dailyTarget={dailyCalorieTarget} /> : null}
+      {day ? completeMealSchedule(day.meals).map((meal) => <MealTimeCard key={meal.mealSlot} meal={meal} onOpenDish={setSelectedDishId} verified={hasMenus} />) : null}
     </View>
     <DishDetailModal dishId={selectedDishId} onClose={() => setSelectedDishId(null)} />
   </Card>;
