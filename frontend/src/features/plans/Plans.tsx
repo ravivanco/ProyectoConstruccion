@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { FileText, Calendar, Clock, Flame, Plus, Copy, Save, Sparkles, User, Target, Check, Trash2, LayoutGrid, ListFilter, Dumbbell } from 'lucide-react';
 import type { WeeklyPlan, DayOfWeek, MealConfig } from './types';
 import { INITIAL_PLANS, createDefaultWeekStructure, DISH_CATALOG } from './services/mockPlans';
-import { WeeklyGrid, MenuSelectorModal, ExerciseSelectorModal, WeeklyExerciseSchedule } from './components';
+import { WeeklyGrid, MenuSelectorModal, ExerciseSelectorModal, WeeklyExerciseSchedule, MobileExerciseSyncModal } from './components';
 import { assignedExerciseApi, type AssignedExerciseItem, type CreateAssignedExerciseInput } from './services/assignedExerciseApi';
 
 export function Plans() {
@@ -24,6 +24,7 @@ export function Plans() {
   const [assignedExercises, setAssignedExercises] = useState<AssignedExerciseItem[]>([]);
   const [showExerciseSelector, setShowExerciseSelector] = useState(false);
   const [exerciseSelectorDefaultDay, setExerciseSelectorDefaultDay] = useState<DayOfWeek>('Lunes');
+  const [showMobilePreviewModal, setShowMobilePreviewModal] = useState(false);
 
   // Estado para crear nuevo plan
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -617,10 +618,18 @@ export function Plans() {
           }}
           onDeleteExercise={handleDeleteAssignedExercise}
           onOpenMobilePreview={() => {
-            showToast('Vista de sincronización móvil disponible al completar PROYEC-678');
+            setShowMobilePreviewModal(true);
           }}
         />
       )}
+
+      {/* Modal de Sincronización y Simulación Móvil (HU21 / PROYEC-678) */}
+      <MobileExerciseSyncModal
+        isOpen={showMobilePreviewModal}
+        onClose={() => setShowMobilePreviewModal(false)}
+        patientId="p-101"
+        planTitle={activePlan.title}
+      />
 
       {/* Modal de Creación de Nuevo Plan */}
       {showCreateModal && (

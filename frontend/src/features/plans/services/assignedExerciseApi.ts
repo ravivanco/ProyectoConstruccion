@@ -155,4 +155,46 @@ export const assignedExerciseApi = {
       return true;
     }
   },
+
+  getMobileSchedule: async (
+    patientId: string,
+  ): Promise<{ patientId: string; schedule: Record<DayOfWeek, AssignedExerciseItem[]> }> => {
+    try {
+      const response = await api.get<{
+        patientId: string;
+        schedule: Record<DayOfWeek, AssignedExerciseItem[]>;
+      }>(`/mobile/patients/${patientId}/exercises`);
+      return response.data;
+    } catch {
+      // Fallback local robusto para simulación móvil en desarrollo
+      const all: AssignedExerciseItem[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('dkfitt_asg_exc_')) {
+          try {
+            const arr = JSON.parse(localStorage.getItem(key) || '[]');
+            if (Array.isArray(arr)) all.push(...arr);
+          } catch {
+            // ignore
+          }
+        }
+      }
+      const items = all.length > 0 ? all : INITIAL_ASSIGNED;
+      const schedule: Record<DayOfWeek, AssignedExerciseItem[]> = {
+        Lunes: [],
+        Martes: [],
+        Miércoles: [],
+        Jueves: [],
+        Viernes: [],
+        Sábado: [],
+        Domingo: [],
+      };
+      items.forEach((item) => {
+        if (schedule[item.dayOfWeek]) {
+          schedule[item.dayOfWeek].push(item);
+        }
+      });
+      return { patientId, schedule };
+    }
+  },
 };

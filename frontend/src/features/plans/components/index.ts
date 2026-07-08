@@ -1,4 +1,5 @@
 export * from './WeeklyGrid';
 export * from './MenuSelectorModal';
-export * from './ExerciseSelectorModal';
-export * from './WeeklyExerciseSchedule';
+export { ExerciseSelectorModal } from './ExerciseSelectorModal';
+export { WeeklyExerciseSchedule } from './WeeklyExerciseSchedule';
+export { MobileExerciseSyncModal } from './MobileExerciseSyncModal';
