@@ -395,6 +395,36 @@ const options: swaggerJsdoc.Options = {
           },
         },
       },
+      '/api/nutrition-plans/{planId}/exercises': {
+        get: {
+          summary: 'Listar ejercicios asociados al seguimiento del plan (HU21)',
+          tags: ['Ejercicios Asignados'],
+          security: [{ bearerAuth: [] }],
+          responses: {
+            200: { description: 'Lista de ejercicios asignados' },
+            401: { description: 'No autenticado' },
+          },
+        },
+        post: {
+          summary: 'Asociar ejercicio del catálogo a un día del plan (HU21)',
+          tags: ['Ejercicios Asignados'],
+          security: [{ bearerAuth: [] }],
+          responses: {
+            201: { description: 'Ejercicio asignado' },
+            401: { description: 'No autenticado' },
+          },
+        },
+      },
+      '/api/mobile/patients/{patientId}/exercises': {
+        get: {
+          summary: 'Sincronización de rutina de ejercicios para App Móvil (PROYEC-678)',
+          tags: ['Ejercicios Asignados'],
+          security: [{ bearerAuth: [] }],
+          responses: {
+            200: { description: 'Rutina semanal móvil del paciente' },
+          },
+        },
+      },
     },
   },
   apis: ['./src/routes/*.ts', './dist/routes/*.js'],
