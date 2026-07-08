@@ -370,6 +370,31 @@ const options: swaggerJsdoc.Options = {
           },
         },
       },
+      '/exercises': {
+        get: {
+          summary: 'Listar catálogo de ejercicios físicos (HU20)',
+          tags: ['Ejercicios'],
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            { name: 'search', in: 'query', schema: { type: 'string' } },
+            { name: 'category', in: 'query', schema: { type: 'string' } },
+          ],
+          responses: {
+            200: { description: 'Lista de ejercicios' },
+            401: { description: 'No autenticado' },
+          },
+        },
+        post: {
+          summary: 'Crear nuevo ejercicio físico (HU20)',
+          tags: ['Ejercicios'],
+          security: [{ bearerAuth: [] }],
+          responses: {
+            201: { description: 'Ejercicio creado' },
+            401: { description: 'No autenticado' },
+            403: { description: 'Solo nutricionista' },
+          },
+        },
+      },
     },
   },
   apis: ['./src/routes/*.ts', './dist/routes/*.js'],
