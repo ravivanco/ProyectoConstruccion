@@ -345,6 +345,31 @@ const options: swaggerJsdoc.Options = {
           },
         },
       },
+      '/foods': {
+        get: {
+          summary: 'Listar alimentos y recetas clínicas (HU18/HU19)',
+          tags: ['Alimentos'],
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            { name: 'search', in: 'query', schema: { type: 'string' } },
+            { name: 'category', in: 'query', schema: { type: 'string' } },
+          ],
+          responses: {
+            200: { description: 'Lista de alimentos' },
+            401: { description: 'No autenticado' },
+          },
+        },
+        post: {
+          summary: 'Crear nuevo alimento o receta (HU18)',
+          tags: ['Alimentos'],
+          security: [{ bearerAuth: [] }],
+          responses: {
+            201: { description: 'Alimento creado' },
+            401: { description: 'No autenticado' },
+            403: { description: 'Solo nutricionista' },
+          },
+        },
+      },
     },
   },
   apis: ['./src/routes/*.ts', './dist/routes/*.js'],

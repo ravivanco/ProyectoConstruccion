@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { Search, Plus, Apple, Flame, Edit2, CheckCircle2, Filter } from 'lucide-react';
 import type { Food, FoodCategory, CreateFoodInput, NutritionalFilter } from './types';
 import { INITIAL_FOODS } from './services/mockFoods';
+import { foodApi } from './services/foodApi';
 import { FoodFormModal } from './components/FoodFormModal';
 
 const CATEGORIES: ('Todos' | FoodCategory)[] = [
@@ -57,6 +58,14 @@ export function Foods() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingFood, setEditingFood] = useState<Food | null>(null);
   const [prefillFoodName, setPrefillFoodName] = useState('');
+
+  useEffect(() => {
+    foodApi.getFoods().then((data) => {
+      if (data && data.length > 0) {
+        setFoods(data);
+      }
+    });
+  }, []);
 
   useEffect(() => {
     localStorage.setItem('dkfitt_foods', JSON.stringify(foods));

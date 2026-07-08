@@ -2,11 +2,17 @@ import { Router } from 'express';
 import { authenticate, requireRole } from '../middleware/authenticate.js';
 import {
   activateNutritionPlan,
+  findNutritionPlanById,
   getActivePlanForPatient,
+  getAllNutritionPlans,
   getPlanStatusForPatient,
   setNutritionPlanModuleLock,
   setNutritionPlanStartDate,
+  updatePlanWeeklyStructure,
+  assignMenuToMealSlot,
+  removeAssignedMenuFromSlot,
 } from '../repositories/nutritionPlanRepository.js';
+import { AssignedMenuDTO, WeeklyDayStructure } from '../types/nutritionPlan.js';
 import { validateStartDate } from '../utils/validateStartDate.js';
 
 export const nutritionPlansRouter = Router();
@@ -150,3 +156,111 @@ nutritionPlansRouter.get(
     }
   },
 );
+
+// GET /api/nutrition-plans - Listado de planes nutricionales
+nutritionPlansRouter.get(
+  '/api/nutrition-plans',
+  authenticate,
+  requireRole('nutricionista'),
+  async (_req, res, next) => {
+    try {
+      const plans = await getAllNutritionPlans();
+      res.json(plans);
+    } catch (error) {
+      next(error);
+    }
+  },
+);
+
+// GET /api/nutrition-plans/:id - Detalle de un plan con estructura semanal
+nutritionPlansRouter.get(
+  '/api/nutrition-plans/:id',
+  authenticate,
+  async (req, res, next) => {
+    try {
+      const id = String(req.params.id ?? '').trim();
+      const plan = await findNutritionPlanById(id);
+      if (!plan) {
+        return res.status(404).json({ message: 'Plan nutricional no encontrado' });
+      }
+      res.json(plan);
+    } catch (error) {
+      next(error);
+    }
+  },
+);
+
+// PUT /api/nutrition-plans/:id/weekly-structure - Guardar días y tiempos de comida (HU16)
+nutritionPlansRouter.put(
+  '/api/nutrition-plans/:id/weekly-structure',
+  authenticate,
+  requireRole('nutricionista'),
+  async (req, res, next) => {
+    try {
+      const id = String(req.params.id ?? '').trim();
+      const structure = req.body?.weeklyStructure as WeeklyDayStructure[];
+      if (!Array.isArray(structure)) {
+        return res.status(400).json({ message: 'weeklyStructure debe ser un arreglo de días' });
+      }
+
+      const plan = await updatePlanWeeklyStructure(id, structure);
+      if (!plan) {
+        return res.status(404).json({ message: 'Plan nutricional no encontrado' });
+      }
+      res.json(plan);
+    } catch (error) {
+      next(error);
+    }
+  },
+);
+
+// POST /api/nutrition-plans/:id/days/:day/meals/:mealId/menus - Asignar plato a toma (HU17)
+nutritionPlansRouter.post(
+  '/api/nutrition-plans/:id/days/:day/meals/:mealId/menus',
+  authenticate,
+  requireRole('nutricionista'),
+  async (req, res, next) => {
+    try {
+      const id = String(req.params.id ?? '').trim();
+      const day = String(req.params.day ?? '').trim();
+      const mealId = String(req.params.mealId ?? '').trim();
+      const menuDto = req.body as AssignedMenuDTO;
+
+      if (!menuDto?.dishId || !menuDto?.name) {
+        return res.status(400).json({ message: 'dishId y name son requeridos para asignar menú' });
+      }
+
+      const plan = await assignMenuToMealSlot(id, day, mealId, menuDto);
+      if (!plan) {
+        return res.status(404).json({ message: 'Plan nutricional no encontrado' });
+      }
+      res.status(201).json(plan);
+    } catch (error) {
+      next(error);
+    }
+  },
+);
+
+// DELETE /api/nutrition-plans/:id/days/:day/meals/:mealId/menus/:menuId - Eliminar plato de toma (HU17)
+nutritionPlansRouter.delete(
+  '/api/nutrition-plans/:id/days/:day/meals/:mealId/menus/:menuId',
+  authenticate,
+  requireRole('nutricionista'),
+  async (req, res, next) => {
+    try {
+      const id = String(req.params.id ?? '').trim();
+      const day = String(req.params.day ?? '').trim();
+      const mealId = String(req.params.mealId ?? '').trim();
+      const menuId = String(req.params.menuId ?? '').trim();
+
+      const plan = await removeAssignedMenuFromSlot(id, day, mealId, menuId);
+      if (!plan) {
+        return res.status(404).json({ message: 'Plan nutricional no encontrado' });
+      }
+      res.json(plan);
+    } catch (error) {
+      next(error);
+    }
+  },
+);
+
