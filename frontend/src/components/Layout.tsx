@@ -1,6 +1,6 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { Users, FileText, Activity, Apple, Bell, LogOut, Calendar, BarChart2, AlertCircle, Menu, Sun, Moon, Monitor } from 'lucide-react';
+import { Users, FileText, Activity, Apple, Dumbbell, Bell, LogOut, Calendar, BarChart2, AlertCircle, Menu, Sun, Moon, Monitor } from 'lucide-react';
 
 type Theme = 'light' | 'dark' | 'system';
 
@@ -18,6 +18,7 @@ export default function Layout() {
     { name: 'Pacientes', path: '/patients', icon: <Users size={18} /> },
     { name: 'Planes Nutricionales', path: '/plans', icon: <FileText size={18} /> },
     { name: 'Alimentos y Recetas', path: '/foods', icon: <Apple size={18} /> },
+    { name: 'Ejercicios Físicos', path: '/exercises', icon: <Dumbbell size={18} /> },
     { name: 'Seguimiento', path: '#', icon: <BarChart2 size={18} /> },
     { name: 'Alertas', path: '#', icon: <AlertCircle size={18} /> },
     { name: 'Citas', path: '#', icon: <Calendar size={18} /> },
