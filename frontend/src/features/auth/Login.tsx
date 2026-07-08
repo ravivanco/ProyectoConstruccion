@@ -63,7 +63,7 @@ export default function Login() {
       </svg>
 
       {/* Left Vertical Banner (Black) */}
-      <div className="flex flex-col w-[320px] bg-[#111111] z-20 shadow-2xl h-screen shrink-0">
+      <div className="hidden md:flex flex-col w-[320px] bg-[#111111] z-20 shadow-2xl h-screen shrink-0">
         {/* Logo Section */}
         <div className="pt-14 pb-8 flex flex-col items-center">
           {/* House with Barbell Logo */}

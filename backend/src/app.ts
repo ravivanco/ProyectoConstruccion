@@ -11,6 +11,7 @@ import { calorieControlRouter } from './routes/calorieControl.route.js';
 import { patientsRouter } from './routes/patients.route.js';
 import { patientProfileRouter } from './routes/patientProfile.route.js';
 import { macroRouter } from './routes/macro.route.js';
+import { authRouter } from './routes/auth.route.js';
 import { setupSwagger } from './swagger/swagger.js';
 
 export function createApp() {
@@ -29,6 +30,7 @@ export function createApp() {
   app.use(patientsRouter);
   app.use(patientProfileRouter);
   app.use(macroRouter);
+  app.use(authRouter);
 
   setupSwagger(app);
 

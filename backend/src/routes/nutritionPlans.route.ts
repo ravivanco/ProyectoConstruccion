@@ -12,7 +12,7 @@ import { validateStartDate } from '../utils/validateStartDate.js';
 export const nutritionPlansRouter = Router();
 
 nutritionPlansRouter.patch(
-  '/nutrition-plans/:id/activate',
+  '/api/nutrition-plans/:id/activate',
   authenticate,
   requireRole('nutricionista'),
   async (req, res, next) => {
@@ -40,7 +40,7 @@ nutritionPlansRouter.patch(
 );
 
 nutritionPlansRouter.patch(
-  '/nutrition-plans/:id/start-date',
+  '/api/nutrition-plans/:id/start-date',
   authenticate,
   requireRole('nutricionista'),
   async (req, res, next) => {
@@ -70,7 +70,7 @@ nutritionPlansRouter.patch(
 );
 
 nutritionPlansRouter.patch(
-  '/nutrition-plans/:id/lock-module',
+  '/api/nutrition-plans/:id/lock-module',
   authenticate,
   requireRole('nutricionista'),
   async (req, res, next) => {
@@ -95,7 +95,7 @@ nutritionPlansRouter.patch(
 );
 
 nutritionPlansRouter.patch(
-  '/nutrition-plans/:id/unlock-module',
+  '/api/nutrition-plans/:id/unlock-module',
   authenticate,
   requireRole('nutricionista'),
   async (req, res, next) => {
@@ -118,7 +118,7 @@ nutritionPlansRouter.patch(
 );
 
 nutritionPlansRouter.get(
-  '/nutrition-plans/active/me',
+  '/api/nutrition-plans/active/me',
   authenticate,
   requireRole('paciente'),
   async (req, res, next) => {
@@ -135,7 +135,7 @@ nutritionPlansRouter.get(
 );
 
 nutritionPlansRouter.get(
-  '/nutrition-plans/status/me',
+  '/api/nutrition-plans/status/me',
   authenticate,
   requireRole('paciente'),
   async (req, res, next) => {
