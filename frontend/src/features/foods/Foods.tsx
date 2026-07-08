@@ -279,7 +279,7 @@ export function Foods() {
         </div>
 
         {/* Category Pills */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar pt-2 border-t border-border">
+        <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-border">
           {CATEGORIES.map((cat) => {
             const isSelected = selectedCategory === cat;
             return (
@@ -300,7 +300,7 @@ export function Foods() {
 
         {/* Quick Nutritional Filters (Chips WOW) */}
         <div className="flex items-center justify-between flex-wrap gap-3 pt-3 border-t border-border">
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+          <div className="flex flex-wrap items-center gap-2">
             <span className="text-[11px] font-extrabold text-muted uppercase tracking-wider shrink-0 flex items-center gap-1">
               <span>⚡ Filtros Nutricionales:</span>
             </span>
@@ -357,15 +357,15 @@ export function Foods() {
       <div className="bg-surface rounded-3xl border border-border overflow-hidden shadow-sm transition-colors">
         {filteredFoods.length > 0 ? (
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <table className="w-full min-w-[720px] text-left border-collapse">
               <thead>
                 <tr className="bg-surface-hover border-b border-border text-[11px] uppercase tracking-wider text-muted font-extrabold">
-                  <th className="py-4 px-6">Alimento</th>
-                  <th className="py-4 px-6">Ración / Unidad</th>
-                  <th className="py-4 px-6">Calorías (kcal)</th>
-                  <th className="py-4 px-6">Desglose de Macros (por ración)</th>
-                  <th className="py-4 px-6 text-center">Estado</th>
-                  <th className="py-4 px-6 text-right">Acciones</th>
+                  <th className="py-4 px-4">Alimento</th>
+                  <th className="py-4 px-4">Ración / Unidad</th>
+                  <th className="py-4 px-4 whitespace-nowrap">Calorías (kcal)</th>
+                  <th className="py-4 px-4 whitespace-nowrap">Desglose de Macros</th>
+                  <th className="py-4 px-4 text-center">Estado</th>
+                  <th className="py-4 px-4 text-right">Acciones</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
