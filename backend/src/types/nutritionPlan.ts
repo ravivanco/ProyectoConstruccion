@@ -1,6 +1,36 @@
 export type NutritionPlanStatus = 'draft' | 'active' | 'inactive';
 export type EffectivePlanStatus = 'draft' | 'scheduled' | 'active' | 'inactive';
 
+export interface AssignedMenuDTO {
+  dishId: string;
+  name: string;
+  portion: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  category: string;
+  notes?: string;
+}
+
+export interface AssignedMenu extends AssignedMenuDTO {
+  id: string;
+}
+
+export interface MealSlot {
+  id: string;
+  name: string;
+  suggestedTime?: string;
+  targetCalories?: number;
+  assignedMenus?: AssignedMenu[];
+}
+
+export interface WeeklyDayStructure {
+  day: string;
+  enabled: boolean;
+  meals: MealSlot[];
+}
+
 export interface NutritionPlan {
   id: string;
   patientId: string;
@@ -12,6 +42,7 @@ export interface NutritionPlan {
   proteinG: number;
   carbsG: number;
   fatG: number;
+  weeklyStructure?: WeeklyDayStructure[];
   activatedAt?: string;
   createdAt: string;
   updatedAt: string;
