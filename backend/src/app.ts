@@ -13,6 +13,8 @@ import { patientProfileRouter } from './routes/patientProfile.route.js';
 import { macroRouter } from './routes/macro.route.js';
 import { authRouter } from './routes/auth.route.js';
 import { foodsRouter } from './routes/foods.route.js';
+import { exercisesRouter } from './routes/exercises.route.js';
+import { assignedExercisesRouter } from './routes/assignedExercises.route.js';
 import { setupSwagger } from './swagger/swagger.js';
 
 export function createApp() {
@@ -33,6 +35,8 @@ export function createApp() {
   app.use(macroRouter);
   app.use(authRouter);
   app.use(foodsRouter);
+  app.use(exercisesRouter);
+  app.use(assignedExercisesRouter);
 
   setupSwagger(app);
 

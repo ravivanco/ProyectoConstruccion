@@ -1,8 +1,9 @@
-import { useState, useEffect, useMemo } from 'react';
-import { FileText, Calendar, Clock, Flame, Plus, Copy, Save, Sparkles, User, Target, Check, Trash2, LayoutGrid, ListFilter } from 'lucide-react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { FileText, Calendar, Clock, Flame, Plus, Copy, Save, Sparkles, User, Target, Check, Trash2, LayoutGrid, ListFilter, Dumbbell } from 'lucide-react';
 import type { WeeklyPlan, DayOfWeek, MealConfig } from './types';
 import { INITIAL_PLANS, createDefaultWeekStructure, DISH_CATALOG } from './services/mockPlans';
-import { WeeklyGrid, MenuSelectorModal } from './components';
+import { WeeklyGrid, MenuSelectorModal, ExerciseSelectorModal, WeeklyExerciseSchedule, MobileExerciseSyncModal } from './components';
+import { assignedExerciseApi, type AssignedExerciseItem, type CreateAssignedExerciseInput } from './services/assignedExerciseApi';
 
 export function Plans() {
   const [plans, setPlans] = useState<WeeklyPlan[]>(() => {
@@ -15,9 +16,15 @@ export function Plans() {
 
   const [activePlanId, setActivePlanId] = useState<string>(() => plans[0]?.id || 'plan-101');
   const [selectedDay, setSelectedDay] = useState<DayOfWeek>('Lunes');
-  const [viewMode, setViewMode] = useState<'days' | 'grid'>('grid'); // 'grid' por defecto para ver la matriz
+  const [viewMode, setViewMode] = useState<'days' | 'grid' | 'exercises'>('grid');
   const [selectedSlotForMenu, setSelectedSlotForMenu] = useState<{ day: DayOfWeek; meal: MealConfig } | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // Estado para gestión de ejercicios del plan (HU21)
+  const [assignedExercises, setAssignedExercises] = useState<AssignedExerciseItem[]>([]);
+  const [showExerciseSelector, setShowExerciseSelector] = useState(false);
+  const [exerciseSelectorDefaultDay, setExerciseSelectorDefaultDay] = useState<DayOfWeek>('Lunes');
+  const [showMobilePreviewModal, setShowMobilePreviewModal] = useState(false);
 
   // Estado para crear nuevo plan
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -37,6 +44,33 @@ export function Plans() {
   const activePlan = useMemo(() => {
     return plans.find((p) => p.id === activePlanId) || plans[0];
   }, [plans, activePlanId]);
+
+  const loadAssignedExercises = useCallback(async (planId: string) => {
+    const list = await assignedExerciseApi.getByPlanId(planId);
+    setAssignedExercises(list);
+  }, []);
+
+  useEffect(() => {
+    if (activePlan?.id) {
+      loadAssignedExercises(activePlan.id);
+    }
+  }, [activePlan?.id, loadAssignedExercises]);
+
+  const handleAssignExercise = async (data: CreateAssignedExerciseInput) => {
+    if (!activePlan) return;
+    const added = await assignedExerciseApi.assignToPlan(activePlan.id, data);
+    if (added) {
+      setAssignedExercises((prev) => [...prev, added]);
+      showToast(`¡Ejercicio "${data.exerciseName}" asignado para el día ${data.dayOfWeek}!`);
+    }
+  };
+
+  const handleDeleteAssignedExercise = async (id: string) => {
+    if (!activePlan) return;
+    await assignedExerciseApi.deleteAssigned(activePlan.id, id);
+    setAssignedExercises((prev) => prev.filter((item) => item.id !== id));
+    showToast('Ejercicio removido del seguimiento.');
+  };
 
   // Si se desactivan fines de semana y estamos en Sábado/Domingo, mover a Lunes
   useEffect(() => {
@@ -372,6 +406,18 @@ export function Plans() {
             <ListFilter size={16} />
             <span>📑 Configurar Horarios y Tomas (Por Días)</span>
           </button>
+
+          <button
+            onClick={() => setViewMode('exercises')}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-extrabold text-xs transition-all ${
+              viewMode === 'exercises'
+                ? 'bg-primary text-gray-900 shadow-sm scale-[1.02]'
+                : 'text-muted hover:text-foreground hover:bg-surface-hover'
+            }`}
+          >
+            <Dumbbell size={16} />
+            <span>🏋️ Actividad Física y Ejercicios Asignados (HU21)</span>
+          </button>
         </div>
 
         <button
@@ -389,7 +435,7 @@ export function Plans() {
           onSelectMealSlot={(day, meal) => setSelectedSlotForMenu({ day, meal })}
           onRemoveAssignedMenu={handleRemoveAssignedMenu}
         />
-      ) : (
+      ) : viewMode === 'days' ? (
         /* Weekly Structure Builder Section */
         <div className="bg-surface rounded-3xl border border-border shadow-sm overflow-hidden">
         
@@ -560,7 +606,30 @@ export function Plans() {
           </div>
         </div>
       </div>
+      ) : (
+        /* Weekly Exercise Schedule View (HU21) */
+        <WeeklyExerciseSchedule
+          planId={activePlan.id}
+          patientId="p-101"
+          assignedExercises={assignedExercises}
+          onOpenSelector={(day) => {
+            if (day) setExerciseSelectorDefaultDay(day);
+            setShowExerciseSelector(true);
+          }}
+          onDeleteExercise={handleDeleteAssignedExercise}
+          onOpenMobilePreview={() => {
+            setShowMobilePreviewModal(true);
+          }}
+        />
       )}
+
+      {/* Modal de Sincronización y Simulación Móvil (HU21 / PROYEC-678) */}
+      <MobileExerciseSyncModal
+        isOpen={showMobilePreviewModal}
+        onClose={() => setShowMobilePreviewModal(false)}
+        patientId="p-101"
+        planTitle={activePlan.title}
+      />
 
       {/* Modal de Creación de Nuevo Plan */}
       {showCreateModal && (
@@ -647,6 +716,15 @@ export function Plans() {
           onAssignDish={handleAssignDish}
         />
       )}
+
+      {/* Modal para Seleccionar Ejercicios y Asociarlos al Seguimiento (HU21) */}
+      <ExerciseSelectorModal
+        isOpen={showExerciseSelector}
+        onClose={() => setShowExerciseSelector(false)}
+        onAssign={handleAssignExercise}
+        patientId="p-101"
+        defaultDay={exerciseSelectorDefaultDay}
+      />
     </div>
   );
 }
