@@ -137,3 +137,88 @@ export function getMediaConfig() {
     nodeEnv: env.nodeEnv,
   };
 }
+
+export async function analyzeFoodImageWithVision(
+  imageBase64: string,
+): Promise<import('../types/tracking.js').FoodVisionAnalysis> {
+  const apiKey = process.env.GEMINI_API_KEY;
+  const payload = imageBase64.includes(',') ? imageBase64.split(',')[1] : imageBase64;
+
+  if (!apiKey) {
+    return {
+      foodName: 'Ensalada mixta',
+      calories: 180,
+      protein: 8,
+      carbs: 22,
+      fat: 6,
+      servingEstimate: '1 plato mediano',
+      confidence: 'media',
+      notes: 'Estimación de plantilla local sin GEMINI_API_KEY',
+      source: 'template',
+    };
+  }
+
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [
+              {
+                text: 'Analiza la imagen de comida y responde SOLO JSON con: foodName, calories, protein, carbs, fat, servingEstimate, confidence (alta|media|baja), notes.',
+              },
+              {
+                inline_data: {
+                  mime_type: 'image/jpeg',
+                  data: payload,
+                },
+              },
+            ],
+          },
+        ],
+      }),
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(`Gemini Vision error: ${response.status}`);
+  }
+
+  const data = (await response.json()) as {
+    candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
+  };
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+
+  try {
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    const parsed = JSON.parse(jsonMatch?.[0] ?? '{}') as Record<string, unknown>;
+    return {
+      foodName: String(parsed.foodName ?? 'Alimento detectado'),
+      calories: Number(parsed.calories ?? 0),
+      protein: Number(parsed.protein ?? 0),
+      carbs: Number(parsed.carbs ?? 0),
+      fat: Number(parsed.fat ?? 0),
+      servingEstimate: String(parsed.servingEstimate ?? '1 porción'),
+      confidence: ['alta', 'media', 'baja'].includes(String(parsed.confidence))
+        ? (String(parsed.confidence) as 'alta' | 'media' | 'baja')
+        : 'media',
+      notes: String(parsed.notes ?? ''),
+      source: 'gemini',
+    };
+  } catch {
+    return {
+      foodName: 'Alimento detectado',
+      calories: 250,
+      protein: 12,
+      carbs: 30,
+      fat: 8,
+      servingEstimate: '1 porción',
+      confidence: 'baja',
+      notes: text || 'No se pudo parsear la respuesta de Gemini',
+      source: 'gemini',
+    };
+  }
+}
