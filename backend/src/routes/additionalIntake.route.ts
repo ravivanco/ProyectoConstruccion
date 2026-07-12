@@ -170,6 +170,7 @@ additionalIntakeRouter.patch(
         log: updated,
         calorieSummary,
         balanceUpdated: true,
+        impactsBalance: true,
         remainingCalories: calorieSummary.remainingCalories,
       });
     } catch (error) {
