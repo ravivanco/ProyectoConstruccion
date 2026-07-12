@@ -22,6 +22,7 @@ export interface CalorieTodaySummary {
   consumedCalories: number;
   burnedCalories: number;
   balanceCalories: number;
+  netCalories: number;
   remainingCalories: number;
   adherencePercentage: number;
   macros: CalorieDashboard['macros'];

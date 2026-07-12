@@ -134,6 +134,7 @@ export async function getCalorieToday(patientId: string): Promise<CalorieTodaySu
     consumedCalories: dashboard.consumedToday,
     burnedCalories,
     balanceCalories,
+    netCalories: balanceCalories,
     remainingCalories: dashboard.remainingToday,
     adherencePercentage: dashboard.adherencePercentage,
     macros: dashboard.macros,
