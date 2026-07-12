@@ -21,6 +21,7 @@ import { exerciseLogsRouter } from './routes/exerciseLogs.route.js';
 import { weightLogsRouter } from './routes/weightLogs.route.js';
 import { additionalIntakeRouter } from './routes/additionalIntake.route.js';
 import { trackingVisionRouter } from './routes/trackingVision.route.js';
+import { exercisesRouter } from './routes/exercises.route.js';
 import { setupSwagger } from './swagger/swagger.js';
 
 export function createApp() {
@@ -49,6 +50,7 @@ export function createApp() {
   app.use(weightLogsRouter);
   app.use(additionalIntakeRouter);
   app.use(trackingVisionRouter);
+  app.use(exercisesRouter);
 
   setupSwagger(app);
 
