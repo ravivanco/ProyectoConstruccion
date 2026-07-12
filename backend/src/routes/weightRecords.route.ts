@@ -10,6 +10,14 @@ import { resolvePatientAccess } from '../utils/patientAccess.js';
 
 export const weightRecordsRouter = Router();
 
+async function validateSingleWeightPerDay(patientId: string, logDate: string) {
+  const existing = await findWeightLogByPatientAndDate(patientId, logDate);
+  if (existing) {
+    return { ok: false as const, message: 'Ya existe un registro de peso para este día' };
+  }
+  return { ok: true as const };
+}
+
 function parseCreateBody(body: unknown): CreateWeightLogInput | null {
   if (!body || typeof body !== 'object') return null;
   const data = body as Record<string, unknown>;
@@ -33,9 +41,9 @@ weightRecordsRouter.post('/weight-records', authenticate, async (req, res, next)
     if (!input) return res.status(400).json({ message: 'weightKg inválido' });
 
     const logDate = input.logDate ?? new Date().toISOString().slice(0, 10);
-    const existing = await findWeightLogByPatientAndDate(access.patientId, logDate);
-    if (existing) {
-      return res.status(409).json({ message: 'Ya existe un registro de peso para este día' });
+    const validation = await validateSingleWeightPerDay(access.patientId, logDate);
+    if (!validation.ok) {
+      return res.status(409).json({ message: validation.message });
     }
 
     const log = await createWeightLog(access.patientId, { ...input, logDate });
