@@ -59,7 +59,11 @@ async function handleCreateAdditionalIntake(req: Request, res: Response, next: N
       logDate: input.logDate ?? new Date().toISOString().slice(0, 10),
       status: 'pending',
     });
-    res.status(201).json(log);
+    res.status(201).json({
+      ...log,
+      patientId: access.patientId,
+      savedDate: log.logDate,
+    });
   } catch (error) {
     next(error);
   }
