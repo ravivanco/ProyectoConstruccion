@@ -106,7 +106,10 @@ additionalIntakeRouter.post('/additional-intake/analyze', authenticate, async (r
     }
 
     const analysis = await analyzeFoodImageWithVision(imageBase64);
-    res.json(analysis);
+    res.json({
+      ...analysis,
+      integratedWith: 'gemini-vision',
+    });
   } catch (error) {
     next(error);
   }
