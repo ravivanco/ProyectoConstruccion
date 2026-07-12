@@ -1,5 +1,5 @@
 import { pool } from '../db/pool.js';
-import { CalorieDashboard } from '../types/calorieControl.js';
+import { CalorieDashboard, CalorieTodaySummary } from '../types/calorieControl.js';
 import { ActivityLevel, Sex, calculateDailyCalorieRequirement } from '../utils/metabolism.js';
 
 export interface CalorieRequirement {
@@ -70,10 +70,10 @@ export async function getCalorieDashboard(patientId: string): Promise<CalorieDas
   const todayResult = await pool.query(
     `SELECT COALESCE(SUM(total), 0) AS total FROM (
        SELECT calories AS total FROM meal_logs
-       WHERE patient_id = $1 AND log_date = CURRENT_DATE
+       WHERE patient_id = $1 AND log_date = CURRENT_DATE AND status = 'completed'
        UNION ALL
        SELECT calories AS total FROM additional_food_logs
-       WHERE patient_id = $1 AND log_date = CURRENT_DATE
+       WHERE patient_id = $1 AND log_date = CURRENT_DATE AND status = 'confirmed'
      ) combined`,
     [patientId],
   );
@@ -85,10 +85,10 @@ export async function getCalorieDashboard(patientId: string): Promise<CalorieDas
        SELECT log_date, SUM(calories) AS daily_total
        FROM (
          SELECT log_date, calories FROM meal_logs WHERE patient_id = $1
-           AND log_date >= CURRENT_DATE - INTERVAL '6 days'
+           AND log_date >= CURRENT_DATE - INTERVAL '6 days' AND status = 'completed'
          UNION ALL
          SELECT log_date, calories FROM additional_food_logs WHERE patient_id = $1
-           AND log_date >= CURRENT_DATE - INTERVAL '6 days'
+           AND log_date >= CURRENT_DATE - INTERVAL '6 days' AND status = 'confirmed'
        ) all_logs
        GROUP BY log_date
      ) daily`,
@@ -106,10 +106,36 @@ export async function getCalorieDashboard(patientId: string): Promise<CalorieDas
     plannedCalories,
     consumedToday,
     remainingToday,
+    remainingCalories: remainingToday,
     weeklyAverageConsumed,
     adherencePercentage,
     macros: { proteinG, carbsG, fatG },
     activePlanId,
     moduleLocked,
+  };
+}
+
+export async function getCalorieToday(patientId: string): Promise<CalorieTodaySummary> {
+  const dashboard = await getCalorieDashboard(patientId);
+
+  const burnedResult = await pool.query(
+    `SELECT COALESCE(SUM(calories_burned), 0) AS total
+     FROM exercise_logs
+     WHERE patient_id = $1 AND log_date = CURRENT_DATE`,
+    [patientId],
+  );
+  const burnedCalories = Number(burnedResult.rows[0]?.total ?? 0);
+  const balanceCalories = dashboard.consumedToday - burnedCalories;
+
+  return {
+    patientId,
+    date: new Date().toISOString().slice(0, 10),
+    plannedCalories: dashboard.plannedCalories,
+    consumedCalories: dashboard.consumedToday,
+    burnedCalories,
+    balanceCalories,
+    remainingCalories: dashboard.remainingToday,
+    adherencePercentage: dashboard.adherencePercentage,
+    macros: dashboard.macros,
   };
 }

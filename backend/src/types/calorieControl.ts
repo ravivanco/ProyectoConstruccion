@@ -3,6 +3,7 @@ export interface CalorieDashboard {
   plannedCalories: number;
   consumedToday: number;
   remainingToday: number;
+  remainingCalories: number;
   weeklyAverageConsumed: number;
   adherencePercentage: number;
   macros: {
@@ -12,4 +13,16 @@ export interface CalorieDashboard {
   };
   activePlanId?: string;
   moduleLocked: boolean;
+}
+
+export interface CalorieTodaySummary {
+  patientId: string;
+  date: string;
+  plannedCalories: number;
+  consumedCalories: number;
+  burnedCalories: number;
+  balanceCalories: number;
+  remainingCalories: number;
+  adherencePercentage: number;
+  macros: CalorieDashboard['macros'];
 }
