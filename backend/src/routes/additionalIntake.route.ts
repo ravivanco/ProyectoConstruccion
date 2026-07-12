@@ -1,16 +1,19 @@
-import { Router } from 'express';
-import { authenticate } from '../middleware/authenticate.js';
+import { Router, Request, Response, NextFunction } from 'express';
+import { authenticate, requireRole } from '../middleware/authenticate.js';
 import {
   createAdditionalFoodLog,
   deleteAdditionalFoodLog,
   findAdditionalFoodLogById,
   listAdditionalFoodLogs,
+  setAdditionalIntakeStatus,
   updateAdditionalFoodLog,
 } from '../repositories/additionalFoodLogRepository.js';
+import { getCalorieToday } from '../repositories/calorieControlRepository.js';
 import {
   CreateAdditionalFoodLogInput,
   UpdateAdditionalFoodLogInput,
 } from '../types/tracking.js';
+import { analyzeFoodImageWithVision, uploadImageBase64 } from '../utils/mediaAi.js';
 import { resolvePatientAccess } from '../utils/patientAccess.js';
 
 export const additionalIntakeRouter = Router();
@@ -37,12 +40,13 @@ function parseCreateBody(body: unknown): CreateAdditionalFoodLogInput | null {
     fat,
     quantity: typeof data.quantity === 'string' ? data.quantity : undefined,
     logDate: typeof data.logDate === 'string' ? data.logDate : undefined,
+    status: 'pending',
     notes: typeof data.notes === 'string' ? data.notes : undefined,
     imageUrl: typeof data.imageUrl === 'string' ? data.imageUrl : undefined,
   };
 }
 
-additionalIntakeRouter.post('/additional-intake/me', authenticate, async (req, res, next) => {
+async function handleCreateAdditionalIntake(req: Request, res: Response, next: NextFunction) {
   try {
     const access = resolvePatientAccess(req);
     if (!access.ok) return res.status(access.status).json({ message: access.message });
@@ -50,8 +54,51 @@ additionalIntakeRouter.post('/additional-intake/me', authenticate, async (req, r
     const input = parseCreateBody(req.body);
     if (!input) return res.status(400).json({ message: 'Datos de consumo adicional inválidos' });
 
-    const log = await createAdditionalFoodLog(access.patientId, input);
+    const log = await createAdditionalFoodLog(access.patientId, {
+      ...input,
+      logDate: input.logDate ?? new Date().toISOString().slice(0, 10),
+      status: 'pending',
+    });
     res.status(201).json(log);
+  } catch (error) {
+    next(error);
+  }
+}
+
+additionalIntakeRouter.post('/additional-intake', authenticate, handleCreateAdditionalIntake);
+additionalIntakeRouter.post('/additional-intake/me', authenticate, handleCreateAdditionalIntake);
+
+additionalIntakeRouter.post(
+  '/additional-intake/upload-image',
+  authenticate,
+  requireRole('paciente'),
+  async (req, res, next) => {
+    try {
+      const imageBase64 = typeof req.body?.imageBase64 === 'string' ? req.body.imageBase64 : '';
+      if (!imageBase64) {
+        return res.status(400).json({ message: 'imageBase64 requerido' });
+      }
+
+      const result = await uploadImageBase64(imageBase64, 'dkfitt/additional-intake');
+      res.status(201).json(result);
+    } catch (error) {
+      next(error);
+    }
+  },
+);
+
+additionalIntakeRouter.post('/additional-intake/analyze', authenticate, async (req, res, next) => {
+  try {
+    const access = resolvePatientAccess(req);
+    if (!access.ok) return res.status(access.status).json({ message: access.message });
+
+    const imageBase64 = typeof req.body?.imageBase64 === 'string' ? req.body.imageBase64 : '';
+    if (!imageBase64) {
+      return res.status(400).json({ message: 'imageBase64 requerido' });
+    }
+
+    const analysis = await analyzeFoodImageWithVision(imageBase64);
+    res.json(analysis);
   } catch (error) {
     next(error);
   }
@@ -81,6 +128,58 @@ additionalIntakeRouter.get(
       const logDate = typeof req.query.logDate === 'string' ? req.query.logDate : undefined;
       const logs = await listAdditionalFoodLogs(access.patientId, logDate);
       res.json(logs);
+    } catch (error) {
+      next(error);
+    }
+  },
+);
+
+additionalIntakeRouter.patch(
+  '/additional-intake/:id/confirm',
+  authenticate,
+  async (req, res, next) => {
+    try {
+      const existing = await findAdditionalFoodLogById(String(req.params.id));
+      if (!existing) return res.status(404).json({ message: 'Registro no encontrado' });
+
+      if (req.user?.role === 'paciente' && existing.patientId !== req.user.id) {
+        return res.status(403).json({ message: 'No autorizado' });
+      }
+
+      const updated = await setAdditionalIntakeStatus(
+        String(req.params.id),
+        existing.patientId,
+        'confirmed',
+      );
+      if (!updated) return res.status(404).json({ message: 'Registro no encontrado' });
+
+      const calorieSummary = await getCalorieToday(existing.patientId);
+      res.json({ log: updated, calorieSummary });
+    } catch (error) {
+      next(error);
+    }
+  },
+);
+
+additionalIntakeRouter.post(
+  '/additional-intake/:id/discard',
+  authenticate,
+  async (req, res, next) => {
+    try {
+      const existing = await findAdditionalFoodLogById(String(req.params.id));
+      if (!existing) return res.status(404).json({ message: 'Registro no encontrado' });
+
+      if (req.user?.role === 'paciente' && existing.patientId !== req.user.id) {
+        return res.status(403).json({ message: 'No autorizado' });
+      }
+
+      const updated = await setAdditionalIntakeStatus(
+        String(req.params.id),
+        existing.patientId,
+        'discarded',
+      );
+      if (!updated) return res.status(404).json({ message: 'Registro no encontrado' });
+      res.json(updated);
     } catch (error) {
       next(error);
     }

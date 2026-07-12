@@ -16,6 +16,7 @@ function mapRow(row: Record<string, unknown>): AdditionalFoodLog {
     fat: Number(row.fat),
     quantity: row.quantity ? String(row.quantity) : undefined,
     logDate: String(row.log_date).slice(0, 10),
+    status: String(row.status ?? 'pending') as AdditionalFoodLog['status'],
     notes: row.notes ? String(row.notes) : undefined,
     imageUrl: row.image_url ? String(row.image_url) : undefined,
     createdAt: new Date(String(row.created_at)).toISOString(),
@@ -30,8 +31,8 @@ export async function createAdditionalFoodLog(
   const result = await pool.query(
     `INSERT INTO additional_food_logs (
       patient_id, food_name, calories, protein, carbs, fat,
-      quantity, log_date, notes, image_url
-    ) VALUES ($1, $2, $3, $4, $5, $6, $7, COALESCE($8::date, CURRENT_DATE), $9, $10)
+      quantity, log_date, status, notes, image_url
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, COALESCE($8::date, CURRENT_DATE), $9, $10, $11)
     RETURNING *`,
     [
       patientId,
@@ -42,6 +43,7 @@ export async function createAdditionalFoodLog(
       input.fat ?? 0,
       input.quantity ?? null,
       input.logDate ?? null,
+      input.status ?? 'pending',
       input.notes ?? null,
       input.imageUrl ?? null,
     ],
@@ -94,8 +96,9 @@ export async function updateAdditionalFoodLog(
       fat = $7,
       quantity = $8,
       log_date = COALESCE($9::date, log_date),
-      notes = $10,
-      image_url = $11,
+      status = $10,
+      notes = $11,
+      image_url = $12,
       updated_at = NOW()
     WHERE id = $1 AND patient_id = $2
     RETURNING *`,
@@ -109,6 +112,7 @@ export async function updateAdditionalFoodLog(
       input.fat ?? current.fat,
       input.quantity ?? current.quantity ?? null,
       input.logDate ?? null,
+      input.status ?? current.status,
       input.notes ?? current.notes ?? null,
       input.imageUrl ?? current.imageUrl ?? null,
     ],
@@ -125,4 +129,12 @@ export async function deleteAdditionalFoodLog(
     [id, patientId],
   );
   return (result.rowCount ?? 0) > 0;
+}
+
+export async function setAdditionalIntakeStatus(
+  id: string,
+  patientId: string,
+  status: 'confirmed' | 'discarded',
+): Promise<AdditionalFoodLog | null> {
+  return updateAdditionalFoodLog(id, patientId, { status });
 }
