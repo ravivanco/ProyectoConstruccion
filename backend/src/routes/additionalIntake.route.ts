@@ -109,6 +109,7 @@ additionalIntakeRouter.post('/additional-intake/analyze', authenticate, async (r
     res.json({
       ...analysis,
       integratedWith: 'gemini-vision',
+      visionProvider: analysis.source,
     });
   } catch (error) {
     next(error);
@@ -165,7 +166,12 @@ additionalIntakeRouter.patch(
       if (!updated) return res.status(404).json({ message: 'Registro no encontrado' });
 
       const calorieSummary = await getCalorieToday(existing.patientId);
-      res.json({ log: updated, calorieSummary });
+      res.json({
+        log: updated,
+        calorieSummary,
+        balanceUpdated: true,
+        remainingCalories: calorieSummary.remainingCalories,
+      });
     } catch (error) {
       next(error);
     }
@@ -190,7 +196,7 @@ additionalIntakeRouter.post(
         'discarded',
       );
       if (!updated) return res.status(404).json({ message: 'Registro no encontrado' });
-      res.json(updated);
+      res.json({ log: updated, discarded: true });
     } catch (error) {
       next(error);
     }
