@@ -68,9 +68,13 @@ export async function getCalorieDashboard(patientId: string): Promise<CalorieDas
   const activePlanId = plan ? String(plan.id) : undefined;
 
   const todayResult = await pool.query(
-    `SELECT COALESCE(SUM(calories), 0) AS total
-     FROM meal_logs
-     WHERE patient_id = $1 AND log_date = CURRENT_DATE`,
+    `SELECT COALESCE(SUM(total), 0) AS total FROM (
+       SELECT calories AS total FROM meal_logs
+       WHERE patient_id = $1 AND log_date = CURRENT_DATE
+       UNION ALL
+       SELECT calories AS total FROM additional_food_logs
+       WHERE patient_id = $1 AND log_date = CURRENT_DATE
+     ) combined`,
     [patientId],
   );
   const consumedToday = Number(todayResult.rows[0]?.total ?? 0);
@@ -79,9 +83,13 @@ export async function getCalorieDashboard(patientId: string): Promise<CalorieDas
     `SELECT COALESCE(AVG(daily_total), 0) AS avg
      FROM (
        SELECT log_date, SUM(calories) AS daily_total
-       FROM meal_logs
-       WHERE patient_id = $1
-         AND log_date >= CURRENT_DATE - INTERVAL '6 days'
+       FROM (
+         SELECT log_date, calories FROM meal_logs WHERE patient_id = $1
+           AND log_date >= CURRENT_DATE - INTERVAL '6 days'
+         UNION ALL
+         SELECT log_date, calories FROM additional_food_logs WHERE patient_id = $1
+           AND log_date >= CURRENT_DATE - INTERVAL '6 days'
+       ) all_logs
        GROUP BY log_date
      ) daily`,
     [patientId],
