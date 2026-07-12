@@ -92,6 +92,7 @@ weightRecordsRouter.get('/weight-records/me/chart', authenticate, async (req, re
     const latest = points.length ? points[points.length - 1].weightKg : null;
     const first = points.length ? points[0].weightKg : null;
     const change = latest !== null && first !== null ? Number((latest - first).toFixed(2)) : 0;
+    const trend = change > 0 ? 'up' : change < 0 ? 'down' : 'stable';
 
     res.json({
       patientId: access.patientId,
@@ -101,6 +102,7 @@ weightRecordsRouter.get('/weight-records/me/chart', authenticate, async (req, re
         minWeightKg: minWeight,
         maxWeightKg: maxWeight,
         changeKg: change,
+        trend,
         daysTracked: points.length,
       },
     });
