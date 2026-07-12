@@ -196,7 +196,7 @@ additionalIntakeRouter.post(
         'discarded',
       );
       if (!updated) return res.status(404).json({ message: 'Registro no encontrado' });
-      res.json({ log: updated, discarded: true });
+      res.json({ log: updated, discarded: true, impactsBalance: false });
     } catch (error) {
       next(error);
     }
