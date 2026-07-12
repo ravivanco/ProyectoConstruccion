@@ -7,8 +7,8 @@ const options: swaggerJsdoc.Options = {
     openapi: '3.0.0',
     info: {
       title: 'DK-FITT API',
-      version: '3.0.0',
-      description: 'API REST de nutrición activa DK-FITT — Sprint 3: catálogo alimentos, platos, semanas y menús',
+      version: '4.0.0',
+      description: 'API REST de nutrición activa DK-FITT — Sprint 4: tracking de comidas, ejercicios, peso, consumos adicionales y Gemini Vision',
     },
     servers: [{ url: 'http://localhost:3000', description: 'Desarrollo local' }],
     components: {
@@ -418,6 +418,71 @@ const options: swaggerJsdoc.Options = {
           tags: ['Platos'],
           security: [{ bearerAuth: [] }],
           responses: { 200: { description: 'Receta generada' } },
+        },
+      },
+      '/meal-logs/me': {
+        get: {
+          summary: 'Listar comidas registradas del paciente autenticado',
+          tags: ['Tracking'],
+          security: [{ bearerAuth: [] }],
+          parameters: [{ name: 'logDate', in: 'query', schema: { type: 'string', format: 'date' } }],
+          responses: { 200: { description: 'Listado de comidas' } },
+        },
+        post: {
+          summary: 'Registrar comida del día',
+          tags: ['Tracking'],
+          security: [{ bearerAuth: [] }],
+          responses: { 201: { description: 'Comida registrada' } },
+        },
+      },
+      '/exercise-logs/me': {
+        get: {
+          summary: 'Listar ejercicios registrados',
+          tags: ['Tracking'],
+          security: [{ bearerAuth: [] }],
+          responses: { 200: { description: 'Listado de ejercicios' } },
+        },
+        post: {
+          summary: 'Registrar ejercicio',
+          tags: ['Tracking'],
+          security: [{ bearerAuth: [] }],
+          responses: { 201: { description: 'Ejercicio registrado' } },
+        },
+      },
+      '/weight-logs/me': {
+        get: {
+          summary: 'Historial de peso del paciente',
+          tags: ['Tracking'],
+          security: [{ bearerAuth: [] }],
+          responses: { 200: { description: 'Registros de peso' } },
+        },
+        post: {
+          summary: 'Registrar peso',
+          tags: ['Tracking'],
+          security: [{ bearerAuth: [] }],
+          responses: { 201: { description: 'Peso registrado' } },
+        },
+      },
+      '/additional-intake/me': {
+        get: {
+          summary: 'Listar consumos adicionales',
+          tags: ['Tracking'],
+          security: [{ bearerAuth: [] }],
+          responses: { 200: { description: 'Consumos adicionales' } },
+        },
+        post: {
+          summary: 'Registrar consumo adicional',
+          tags: ['Tracking'],
+          security: [{ bearerAuth: [] }],
+          responses: { 201: { description: 'Consumo registrado' } },
+        },
+      },
+      '/tracking/analyze-food-image': {
+        post: {
+          summary: 'Analizar imagen de comida con Gemini Vision',
+          tags: ['Tracking'],
+          security: [{ bearerAuth: [] }],
+          responses: { 200: { description: 'Estimación nutricional' } },
         },
       },
     },

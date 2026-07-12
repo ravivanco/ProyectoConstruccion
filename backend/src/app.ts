@@ -16,6 +16,11 @@ import { planWeeksRouter } from './routes/planWeeks.route.js';
 import { dishesRouter } from './routes/dishes.route.js';
 import { menuGenerationRouter } from './routes/menuGeneration.route.js';
 import { mediaRouter } from './routes/media.route.js';
+import { mealLogsRouter } from './routes/mealLogs.route.js';
+import { exerciseLogsRouter } from './routes/exerciseLogs.route.js';
+import { weightLogsRouter } from './routes/weightLogs.route.js';
+import { additionalIntakeRouter } from './routes/additionalIntake.route.js';
+import { trackingVisionRouter } from './routes/trackingVision.route.js';
 import { setupSwagger } from './swagger/swagger.js';
 
 export function createApp() {
@@ -39,6 +44,11 @@ export function createApp() {
   app.use(dishesRouter);
   app.use(menuGenerationRouter);
   app.use(mediaRouter);
+  app.use(mealLogsRouter);
+  app.use(exerciseLogsRouter);
+  app.use(weightLogsRouter);
+  app.use(additionalIntakeRouter);
+  app.use(trackingVisionRouter);
 
   setupSwagger(app);
 

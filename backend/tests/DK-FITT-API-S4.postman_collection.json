@@ -1,0 +1,120 @@
+{
+  "info": {
+    "name": "DK-FITT API Sprint 4",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Meal tracking",
+      "item": [
+        {
+          "name": "POST meal-logs/me",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{patientToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mealType\": \"Almuerzo\",\n  \"foodName\": \"Pollo con arroz\",\n  \"calories\": 520,\n  \"protein\": 35,\n  \"carbs\": 48,\n  \"fat\": 12\n}"
+            },
+            "url": "{{baseUrl}}/meal-logs/me"
+          }
+        },
+        {
+          "name": "GET meal-logs/me",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{patientToken}}" }],
+            "url": "{{baseUrl}}/meal-logs/me"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Exercise tracking",
+      "item": [
+        {
+          "name": "POST exercise-logs/me",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{patientToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"exerciseName\": \"Caminata\",\n  \"category\": \"Cardio\",\n  \"durationMinutes\": 30,\n  \"caloriesBurned\": 180\n}"
+            },
+            "url": "{{baseUrl}}/exercise-logs/me"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Weight records",
+      "item": [
+        {
+          "name": "POST weight-logs/me",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{patientToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"weightKg\": 74.5\n}"
+            },
+            "url": "{{baseUrl}}/weight-logs/me"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Additional intake",
+      "item": [
+        {
+          "name": "POST additional-intake/me",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{patientToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"foodName\": \"Galletas\",\n  \"calories\": 120,\n  \"quantity\": \"2 unidades\"\n}"
+            },
+            "url": "{{baseUrl}}/additional-intake/me"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Gemini Vision",
+      "item": [
+        {
+          "name": "POST tracking/analyze-food-image",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{patientToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"imageBase64\": \"data:image/jpeg;base64,/9j/4AAQ\"\n}"
+            },
+            "url": "{{baseUrl}}/tracking/analyze-food-image"
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "patientToken", "value": "" }
+  ]
+}
