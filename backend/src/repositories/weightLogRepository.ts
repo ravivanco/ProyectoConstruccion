@@ -65,6 +65,17 @@ export async function findWeightLogById(id: string): Promise<WeightLog | null> {
   return result.rowCount ? mapRow(result.rows[0]) : null;
 }
 
+export async function findWeightLogByPatientAndDate(
+  patientId: string,
+  logDate: string,
+): Promise<WeightLog | null> {
+  const result = await pool.query(
+    'SELECT * FROM weight_logs WHERE patient_id = $1 AND log_date = $2::date',
+    [patientId, logDate],
+  );
+  return result.rowCount ? mapRow(result.rows[0]) : null;
+}
+
 export async function updateWeightLog(
   id: string,
   patientId: string,
