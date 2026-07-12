@@ -79,11 +79,15 @@ additionalIntakeRouter.post(
   async (req, res, next) => {
     try {
       const imageBase64 = typeof req.body?.imageBase64 === 'string' ? req.body.imageBase64 : '';
+      const folder =
+        typeof req.body?.folder === 'string' && req.body.folder
+          ? req.body.folder
+          : 'dkfitt/additional-intake';
       if (!imageBase64) {
         return res.status(400).json({ message: 'imageBase64 requerido' });
       }
 
-      const result = await uploadImageBase64(imageBase64, 'dkfitt/additional-intake');
+      const result = await uploadImageBase64(imageBase64, folder);
       res.status(201).json(result);
     } catch (error) {
       next(error);
