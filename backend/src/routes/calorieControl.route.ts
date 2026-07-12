@@ -66,7 +66,10 @@ calorieControlRouter.get(
       }
 
       const dashboard = await getCalorieDashboard(patientId);
-      res.json(dashboard);
+      res.json({
+        ...dashboard,
+        remainingCalories: dashboard.remainingToday,
+      });
     } catch (error) {
       next(error);
     }
