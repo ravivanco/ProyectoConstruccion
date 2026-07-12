@@ -28,11 +28,14 @@ export interface MealLog {
   carbs: number;
   fat: number;
   logDate: string;
+  status: MealTrackingStatus;
   notes?: string;
   dishId?: string;
   createdAt: string;
   updatedAt: string;
 }
+
+export type MealTrackingStatus = 'pending' | 'completed' | 'skipped';
 
 export interface CreateMealLogInput {
   mealType: MealType;
@@ -42,6 +45,7 @@ export interface CreateMealLogInput {
   carbs?: number;
   fat?: number;
   logDate?: string;
+  status?: MealTrackingStatus;
   notes?: string;
   dishId?: string;
 }
@@ -54,6 +58,7 @@ export interface UpdateMealLogInput {
   carbs?: number;
   fat?: number;
   logDate?: string;
+  status?: MealTrackingStatus;
   notes?: string;
   dishId?: string;
 }
@@ -121,11 +126,14 @@ export interface AdditionalFoodLog {
   fat: number;
   quantity?: string;
   logDate: string;
+  status: AdditionalIntakeStatus;
   notes?: string;
   imageUrl?: string;
   createdAt: string;
   updatedAt: string;
 }
+
+export type AdditionalIntakeStatus = 'pending' | 'confirmed' | 'discarded';
 
 export interface CreateAdditionalFoodLogInput {
   foodName: string;
@@ -135,6 +143,7 @@ export interface CreateAdditionalFoodLogInput {
   fat?: number;
   quantity?: string;
   logDate?: string;
+  status?: AdditionalIntakeStatus;
   notes?: string;
   imageUrl?: string;
 }
@@ -147,6 +156,7 @@ export interface UpdateAdditionalFoodLogInput {
   fat?: number;
   quantity?: string;
   logDate?: string;
+  status?: AdditionalIntakeStatus;
   notes?: string;
   imageUrl?: string;
 }

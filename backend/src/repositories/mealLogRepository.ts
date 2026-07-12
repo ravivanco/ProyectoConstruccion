@@ -4,6 +4,7 @@ import {
   MealLog,
   MealType,
   MEAL_TYPES,
+  MealTrackingStatus,
   UpdateMealLogInput,
 } from '../types/tracking.js';
 
@@ -18,6 +19,7 @@ function mapRow(row: Record<string, unknown>): MealLog {
     carbs: Number(row.carbs ?? 0),
     fat: Number(row.fat ?? 0),
     logDate: String(row.log_date).slice(0, 10),
+    status: String(row.status ?? 'completed') as MealLog['status'],
     notes: row.notes ? String(row.notes) : undefined,
     dishId: row.dish_id ? String(row.dish_id) : undefined,
     createdAt: new Date(String(row.created_at)).toISOString(),
@@ -36,8 +38,8 @@ export async function createMealLog(
   const result = await pool.query(
     `INSERT INTO meal_logs (
       patient_id, meal_type, food_name, calories, protein, carbs, fat,
-      log_date, notes, dish_id
-    ) VALUES ($1, $2, $3, $4, $5, $6, $7, COALESCE($8::date, CURRENT_DATE), $9, $10)
+      log_date, status, notes, dish_id
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, COALESCE($8::date, CURRENT_DATE), $9, $10, $11)
     RETURNING *`,
     [
       patientId,
@@ -48,6 +50,7 @@ export async function createMealLog(
       input.carbs ?? 0,
       input.fat ?? 0,
       input.logDate ?? null,
+      input.status ?? 'completed',
       input.notes ?? null,
       input.dishId ?? null,
     ],
@@ -98,8 +101,9 @@ export async function updateMealLog(
       carbs = $7,
       fat = $8,
       log_date = COALESCE($9::date, log_date),
-      notes = $10,
-      dish_id = $11,
+      status = $10,
+      notes = $11,
+      dish_id = $12,
       updated_at = NOW()
     WHERE id = $1 AND patient_id = $2
     RETURNING *`,
@@ -113,6 +117,7 @@ export async function updateMealLog(
       input.carbs ?? current.carbs,
       input.fat ?? current.fat,
       input.logDate ?? null,
+      input.status ?? current.status,
       input.notes ?? current.notes ?? null,
       input.dishId ?? current.dishId ?? null,
     ],
@@ -126,4 +131,56 @@ export async function deleteMealLog(id: string, patientId: string): Promise<bool
     [id, patientId],
   );
   return (result.rowCount ?? 0) > 0;
+}
+
+export async function upsertMealTracking(
+  patientId: string,
+  input: CreateMealLogInput,
+): Promise<MealLog> {
+  const logDate = input.logDate ?? new Date().toISOString().slice(0, 10);
+  const existing = await pool.query(
+    `SELECT * FROM meal_logs
+     WHERE patient_id = $1 AND meal_type = $2 AND log_date = $3::date`,
+    [patientId, input.mealType, logDate],
+  );
+
+  if (existing.rowCount) {
+    const updated = await updateMealLog(String(existing.rows[0].id), patientId, {
+      calories: input.calories,
+      protein: input.protein,
+      carbs: input.carbs,
+      fat: input.fat,
+      status: input.status ?? 'completed',
+      foodName: input.foodName,
+      dishId: input.dishId,
+      notes: input.notes,
+    });
+    return updated!;
+  }
+
+  return createMealLog(patientId, { ...input, logDate });
+}
+
+export async function getMealStatusByDate(
+  patientId: string,
+  logDate: string,
+): Promise<Array<{ mealType: MealType; status: MealTrackingStatus; calories: number; logId?: string }>> {
+  const result = await pool.query(
+    `SELECT * FROM meal_logs WHERE patient_id = $1 AND log_date = $2::date`,
+    [patientId, logDate],
+  );
+  const byType = new Map(result.rows.map((row) => [String(row.meal_type), row]));
+
+  return MEAL_TYPES.map((mealType) => {
+    const row = byType.get(mealType);
+    if (!row) {
+      return { mealType, status: 'pending' as MealTrackingStatus, calories: 0 };
+    }
+    return {
+      mealType,
+      status: String(row.status ?? 'completed') as MealTrackingStatus,
+      calories: Number(row.calories),
+      logId: String(row.id),
+    };
+  });
 }
