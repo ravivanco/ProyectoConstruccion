@@ -109,6 +109,7 @@ additionalIntakeRouter.post('/additional-intake/analyze', authenticate, async (r
     res.json({
       ...analysis,
       integratedWith: 'gemini-vision',
+      visionProvider: analysis.source,
     });
   } catch (error) {
     next(error);
