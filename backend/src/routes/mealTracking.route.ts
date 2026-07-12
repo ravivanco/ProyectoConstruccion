@@ -56,7 +56,12 @@ mealTrackingRouter.post('/meal-tracking', authenticate, async (req, res, next) =
     });
 
     const calorieSummary = await getCalorieToday(access.patientId);
-    res.status(201).json({ log, calorieSummary });
+    res.status(201).json({
+      log,
+      calorieSummary,
+      balanceUpdated: true,
+      remainingCalories: calorieSummary.remainingCalories,
+    });
   } catch (error) {
     next(error);
   }
