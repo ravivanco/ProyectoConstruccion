@@ -6,7 +6,7 @@ import { Button, Card } from '../components/ui';
 import { useApp } from '../context/AppContext';
 import { colors } from '../theme';
 
-export function HomeScreen({ onOpenPlan, onOpenCalories }: { onOpenPlan(): void; onOpenCalories(): void }) {
+export function HomeScreen({ onOpenPlan, onOpenCalories, onOpenExercises, onOpenProgress }: { onOpenPlan(): void; onOpenCalories(): void; onOpenExercises(): void; onOpenProgress(): void }) {
   const { getPlanStatus, reset } = useApp();
   const [status, setStatus] = useState<NutritionPlanStatus | null>(null);
   const [loading, setLoading] = useState(true);
@@ -30,8 +30,18 @@ export function HomeScreen({ onOpenPlan, onOpenCalories }: { onOpenPlan(): void;
     </Card>
     <Card>
       <Text style={styles.cardTitle}>Control calórico</Text>
-      <Text style={styles.text}>Revisa tu meta energética para hoy.</Text>
+      <Text style={styles.text}>Revisa tu meta energética, comidas y alimentos adicionales de hoy.</Text>
       <Button label="Ver control calórico" onPress={onOpenCalories} />
+    </Card>
+    <Card>
+      <Text style={styles.cardTitle}>Ejercicios</Text>
+      <Text style={styles.text}>Consulta el catálogo, recomendaciones y ejercicios programados.</Text>
+      <Button label="Ver ejercicios" onPress={onOpenExercises} />
+    </Card>
+    <Card>
+      <Text style={styles.cardTitle}>Progreso</Text>
+      <Text style={styles.text}>Registra tu peso diario y revisa tu evolución.</Text>
+      <Button label="Ver progreso" onPress={onOpenProgress} />
     </Card>
     <Button secondary label="Cerrar sesión" onPress={reset} />
   </ScrollView>;
