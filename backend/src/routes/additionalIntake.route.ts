@@ -4,6 +4,7 @@ import {
   createAdditionalFoodLog,
   deleteAdditionalFoodLog,
   findAdditionalFoodLogById,
+  getAdditionalIntakeImpact,
   listAdditionalFoodLogs,
   updateAdditionalFoodLog,
 } from '../repositories/additionalFoodLogRepository.js';
@@ -64,7 +65,10 @@ additionalIntakeRouter.get('/additional-intake/me', authenticate, async (req, re
 
     const logDate = typeof req.query.logDate === 'string' ? req.query.logDate : undefined;
     const logs = await listAdditionalFoodLogs(access.patientId, logDate);
-    res.json(logs);
+    res.json(logs.map((log) => ({
+      ...log,
+      image_url: log.imageUrl,
+    })));
   } catch (error) {
     next(error);
   }
@@ -80,7 +84,28 @@ additionalIntakeRouter.get(
 
       const logDate = typeof req.query.logDate === 'string' ? req.query.logDate : undefined;
       const logs = await listAdditionalFoodLogs(access.patientId, logDate);
-      res.json(logs);
+      res.json(logs.map((log) => ({
+        ...log,
+        image_url: log.imageUrl,
+      })));
+    } catch (error) {
+      next(error);
+    }
+  },
+);
+
+additionalIntakeRouter.get(
+  '/additional-intake/patient/:patientId/impact',
+  authenticate,
+  async (req, res, next) => {
+    try {
+      const access = resolvePatientAccess(req, String(req.params.patientId));
+      if (!access.ok) return res.status(access.status).json({ message: access.message });
+
+      const periodDays = Number(req.query.periodDays);
+      const days = Number.isNaN(periodDays) || periodDays < 1 ? 7 : Math.min(periodDays, 90);
+      const impact = await getAdditionalIntakeImpact(access.patientId, days);
+      res.json(impact);
     } catch (error) {
       next(error);
     }
