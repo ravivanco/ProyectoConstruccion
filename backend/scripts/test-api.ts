@@ -78,6 +78,57 @@ async function main() {
     }
   });
 
+  const patientToken = signToken({
+    id: 'pat-001',
+    email: 'paciente@dkfitt.com',
+    role: 'paciente',
+  });
+
+  await runTest('POST /meal-logs/me', async () => {
+    const response = await fetch(`${baseUrl}/meal-logs/me`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${patientToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        mealType: 'Almuerzo',
+        foodName: 'Pollo con arroz',
+        calories: 520,
+        protein: 35,
+        carbs: 48,
+        fat: 12,
+      }),
+    });
+
+    if (!response.ok) throw new Error(`Status ${response.status}`);
+    const body = await response.json();
+    if (!body.id || body.calories !== 520) throw new Error('Respuesta inesperada');
+  });
+
+  await runTest('GET /meal-logs/me', async () => {
+    const response = await fetch(`${baseUrl}/meal-logs/me`, {
+      headers: { Authorization: `Bearer ${patientToken}` },
+    });
+    if (!response.ok) throw new Error(`Status ${response.status}`);
+    const body = await response.json();
+    if (!Array.isArray(body) || body.length === 0) throw new Error('Sin registros');
+  });
+
+  await runTest('POST /tracking/analyze-food-image', async () => {
+    const response = await fetch(`${baseUrl}/tracking/analyze-food-image`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${patientToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ imageBase64: 'data:image/jpeg;base64,/9j/4AAQ' }),
+    });
+    if (!response.ok) throw new Error(`Status ${response.status}`);
+    const body = await response.json();
+    if (!body.foodName || body.calories === undefined) throw new Error('Análisis incompleto');
+  });
+
   const passed = results.filter((r) => r.passed).length;
   const total = results.length;
 

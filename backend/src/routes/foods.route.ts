@@ -1,109 +1,167 @@
 import { Router } from 'express';
 import { authenticate, requireRole } from '../middleware/authenticate.js';
 import {
-  getAllFoods,
-  getFoodById,
   createFood,
-  updateFood,
   deleteFood,
+  findFoodById,
+  isValidFoodCategory,
+  listFoods,
+  updateFood,
 } from '../repositories/foodRepository.js';
-import { CreateFoodDTO, UpdateFoodDTO } from '../types/food.js';
+import { CreateFoodInput, FOOD_CATEGORIES, UpdateFoodInput } from '../types/food.js';
 
 export const foodsRouter = Router();
 
-// GET /api/foods - Listar y filtrar alimentos (HU18 y HU19)
+function parseCreateBody(body: unknown): CreateFoodInput | null {
+  if (!body || typeof body !== 'object') return null;
+  const data = body as Record<string, unknown>;
+  const name = typeof data.name === 'string' ? data.name.trim() : '';
+  const category = typeof data.category === 'string' ? data.category : '';
+  const servingSize = typeof data.servingSize === 'string' ? data.servingSize.trim() : '';
+
+  if (!name || !servingSize || !isValidFoodCategory(category)) return null;
+
+  const calories = Number(data.calories);
+  const protein = Number(data.protein);
+  const carbs = Number(data.carbs);
+  const fat = Number(data.fat);
+
+  if ([calories, protein, carbs, fat].some((n) => Number.isNaN(n) || n < 0)) return null;
+
+  return { name, category, servingSize, calories, protein, carbs, fat };
+}
+
 foodsRouter.get(
-  '/api/foods',
+  '/foods',
   authenticate,
+  requireRole('nutricionista'),
   async (req, res, next) => {
     try {
       const search = typeof req.query.search === 'string' ? req.query.search : undefined;
-      const category = typeof req.query.category === 'string' ? req.query.category : undefined;
+      const categoryRaw = typeof req.query.category === 'string' ? req.query.category : undefined;
+      const category =
+        categoryRaw && isValidFoodCategory(categoryRaw) ? categoryRaw : undefined;
 
-      const items = await getAllFoods({ search, category });
-      res.json(items);
+      let isActive: boolean | undefined;
+      if (req.query.isActive === 'true') isActive = true;
+      if (req.query.isActive === 'false') isActive = false;
+
+      const foods = await listFoods(req.user!.id, { search, category, isActive });
+      res.json(foods);
     } catch (error) {
       next(error);
     }
-  }
+  },
 );
 
-// GET /api/foods/:id - Detalle de un alimento/receta
 foodsRouter.get(
-  '/api/foods/:id',
+  '/foods/:id',
   authenticate,
+  requireRole('nutricionista'),
   async (req, res, next) => {
     try {
-      const id = String(req.params.id ?? '').trim();
-      const item = await getFoodById(id);
-      if (!item) {
+      const food = await findFoodById(req.user!.id, String(req.params.id));
+      if (!food) {
         return res.status(404).json({ message: 'Alimento no encontrado' });
       }
-      res.json(item);
+      res.json(food);
     } catch (error) {
       next(error);
     }
-  }
+  },
 );
 
-// POST /api/foods - Crear nuevo alimento/plato clínico (HU18)
 foodsRouter.post(
-  '/api/foods',
+  '/foods',
   authenticate,
   requireRole('nutricionista'),
   async (req, res, next) => {
     try {
-      const body = req.body as CreateFoodDTO;
-      if (!body?.name?.trim()) {
-        return res.status(400).json({ message: 'El nombre del alimento o plato es requerido' });
+      const input = parseCreateBody(req.body);
+      if (!input) {
+        return res.status(400).json({
+          message: 'Datos inválidos',
+          validCategories: FOOD_CATEGORIES,
+        });
       }
 
-      const created = await createFood(body);
-      res.status(201).json(created);
+      const food = await createFood(req.user!.id, input);
+      res.status(201).json(food);
     } catch (error) {
       next(error);
     }
-  }
+  },
 );
 
-// PUT /api/foods/:id - Actualizar alimento (HU18)
 foodsRouter.put(
-  '/api/foods/:id',
+  '/foods/:id',
   authenticate,
   requireRole('nutricionista'),
   async (req, res, next) => {
     try {
-      const id = String(req.params.id ?? '').trim();
-      const body = req.body as UpdateFoodDTO;
+      const body = req.body as Record<string, unknown>;
+      const input: UpdateFoodInput = {};
 
-      const updated = await updateFood(id, body);
-      if (!updated) {
+      if (typeof body.name === 'string') input.name = body.name;
+      if (typeof body.category === 'string') {
+        if (!isValidFoodCategory(body.category)) {
+          return res.status(400).json({ message: 'Categoría inválida', validCategories: FOOD_CATEGORIES });
+        }
+        input.category = body.category;
+      }
+      if (typeof body.servingSize === 'string') input.servingSize = body.servingSize;
+      if (body.calories !== undefined) input.calories = Number(body.calories);
+      if (body.protein !== undefined) input.protein = Number(body.protein);
+      if (body.carbs !== undefined) input.carbs = Number(body.carbs);
+      if (body.fat !== undefined) input.fat = Number(body.fat);
+      if (typeof body.isActive === 'boolean') input.isActive = body.isActive;
+
+      const food = await updateFood(req.user!.id, String(req.params.id), input);
+      if (!food) {
         return res.status(404).json({ message: 'Alimento no encontrado' });
       }
-
-      res.json(updated);
+      res.json(food);
     } catch (error) {
       next(error);
     }
-  }
+  },
 );
 
-// DELETE /api/foods/:id - Eliminar alimento (HU18)
-foodsRouter.delete(
-  '/api/foods/:id',
+foodsRouter.patch(
+  '/foods/:id/status',
   authenticate,
   requireRole('nutricionista'),
   async (req, res, next) => {
     try {
-      const id = String(req.params.id ?? '').trim();
-      const success = await deleteFood(id);
-      if (!success) {
-        return res.status(404).json({ message: 'Alimento no encontrado o ya eliminado' });
+      const isActive = typeof req.body?.isActive === 'boolean' ? req.body.isActive : null;
+      if (isActive === null) {
+        return res.status(400).json({ message: 'isActive boolean requerido' });
       }
 
-      res.json({ message: 'Alimento eliminado exitosamente' });
+      const food = await updateFood(req.user!.id, String(req.params.id), { isActive });
+      if (!food) {
+        return res.status(404).json({ message: 'Alimento no encontrado' });
+      }
+      res.json(food);
     } catch (error) {
       next(error);
     }
-  }
+  },
+);
+
+foodsRouter.delete(
+  '/foods/:id',
+  authenticate,
+  requireRole('nutricionista'),
+  async (req, res, next) => {
+    try {
+      const deleted = await deleteFood(req.user!.id, String(req.params.id));
+      if (!deleted) {
+        return res.status(404).json({ message: 'Alimento no encontrado' });
+      }
+      res.status(204).send();
+    } catch (error) {
+      next(error);
+    }
+  },
 );

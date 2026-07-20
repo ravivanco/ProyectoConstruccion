@@ -7,8 +7,8 @@ const options: swaggerJsdoc.Options = {
     openapi: '3.0.0',
     info: {
       title: 'DK-FITT API',
-      version: '2.0.0',
-      description: 'API REST de nutrición activa DK-FITT — Sprint 2: evaluaciones, planes y control calórico',
+      version: '5.0.0',
+      description: 'API REST de nutrición activa DK-FITT — Sprint 5: adherencia, alertas automáticas, citas y dashboard nutricionista',
     },
     servers: [{ url: 'http://localhost:3000', description: 'Desarrollo local' }],
     components: {
@@ -347,87 +347,296 @@ const options: swaggerJsdoc.Options = {
       },
       '/foods': {
         get: {
-          summary: 'Listar alimentos y recetas clínicas (HU18/HU19)',
+          summary: 'Listar alimentos con filtros opcionales',
           tags: ['Alimentos'],
           security: [{ bearerAuth: [] }],
           parameters: [
             { name: 'search', in: 'query', schema: { type: 'string' } },
             { name: 'category', in: 'query', schema: { type: 'string' } },
+            { name: 'isActive', in: 'query', schema: { type: 'boolean' } },
           ],
-          responses: {
-            200: { description: 'Lista de alimentos' },
-            401: { description: 'No autenticado' },
-          },
+          responses: { 200: { description: 'Listado de alimentos' } },
         },
         post: {
-          summary: 'Crear nuevo alimento o receta (HU18)',
+          summary: 'Crear alimento',
           tags: ['Alimentos'],
           security: [{ bearerAuth: [] }],
-          responses: {
-            201: { description: 'Alimento creado' },
-            401: { description: 'No autenticado' },
-            403: { description: 'Solo nutricionista' },
-          },
+          responses: { 201: { description: 'Alimento creado' } },
         },
       },
-      '/exercises': {
+      '/dishes/{id}': {
         get: {
-          summary: 'Listar catálogo de ejercicios físicos (HU20)',
-          tags: ['Ejercicios'],
+          summary: 'Detalle de plato con receta',
+          tags: ['Platos'],
+          security: [{ bearerAuth: [] }],
+          parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+          responses: { 200: { description: 'Plato encontrado' }, 404: { description: 'No encontrado' } },
+        },
+      },
+      '/nutrition-plans/{planId}/weeks': {
+        get: {
+          summary: 'Listar semanas del plan',
+          tags: ['Planes semanales'],
+          security: [{ bearerAuth: [] }],
+          parameters: [{ name: 'planId', in: 'path', required: true, schema: { type: 'string' } }],
+          responses: { 200: { description: 'Semanas del plan' } },
+        },
+        post: {
+          summary: 'Crear semana del plan',
+          tags: ['Planes semanales'],
+          security: [{ bearerAuth: [] }],
+          responses: { 201: { description: 'Semana creada' } },
+        },
+      },
+      '/meal-times': {
+        get: {
+          summary: 'Tiempos de comida ordenados',
+          tags: ['Planes semanales'],
+          security: [{ bearerAuth: [] }],
+          responses: { 200: { description: 'Cinco tiempos de comida' } },
+        },
+      },
+      '/nutrition-plans/{planId}/generate-menus': {
+        post: {
+          summary: 'Generar menús respetando restricciones del paciente',
+          tags: ['Generación de menús'],
+          security: [{ bearerAuth: [] }],
+          responses: { 200: { description: 'Sugerencias generadas' } },
+        },
+      },
+      '/uploads/image': {
+        post: {
+          summary: 'Subir imagen a Cloudinary',
+          tags: ['Medios'],
+          security: [{ bearerAuth: [] }],
+          responses: { 201: { description: 'Imagen subida' } },
+        },
+      },
+      '/dishes/generate-ai': {
+        post: {
+          summary: 'Generar receta con IA',
+          tags: ['Platos'],
+          security: [{ bearerAuth: [] }],
+          responses: { 200: { description: 'Receta generada' } },
+        },
+      },
+      '/meal-logs/me': {
+        get: {
+          summary: 'Listar comidas registradas del paciente autenticado',
+          tags: ['Tracking'],
+          security: [{ bearerAuth: [] }],
+          parameters: [{ name: 'logDate', in: 'query', schema: { type: 'string', format: 'date' } }],
+          responses: { 200: { description: 'Listado de comidas' } },
+        },
+        post: {
+          summary: 'Registrar comida del día',
+          tags: ['Tracking'],
+          security: [{ bearerAuth: [] }],
+          responses: { 201: { description: 'Comida registrada' } },
+        },
+      },
+      '/exercise-logs/me': {
+        get: {
+          summary: 'Listar ejercicios registrados',
+          tags: ['Tracking'],
+          security: [{ bearerAuth: [] }],
+          responses: { 200: { description: 'Listado de ejercicios' } },
+        },
+        post: {
+          summary: 'Registrar ejercicio',
+          tags: ['Tracking'],
+          security: [{ bearerAuth: [] }],
+          responses: { 201: { description: 'Ejercicio registrado' } },
+        },
+      },
+      '/weight-logs/me': {
+        get: {
+          summary: 'Historial de peso del paciente',
+          tags: ['Tracking'],
+          security: [{ bearerAuth: [] }],
+          responses: { 200: { description: 'Registros de peso' } },
+        },
+        post: {
+          summary: 'Registrar peso',
+          tags: ['Tracking'],
+          security: [{ bearerAuth: [] }],
+          responses: { 201: { description: 'Peso registrado' } },
+        },
+      },
+      '/additional-intake/me': {
+        get: {
+          summary: 'Listar consumos adicionales',
+          tags: ['Tracking'],
+          security: [{ bearerAuth: [] }],
+          responses: { 200: { description: 'Consumos adicionales' } },
+        },
+        post: {
+          summary: 'Registrar consumo adicional',
+          tags: ['Tracking'],
+          security: [{ bearerAuth: [] }],
+          responses: { 201: { description: 'Consumo registrado' } },
+        },
+      },
+      '/tracking/analyze-food-image': {
+        post: {
+          summary: 'Analizar imagen de comida con Gemini Vision',
+          tags: ['Tracking'],
+          security: [{ bearerAuth: [] }],
+          responses: { 200: { description: 'Estimación nutricional' } },
+        },
+      },
+      '/adherence/patient/{patientId}': {
+        get: {
+          summary: 'Resumen completo de adherencia del paciente',
+          tags: ['Adherencia'],
           security: [{ bearerAuth: [] }],
           parameters: [
-            { name: 'search', in: 'query', schema: { type: 'string' } },
-            { name: 'category', in: 'query', schema: { type: 'string' } },
+            { name: 'patientId', in: 'path', required: true, schema: { type: 'string' } },
+            { name: 'periodDays', in: 'query', schema: { type: 'integer', default: 7 } },
           ],
-          responses: {
-            200: { description: 'Lista de ejercicios' },
-            401: { description: 'No autenticado' },
-          },
-        },
-        post: {
-          summary: 'Crear nuevo ejercicio físico (HU20)',
-          tags: ['Ejercicios'],
-          security: [{ bearerAuth: [] }],
-          responses: {
-            201: { description: 'Ejercicio creado' },
-            401: { description: 'No autenticado' },
-            403: { description: 'Solo nutricionista' },
-          },
+          responses: { 200: { description: 'Overview de adherencia' } },
         },
       },
-      '/api/nutrition-plans/{planId}/exercises': {
+      '/adherence/patient/{patientId}/food-compliance': {
         get: {
-          summary: 'Listar ejercicios asociados al seguimiento del plan (HU21)',
-          tags: ['Ejercicios Asignados'],
+          summary: 'Monitoreo de cumplimiento alimentario',
+          tags: ['Adherencia'],
           security: [{ bearerAuth: [] }],
-          responses: {
-            200: { description: 'Lista de ejercicios asignados' },
-            401: { description: 'No autenticado' },
-          },
-        },
-        post: {
-          summary: 'Asociar ejercicio del catálogo a un día del plan (HU21)',
-          tags: ['Ejercicios Asignados'],
-          security: [{ bearerAuth: [] }],
-          responses: {
-            201: { description: 'Ejercicio asignado' },
-            401: { description: 'No autenticado' },
-          },
+          parameters: [
+            { name: 'patientId', in: 'path', required: true, schema: { type: 'string' } },
+            { name: 'periodDays', in: 'query', schema: { type: 'integer', default: 7 } },
+          ],
+          responses: { 200: { description: 'Cumplimiento alimentario' } },
         },
       },
-      '/api/mobile/patients/{patientId}/exercises': {
+      '/adherence/patient/{patientId}/exercise-compliance': {
         get: {
-          summary: 'Sincronización de rutina de ejercicios para App Móvil (PROYEC-678)',
-          tags: ['Ejercicios Asignados'],
+          summary: 'Monitoreo de cumplimiento físico',
+          tags: ['Adherencia'],
           security: [{ bearerAuth: [] }],
-          responses: {
-            200: { description: 'Rutina semanal móvil del paciente' },
-          },
+          parameters: [
+            { name: 'patientId', in: 'path', required: true, schema: { type: 'string' } },
+          ],
+          responses: { 200: { description: 'Cumplimiento físico' } },
+        },
+      },
+      '/adherence/patient/{patientId}/weight-monitoring': {
+        get: {
+          summary: 'Monitoreo de peso diario',
+          tags: ['Adherencia'],
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            { name: 'patientId', in: 'path', required: true, schema: { type: 'string' } },
+          ],
+          responses: { 200: { description: 'Monitoreo de peso' } },
+        },
+      },
+      '/adherence/patient/{patientId}/plan-deviation': {
+        get: {
+          summary: 'Análisis de desviación del plan nutricional',
+          tags: ['Adherencia'],
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            { name: 'patientId', in: 'path', required: true, schema: { type: 'string' } },
+          ],
+          responses: { 200: { description: 'Desviación del plan' } },
+        },
+      },
+      '/adherence/patient/{patientId}/level': {
+        get: {
+          summary: 'Clasificación del nivel de adherencia',
+          tags: ['Adherencia'],
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            { name: 'patientId', in: 'path', required: true, schema: { type: 'string' } },
+          ],
+          responses: { 200: { description: 'Nivel de adherencia' } },
+        },
+      },
+      '/alerts': {
+        get: {
+          summary: 'Listar alertas',
+          tags: ['Alertas'],
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            { name: 'status', in: 'query', schema: { type: 'string' } },
+            { name: 'patientId', in: 'query', schema: { type: 'string' } },
+          ],
+          responses: { 200: { description: 'Listado de alertas' } },
+        },
+        post: {
+          summary: 'Crear alerta manual (nutricionista)',
+          tags: ['Alertas'],
+          security: [{ bearerAuth: [] }],
+          responses: { 201: { description: 'Alerta creada' } },
+        },
+      },
+      '/alerts/generate': {
+        post: {
+          summary: 'Generar alertas automáticas para un paciente',
+          tags: ['Alertas'],
+          security: [{ bearerAuth: [] }],
+          responses: { 201: { description: 'Alertas generadas' } },
+        },
+      },
+      '/alerts/{id}/status': {
+        patch: {
+          summary: 'Actualizar estado de una alerta',
+          tags: ['Alertas'],
+          security: [{ bearerAuth: [] }],
+          parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
+          responses: { 200: { description: 'Alerta actualizada' } },
+        },
+      },
+      '/appointments': {
+        get: {
+          summary: 'Listar citas',
+          tags: ['Citas'],
+          security: [{ bearerAuth: [] }],
+          responses: { 200: { description: 'Listado de citas' } },
+        },
+        post: {
+          summary: 'Crear cita',
+          tags: ['Citas'],
+          security: [{ bearerAuth: [] }],
+          responses: { 201: { description: 'Cita creada' } },
+        },
+      },
+      '/appointments/{id}': {
+        get: {
+          summary: 'Detalle de cita',
+          tags: ['Citas'],
+          security: [{ bearerAuth: [] }],
+          parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
+          responses: { 200: { description: 'Cita encontrada' }, 404: { description: 'No encontrada' } },
+        },
+        patch: {
+          summary: 'Actualizar cita',
+          tags: ['Citas'],
+          security: [{ bearerAuth: [] }],
+          responses: { 200: { description: 'Cita actualizada' } },
+        },
+        delete: {
+          summary: 'Eliminar cita',
+          tags: ['Citas'],
+          security: [{ bearerAuth: [] }],
+          responses: { 204: { description: 'Cita eliminada' } },
+        },
+      },
+      '/nutritionist/dashboard': {
+        get: {
+          summary: 'Dashboard agregado del nutricionista',
+          tags: ['Dashboard'],
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            { name: 'periodDays', in: 'query', schema: { type: 'integer', default: 7 } },
+          ],
+          responses: { 200: { description: 'Métricas del dashboard' } },
         },
       },
     },
   },
-  apis: ['./src/routes/*.ts', './dist/routes/*.js'],
+  apis: [],
 };
 
 const swaggerSpec = swaggerJsdoc(options);

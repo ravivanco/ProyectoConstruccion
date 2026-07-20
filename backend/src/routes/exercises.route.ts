@@ -1,108 +1,55 @@
 import { Router } from 'express';
-import { authenticate, requireRole } from '../middleware/authenticate.js';
+import { authenticate } from '../middleware/authenticate.js';
 import {
-  createExercise,
-  deleteExercise,
-  findExerciseById,
-  getAllExercises,
-  updateExercise,
-} from '../repositories/exerciseRepository.js';
-import { CreateExerciseDTO, UpdateExerciseDTO } from '../types/exercise.js';
+  listExercises,
+  listExercisesByDate,
+  listRecommendedExercises,
+  seedPatientScheduleIfEmpty,
+} from '../repositories/exerciseCatalogRepository.js';
+import { getPatientProfileById } from '../repositories/patientProfileRepository.js';
+import { ActivityLevel } from '../utils/metabolism.js';
+import { resolvePatientAccess } from '../utils/patientAccess.js';
 
 export const exercisesRouter = Router();
 
-// GET /api/exercises
-exercisesRouter.get(
-  '/api/exercises',
-  authenticate,
-  async (req, res, next) => {
-    try {
-      const { search, category } = req.query;
-      const exercises = await getAllExercises({
-        search: typeof search === 'string' ? search : undefined,
-        category: typeof category === 'string' ? category : undefined,
-      });
-      res.json(exercises);
-    } catch (error) {
-      next(error);
-    }
-  },
-);
+exercisesRouter.get('/exercises', authenticate, async (req, res, next) => {
+  try {
+    const category = typeof req.query.category === 'string' ? req.query.category : undefined;
+    const exercises = await listExercises(category);
+    res.json(exercises);
+  } catch (error) {
+    next(error);
+  }
+});
 
-// GET /api/exercises/:id
-exercisesRouter.get(
-  '/api/exercises/:id',
-  authenticate,
-  async (req, res, next) => {
-    try {
-      const id = String(req.params.id ?? '').trim();
-      const exercise = await findExerciseById(id);
-      if (!exercise) {
-        return res.status(404).json({ message: 'Ejercicio no encontrado' });
-      }
-      res.json(exercise);
-    } catch (error) {
-      next(error);
-    }
-  },
-);
+exercisesRouter.get('/exercises/recommendations', authenticate, async (req, res, next) => {
+  try {
+    const access = resolvePatientAccess(req);
+    if (!access.ok) return res.status(access.status).json({ message: access.message });
 
-// POST /api/exercises
-exercisesRouter.post(
-  '/api/exercises',
-  authenticate,
-  requireRole('nutricionista'),
-  async (req, res, next) => {
-    try {
-      const body = req.body as CreateExerciseDTO;
-      if (!body.name || !body.category) {
-        return res
-          .status(400)
-          .json({ message: 'El nombre y la categoría son campos obligatorios' });
-      }
-      const newExercise = await createExercise(body);
-      res.status(201).json(newExercise);
-    } catch (error) {
-      next(error);
-    }
-  },
-);
+    const profile = await getPatientProfileById(access.patientId);
+    const activityLevel = (profile?.activityLevel ?? 'moderate') as ActivityLevel;
+    const exercises = await listRecommendedExercises(activityLevel);
+    res.json(exercises);
+  } catch (error) {
+    next(error);
+  }
+});
 
-// PUT /api/exercises/:id
-exercisesRouter.put(
-  '/api/exercises/:id',
-  authenticate,
-  requireRole('nutricionista'),
-  async (req, res, next) => {
-    try {
-      const id = String(req.params.id ?? '').trim();
-      const body = req.body as UpdateExerciseDTO;
-      const updated = await updateExercise(id, body);
-      if (!updated) {
-        return res.status(404).json({ message: 'Ejercicio no encontrado' });
-      }
-      res.json(updated);
-    } catch (error) {
-      next(error);
-    }
-  },
-);
+exercisesRouter.get('/exercises/assigned', authenticate, async (req, res, next) => {
+  try {
+    const access = resolvePatientAccess(req);
+    if (!access.ok) return res.status(access.status).json({ message: access.message });
 
-// DELETE /api/exercises/:id
-exercisesRouter.delete(
-  '/api/exercises/:id',
-  authenticate,
-  requireRole('nutricionista'),
-  async (req, res, next) => {
-    try {
-      const id = String(req.params.id ?? '').trim();
-      const deleted = await deleteExercise(id);
-      if (!deleted) {
-        return res.status(404).json({ message: 'Ejercicio no encontrado' });
-      }
-      res.json({ success: true });
-    } catch (error) {
-      next(error);
-    }
-  },
-);
+    const date =
+      typeof req.query.date === 'string' && req.query.date
+        ? req.query.date
+        : new Date().toISOString().slice(0, 10);
+
+    await seedPatientScheduleIfEmpty(access.patientId, date);
+    const exercises = await listExercisesByDate(access.patientId, date);
+    res.json(exercises);
+  } catch (error) {
+    next(error);
+  }
+});

@@ -1,33 +1,50 @@
-export interface FoodItem {
+export const FOOD_CATEGORIES = [
+  'Proteínas',
+  'Carbohidratos',
+  'Grasas',
+  'Frutas',
+  'Verduras',
+  'Lácteos',
+] as const;
+
+export type FoodCategory = (typeof FOOD_CATEGORIES)[number];
+
+export interface Food {
   id: string;
   name: string;
-  category: string;
+  category: FoodCategory;
+  servingSize: string;
   calories: number;
   protein: number;
   carbs: number;
   fat: number;
-  defaultPortion: string;
-  tags?: string[];
-  notes?: string;
+  isActive: boolean;
   createdAt: string;
-  updatedAt: string;
 }
 
-export interface CreateFoodDTO {
+export interface CreateFoodInput {
   name: string;
-  category: string;
+  category: FoodCategory;
+  servingSize: string;
   calories: number;
   protein: number;
   carbs: number;
   fat: number;
-  defaultPortion?: string;
-  tags?: string[];
-  notes?: string;
 }
 
-export type UpdateFoodDTO = Partial<CreateFoodDTO>;
+export interface UpdateFoodInput {
+  name?: string;
+  category?: FoodCategory;
+  servingSize?: string;
+  calories?: number;
+  protein?: number;
+  carbs?: number;
+  fat?: number;
+  isActive?: boolean;
+}
 
-export interface FoodQueryFilters {
+export interface FoodFilters {
   search?: string;
-  category?: string;
+  category?: FoodCategory;
+  isActive?: boolean;
 }

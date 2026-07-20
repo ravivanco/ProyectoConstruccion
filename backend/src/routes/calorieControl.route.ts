@@ -3,6 +3,7 @@ import { authenticate } from '../middleware/authenticate.js';
 import {
   getCalorieDashboard,
   getCalorieRequirementFromEvaluation,
+  getCalorieToday,
 } from '../repositories/calorieControlRepository.js';
 import { ActivityLevel, Sex } from '../utils/metabolism.js';
 
@@ -65,7 +66,34 @@ calorieControlRouter.get(
       }
 
       const dashboard = await getCalorieDashboard(patientId);
-      res.json(dashboard);
+      res.json({
+        ...dashboard,
+        remainingCalories: dashboard.remainingToday,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+);
+
+calorieControlRouter.get(
+  '/calorie-control/today',
+  authenticate,
+  async (req, res, next) => {
+    try {
+      const queryPatientId = typeof req.query.patientId === 'string' ? req.query.patientId : undefined;
+      const patientId = queryPatientId?.trim() || req.user?.id;
+
+      if (!patientId) {
+        return res.status(400).json({ message: 'patientId requerido' });
+      }
+
+      if (req.user?.role === 'paciente' && patientId !== req.user.id) {
+        return res.status(403).json({ message: 'No autorizado para consultar otro paciente' });
+      }
+
+      const summary = await getCalorieToday(patientId);
+      res.json(summary);
     } catch (error) {
       next(error);
     }
