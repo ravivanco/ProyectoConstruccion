@@ -9,16 +9,71 @@ import {
   AlertCircle,
   Clock,
   Info,
+  Eye,
 } from 'lucide-react';
 import { useAdditionalIntake } from '../hooks/useAdditionalIntake';
+import type { AdditionalFoodLog } from '../types';
+import { AdditionalIntakeImageModal } from './AdditionalIntakeImageModal';
 
 interface AdditionalIntakeSectionProps {
   patientId: string;
 }
 
+function CloudinaryThumbnail({
+  imageUrl,
+  foodName,
+  onClick,
+}: {
+  imageUrl?: string;
+  foodName: string;
+  onClick: () => void;
+}) {
+  const [error, setError] = useState(false);
+
+  if (!imageUrl) {
+    return (
+      <span className="text-[11px] text-muted italic inline-flex items-center gap-1 py-1 px-2.5 rounded-lg bg-surface-hover border border-border/50">
+        Sin foto
+      </span>
+    );
+  }
+
+  if (error) {
+    return (
+      <button
+        onClick={onClick}
+        className="inline-flex items-center gap-1.5 py-1 px-2.5 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500/20 border border-red-500/20 transition-colors text-[11px] font-bold"
+        title="Error al cargar miniatura desde Cloudinary. Clic para ver detalles o reintentar."
+      >
+        <AlertCircle size={14} />
+        Error de carga
+      </button>
+    );
+  }
+
+  return (
+    <button
+      onClick={onClick}
+      className="group relative w-12 h-12 rounded-xl overflow-hidden border border-border bg-gray-950 block shadow-sm hover:scale-105 transition-all focus:outline-none focus:ring-2 focus:ring-primary shrink-0"
+      title="Clic para ampliar evidencia visual"
+    >
+      <img
+        src={imageUrl}
+        alt={foodName}
+        onError={() => setError(true)}
+        className="w-full h-full object-cover group-hover:opacity-80 transition-opacity"
+      />
+      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+        <Eye size={16} className="text-white" />
+      </div>
+    </button>
+  );
+}
+
 export function AdditionalIntakeSection({ patientId }: AdditionalIntakeSectionProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDate, setSelectedDate] = useState<string>('');
+  const [selectedImageLog, setSelectedImageLog] = useState<AdditionalFoodLog | null>(null);
 
   const { logs, isLoading, isFetching, refetch } = useAdditionalIntake(
     patientId,
@@ -224,6 +279,7 @@ export function AdditionalIntakeSection({ patientId }: AdditionalIntakeSectionPr
                 <tr className="border-b border-border text-[11px] font-black uppercase tracking-wider text-muted">
                   <th className="py-3 px-4">Fecha y Hora</th>
                   <th className="py-3 px-4">Alimento y Cantidad</th>
+                  <th className="py-3 px-4">Evidencia Visual</th>
                   <th className="py-3 px-4">Calorías Estimadas</th>
                   <th className="py-3 px-4">Macronutrientes (P / C / G)</th>
                   <th className="py-3 px-4">Origen</th>
@@ -270,6 +326,15 @@ export function AdditionalIntakeSection({ patientId }: AdditionalIntakeSectionPr
                         </div>
                       </td>
 
+                      {/* Subtarea 1: Evidencia Visual (Miniatura de Cloudinary o indicador) */}
+                      <td className="py-4 px-4">
+                        <CloudinaryThumbnail
+                          imageUrl={log.imageUrl}
+                          foodName={log.foodName}
+                          onClick={() => setSelectedImageLog(log)}
+                        />
+                      </td>
+
                       {/* Subtarea 2: Calorías Estimadas */}
                       <td className="py-4 px-4 whitespace-nowrap">
                         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 font-black text-sm border border-amber-500/30">
@@ -313,6 +378,13 @@ export function AdditionalIntakeSection({ patientId }: AdditionalIntakeSectionPr
           </div>
         )}
       </div>
+
+      {/* Subtarea 2: Modal de vista ampliada de evidencia visual */}
+      <AdditionalIntakeImageModal
+        isOpen={Boolean(selectedImageLog)}
+        onClose={() => setSelectedImageLog(null)}
+        log={selectedImageLog}
+      />
     </div>
   );
 }
