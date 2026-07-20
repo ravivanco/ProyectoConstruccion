@@ -22,5 +22,8 @@ export const endpoints = {
   physicalCompliance: {
     byDate: (patientId: string, date: string) => `/adherence/patient/${patientId}/exercise-compliance?date=${date}`,
     summary: (patientId: string) => `/adherence/patient/${patientId}/exercise-compliance/summary`,
+  },
+  adherenceIndicators: {
+    byPeriod: (patientId: string, periodDays = 7) => `/adherence/patient/${patientId}/indicators?periodDays=${periodDays}`,
   }
 };

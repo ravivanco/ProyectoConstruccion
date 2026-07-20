@@ -94,3 +94,13 @@ export interface DailyPhysicalCompliance {
   totalCaloriesBurned: number;
   exercises: ExerciseComplianceItem[];
 }
+
+export interface AdherenceIndicators {
+  patientId: string;
+  periodDays: number;
+  foodCompliancePercentage: number;
+  exerciseCompliancePercentage: number;
+  weightCompliancePercentage: number;
+  calorieAdherencePercentage: number;
+  overallScore: number;
+}

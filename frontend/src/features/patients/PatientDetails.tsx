@@ -7,6 +7,7 @@ import { ClinicalEvaluationModal } from './components/ClinicalEvaluationModal';
 import { ActivatePlanModal } from './components/ActivatePlanModal';
 import { MealComplianceSection } from './components/MealComplianceSection';
 import { PhysicalComplianceSection } from './components/PhysicalComplianceSection';
+import { AdherenceIndicatorsSummary } from './components/AdherenceIndicatorsSummary';
 
 export function PatientDetails() {
   const { id } = useParams<{ id: string }>();
@@ -17,7 +18,7 @@ export function PatientDetails() {
 
   const [isEvaluationModalOpen, setIsEvaluationModalOpen] = useState(false);
   const [isActivateModalOpen, setIsActivateModalOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'profile' | 'compliance' | 'physical_compliance'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'indicators' | 'compliance' | 'physical_compliance'>('profile');
 
   const getTreatmentColor = (state?: string) => {
     switch(state) {
@@ -220,6 +221,17 @@ export function PatientDetails() {
             >
               <Activity size={16} />
               <span>Perfil y Evaluaciones</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('indicators')}
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold transition-all ${
+                activeTab === 'indicators'
+                  ? 'bg-primary text-gray-900 shadow-sm'
+                  : 'text-muted hover:text-foreground hover:bg-surface-hover'
+              }`}
+            >
+              <Target size={16} />
+              <span>Indicadores de Adherencia</span>
             </button>
             <button
               onClick={() => setActiveTab('compliance')}
@@ -429,6 +441,8 @@ export function PatientDetails() {
               )}
             </div>
           </div>
+          ) : activeTab === 'indicators' ? (
+            <AdherenceIndicatorsSummary patientId={patient.id} />
           ) : activeTab === 'compliance' ? (
             <MealComplianceSection patientId={patient.id} />
           ) : (
