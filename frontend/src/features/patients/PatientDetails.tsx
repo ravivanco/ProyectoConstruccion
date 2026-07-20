@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, User, Activity, AlertCircle, Phone, Mail, Weight, Ruler, FileText, HeartPulse, Ban, Apple, Target, Plus, Calendar, History, PlayCircle, Lock, Unlock, Utensils, Dumbbell, Flame } from 'lucide-react';
+import { ArrowLeft, User, Activity, AlertCircle, Phone, Mail, Weight, Ruler, FileText, HeartPulse, Ban, Apple, Target, Plus, Calendar, History, PlayCircle, Lock, Unlock, Utensils, Dumbbell, Flame, Bell } from 'lucide-react';
 import { usePatientProfile } from './hooks/usePatientProfile';
 import { useActivatePlan } from './hooks/useActivatePlan';
 import { ClinicalEvaluationModal } from './components/ClinicalEvaluationModal';
@@ -12,6 +12,7 @@ import { AdherenceLevelBadge } from './components/AdherenceLevelBadge';
 import { AdherenceTrafficLight } from './components/AdherenceTrafficLight';
 import { WeightMonitoringSection } from './components/WeightMonitoringSection';
 import { AdditionalIntakeSection } from './components/AdditionalIntakeSection';
+import { PatientAlertsSection } from './components/PatientAlertsSection';
 
 export function PatientDetails() {
   const { id } = useParams<{ id: string }>();
@@ -22,7 +23,7 @@ export function PatientDetails() {
 
   const [isEvaluationModalOpen, setIsEvaluationModalOpen] = useState(false);
   const [isActivateModalOpen, setIsActivateModalOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'profile' | 'indicators' | 'compliance' | 'physical_compliance' | 'weight_monitoring' | 'additional_intake'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'indicators' | 'compliance' | 'physical_compliance' | 'weight_monitoring' | 'additional_intake' | 'alerts'>('profile');
 
   const getTreatmentColor = (state?: string) => {
     switch(state) {
@@ -278,6 +279,18 @@ export function PatientDetails() {
               <Flame size={16} />
               <span>Consumo Adicional</span>
             </button>
+            <button
+              onClick={() => setActiveTab('alerts')}
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold transition-all relative ${
+                activeTab === 'alerts'
+                  ? 'bg-red-500 text-white shadow-sm'
+                  : 'text-muted hover:text-foreground hover:bg-surface-hover'
+              }`}
+            >
+              <Bell size={16} className={activeTab === 'alerts' ? 'animate-bounce' : 'text-red-500'} />
+              <span>Alertas Automáticas</span>
+              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full ring-2 ring-surface animate-ping" />
+            </button>
           </div>
 
           {activeTab === 'profile' ? (
@@ -472,8 +485,10 @@ export function PatientDetails() {
             <PhysicalComplianceSection patientId={patient.id} />
           ) : activeTab === 'weight_monitoring' ? (
             <WeightMonitoringSection patientId={patient.id} />
-          ) : (
+          ) : activeTab === 'additional_intake' ? (
             <AdditionalIntakeSection patientId={patient.id} />
+          ) : (
+            <PatientAlertsSection patientId={patient.id} />
           )}
         </div>
 

@@ -47,4 +47,16 @@ export const endpoints = {
       return url;
     },
   },
+  alerts: {
+    list: (patientId?: string, status?: string) => {
+      let url = '/alerts';
+      const params = new URLSearchParams();
+      if (patientId) params.append('patientId', patientId);
+      if (status && status !== 'all') params.append('status', status);
+      if (params.toString()) url += `?${params.toString()}`;
+      return url;
+    },
+    generate: '/alerts/generate',
+    status: (id: string) => `/alerts/${id}/status`,
+  },
 };

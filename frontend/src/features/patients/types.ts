@@ -157,3 +157,32 @@ export interface PlanDeviationSummary {
   averageDeviationPercentage: number;
   days: PlanDeviationDay[];
 }
+
+export type AlertType =
+  | 'meal_missed'
+  | 'calorie_excess'
+  | 'calorie_deficit'
+  | 'weight_anomaly'
+  | 'exercise_missed'
+  | 'plan_deviation'
+  | 'additional_intake';
+
+export type AlertSeverity = 'low' | 'medium' | 'high' | 'critical';
+export type AlertClassification = 'nutritional' | 'behavioral' | 'clinical';
+export type AlertStatus = 'pending' | 'reviewed' | 'resolved' | 'dismissed';
+
+export interface PatientAlert {
+  id: string;
+  patientId: string;
+  nutritionistId?: string;
+  alertType: AlertType;
+  severity: AlertSeverity;
+  classification: AlertClassification;
+  title: string;
+  message: string;
+  status: AlertStatus;
+  triggeredDate: string;
+  metadata?: Record<string, unknown>;
+  createdAt?: string;
+  updatedAt?: string;
+}
