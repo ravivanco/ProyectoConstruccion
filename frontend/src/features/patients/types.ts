@@ -126,3 +126,19 @@ export interface WeightChartResponse {
     daysTracked: number;
   };
 }
+
+export interface AdditionalFoodLog {
+  id: string;
+  patientId: string;
+  foodName: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  quantity?: string;
+  logDate: string;
+  notes?: string;
+  imageUrl?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}

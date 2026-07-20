@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, User, Activity, AlertCircle, Phone, Mail, Weight, Ruler, FileText, HeartPulse, Ban, Apple, Target, Plus, Calendar, History, PlayCircle, Lock, Unlock, Utensils, Dumbbell } from 'lucide-react';
+import { ArrowLeft, User, Activity, AlertCircle, Phone, Mail, Weight, Ruler, FileText, HeartPulse, Ban, Apple, Target, Plus, Calendar, History, PlayCircle, Lock, Unlock, Utensils, Dumbbell, Flame } from 'lucide-react';
 import { usePatientProfile } from './hooks/usePatientProfile';
 import { useActivatePlan } from './hooks/useActivatePlan';
 import { ClinicalEvaluationModal } from './components/ClinicalEvaluationModal';
@@ -11,6 +11,7 @@ import { AdherenceIndicatorsSummary } from './components/AdherenceIndicatorsSumm
 import { AdherenceLevelBadge } from './components/AdherenceLevelBadge';
 import { AdherenceTrafficLight } from './components/AdherenceTrafficLight';
 import { WeightMonitoringSection } from './components/WeightMonitoringSection';
+import { AdditionalIntakeSection } from './components/AdditionalIntakeSection';
 
 export function PatientDetails() {
   const { id } = useParams<{ id: string }>();
@@ -21,7 +22,7 @@ export function PatientDetails() {
 
   const [isEvaluationModalOpen, setIsEvaluationModalOpen] = useState(false);
   const [isActivateModalOpen, setIsActivateModalOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'profile' | 'indicators' | 'compliance' | 'physical_compliance' | 'weight_monitoring'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'indicators' | 'compliance' | 'physical_compliance' | 'weight_monitoring' | 'additional_intake'>('profile');
 
   const getTreatmentColor = (state?: string) => {
     switch(state) {
@@ -266,6 +267,17 @@ export function PatientDetails() {
               <Weight size={16} />
               <span>Monitoreo de Peso</span>
             </button>
+            <button
+              onClick={() => setActiveTab('additional_intake')}
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold transition-all ${
+                activeTab === 'additional_intake'
+                  ? 'bg-primary text-gray-900 shadow-sm'
+                  : 'text-muted hover:text-foreground hover:bg-surface-hover'
+              }`}
+            >
+              <Flame size={16} />
+              <span>Consumo Adicional</span>
+            </button>
           </div>
 
           {activeTab === 'profile' ? (
@@ -458,8 +470,10 @@ export function PatientDetails() {
             <MealComplianceSection patientId={patient.id} />
           ) : activeTab === 'physical_compliance' ? (
             <PhysicalComplianceSection patientId={patient.id} />
-          ) : (
+          ) : activeTab === 'weight_monitoring' ? (
             <WeightMonitoringSection patientId={patient.id} />
+          ) : (
+            <AdditionalIntakeSection patientId={patient.id} />
           )}
         </div>
 

@@ -37,4 +37,11 @@ export const endpoints = {
     },
     chart: (patientId: string, days = 30) => `/weight-records/patient/${patientId}/chart?days=${days}`,
   },
+  additionalIntake: {
+    list: (patientId: string, logDate?: string) => {
+      let url = `/additional-intake/patient/${patientId}`;
+      if (logDate) url += `?logDate=${logDate}`;
+      return url;
+    },
+  },
 };
