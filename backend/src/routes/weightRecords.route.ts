@@ -7,6 +7,7 @@ import {
 } from '../repositories/weightLogRepository.js';
 import { CreateWeightLogInput } from '../types/tracking.js';
 import { resolvePatientAccess } from '../utils/patientAccess.js';
+import { buildWeightChart } from '../utils/weightChart.js';
 
 export const weightRecordsRouter = Router();
 
@@ -79,34 +80,30 @@ weightRecordsRouter.get('/weight-records/me/chart', authenticate, async (req, re
     const from = fromDate.toISOString().slice(0, 10);
 
     const logs = await listWeightLogs(access.patientId, from);
-    const points = [...logs]
-      .sort((a, b) => a.logDate.localeCompare(b.logDate))
-      .map((log) => ({
-        date: log.logDate,
-        weightKg: log.weightKg,
-      }));
-
-    const weights = points.map((p) => p.weightKg);
-    const minWeight = weights.length ? Math.min(...weights) : 0;
-    const maxWeight = weights.length ? Math.max(...weights) : 0;
-    const latest = points.length ? points[points.length - 1].weightKg : null;
-    const first = points.length ? points[0].weightKg : null;
-    const change = latest !== null && first !== null ? Number((latest - first).toFixed(2)) : 0;
-    const trend = change > 0 ? 'up' : change < 0 ? 'down' : 'stable';
-
-    res.json({
-      patientId: access.patientId,
-      points,
-      summary: {
-        latestWeightKg: latest,
-        minWeightKg: minWeight,
-        maxWeightKg: maxWeight,
-        changeKg: change,
-        trend,
-        daysTracked: points.length,
-      },
-    });
+    res.json(buildWeightChart(access.patientId, logs, limit));
   } catch (error) {
     next(error);
   }
 });
+
+weightRecordsRouter.get(
+  '/weight-records/patient/:patientId/chart',
+  authenticate,
+  async (req, res, next) => {
+    try {
+      const access = resolvePatientAccess(req, String(req.params.patientId));
+      if (!access.ok) return res.status(access.status).json({ message: access.message });
+
+      const days = typeof req.query.days === 'string' ? Number(req.query.days) : 30;
+      const limit = Number.isNaN(days) || days <= 0 ? 30 : Math.min(days, 90);
+      const fromDate = new Date();
+      fromDate.setDate(fromDate.getDate() - (limit - 1));
+      const from = fromDate.toISOString().slice(0, 10);
+
+      const logs = await listWeightLogs(access.patientId, from);
+      res.json(buildWeightChart(access.patientId, logs, limit));
+    } catch (error) {
+      next(error);
+    }
+  },
+);
