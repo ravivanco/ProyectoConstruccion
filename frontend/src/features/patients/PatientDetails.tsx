@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, User, Activity, AlertCircle, Phone, Mail, Weight, Ruler, FileText, HeartPulse, Ban, Apple, Target, Plus, Calendar, History, PlayCircle, Lock, Unlock } from 'lucide-react';
+import { ArrowLeft, User, Activity, AlertCircle, Phone, Mail, Weight, Ruler, FileText, HeartPulse, Ban, Apple, Target, Plus, Calendar, History, PlayCircle, Lock, Unlock, Utensils } from 'lucide-react';
 import { usePatientProfile } from './hooks/usePatientProfile';
 import { useActivatePlan } from './hooks/useActivatePlan';
 import { ClinicalEvaluationModal } from './components/ClinicalEvaluationModal';
 import { ActivatePlanModal } from './components/ActivatePlanModal';
+import { MealComplianceSection } from './components/MealComplianceSection';
 
 export function PatientDetails() {
   const { id } = useParams<{ id: string }>();
@@ -15,6 +16,7 @@ export function PatientDetails() {
 
   const [isEvaluationModalOpen, setIsEvaluationModalOpen] = useState(false);
   const [isActivateModalOpen, setIsActivateModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'profile' | 'compliance'>('profile');
 
   const getTreatmentColor = (state?: string) => {
     switch(state) {
@@ -203,9 +205,36 @@ export function PatientDetails() {
           </div>
         </div>
 
-        {/* Right Column: Nutritional Data */}
+        {/* Right Column: Nutritional Data & Monitoring */}
         <div className="col-span-2 space-y-6">
-          <div className="bg-surface rounded-3xl border border-border p-6 shadow-[0_8px_30px_rgba(0,0,0,0.03)] transition-colors h-full">
+          {/* Tabs header */}
+          <div className="flex items-center gap-2 bg-surface p-1.5 rounded-2xl border border-border">
+            <button
+              onClick={() => setActiveTab('profile')}
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold transition-all ${
+                activeTab === 'profile'
+                  ? 'bg-primary text-gray-900 shadow-sm'
+                  : 'text-muted hover:text-foreground hover:bg-surface-hover'
+              }`}
+            >
+              <Activity size={16} />
+              <span>Perfil y Evaluaciones</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('compliance')}
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold transition-all ${
+                activeTab === 'compliance'
+                  ? 'bg-primary text-gray-900 shadow-sm'
+                  : 'text-muted hover:text-foreground hover:bg-surface-hover'
+              }`}
+            >
+              <Utensils size={16} />
+              <span>Cumplimiento Alimentario</span>
+            </button>
+          </div>
+
+          {activeTab === 'profile' ? (
+            <div className="bg-surface rounded-3xl border border-border p-6 shadow-[0_8px_30px_rgba(0,0,0,0.03)] transition-colors h-full">
             <h3 className="text-lg font-bold text-foreground mb-6 flex items-center gap-2">
               <Activity size={20} className="text-primary" />
               Perfil Nutricional Básico
@@ -388,6 +417,9 @@ export function PatientDetails() {
               )}
             </div>
           </div>
+          ) : (
+            <MealComplianceSection patientId={patient.id} />
+          )}
         </div>
 
       </div>
