@@ -112,3 +112,12 @@ planWeeksRouter.post(
 planWeeksRouter.get('/meal-times', authenticate, async (_req, res) => {
   res.json(getOrderedMealTimes());
 });
+
+planWeeksRouter.get('/meal-alerts/schedules', authenticate, async (_req, res) => {
+  const schedules = getOrderedMealTimes().map((slot) => ({
+    ...slot,
+    alertWindowMinutes: 30,
+    suggestedEndTime: slot.suggestedTime,
+  }));
+  res.json({ schedules });
+});
