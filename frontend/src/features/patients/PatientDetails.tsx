@@ -9,6 +9,7 @@ import { MealComplianceSection } from './components/MealComplianceSection';
 import { PhysicalComplianceSection } from './components/PhysicalComplianceSection';
 import { AdherenceIndicatorsSummary } from './components/AdherenceIndicatorsSummary';
 import { AdherenceLevelBadge } from './components/AdherenceLevelBadge';
+import { AdherenceTrafficLight } from './components/AdherenceTrafficLight';
 
 export function PatientDetails() {
   const { id } = useParams<{ id: string }>();
@@ -131,6 +132,9 @@ export function PatientDetails() {
                 <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold border ${getTreatmentColor(patient.treatmentState).replace('bg-', 'border-').replace('text-', 'border-').split(' ')[0]} ${getTreatmentColor(patient.treatmentState)}`}>
                   {patient.treatmentState || 'Pendiente'}
                 </span>
+              </div>
+              <div className="mt-3.5">
+                <AdherenceTrafficLight level={patient.generalState} compact={true} />
               </div>
               
               {/* PROYEC-463: Botón para Activar Plan */}

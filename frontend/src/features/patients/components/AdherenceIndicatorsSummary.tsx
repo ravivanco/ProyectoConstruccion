@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { useAdherenceIndicators } from '../hooks/useAdherenceIndicators';
 import { AdherenceLevelBadge } from './AdherenceLevelBadge';
+import { AdherenceTrafficLight } from './AdherenceTrafficLight';
 
 interface AdherenceIndicatorsSummaryProps {
   patientId: string;
@@ -259,6 +260,9 @@ export function AdherenceIndicatorsSummary({ patientId }: AdherenceIndicatorsSum
           </div>
         </div>
       </div>
+
+      {/* Semáforo Visual de Cumplimiento / Nivel de Adherencia */}
+      <AdherenceTrafficLight score={indicators.overallScore} />
     </div>
   );
 }
