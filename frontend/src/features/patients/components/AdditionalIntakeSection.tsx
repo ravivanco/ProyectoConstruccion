@@ -14,6 +14,7 @@ import {
 import { useAdditionalIntake } from '../hooks/useAdditionalIntake';
 import type { AdditionalFoodLog } from '../types';
 import { AdditionalIntakeImageModal } from './AdditionalIntakeImageModal';
+import { PlanDeviationAnalysisPanel } from './PlanDeviationAnalysisPanel';
 
 interface AdditionalIntakeSectionProps {
   patientId: string;
@@ -236,6 +237,9 @@ export function AdditionalIntakeSection({ patientId }: AdditionalIntakeSectionPr
           </div>
         </div>
       </div>
+
+      {/* HU29: Panel de Análisis de Desviación del Plan Nutricional */}
+      <PlanDeviationAnalysisPanel patientId={patientId} />
 
       {/* Subtarea 1: [WEB] Crear tabla de consumos adicionales */}
       <div className="bg-surface rounded-3xl border border-border p-6 shadow-sm space-y-4">

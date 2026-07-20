@@ -26,6 +26,9 @@ export const endpoints = {
   adherenceIndicators: {
     byPeriod: (patientId: string, periodDays = 7) => `/adherence/patient/${patientId}/indicators?periodDays=${periodDays}`,
   },
+  planDeviation: {
+    byPeriod: (patientId: string, periodDays = 7) => `/adherence/patient/${patientId}/plan-deviation?periodDays=${periodDays}`,
+  },
   weightRecords: {
     list: (patientId: string, fromDate?: string, toDate?: string) => {
       let url = `/weight-logs/patient/${patientId}`;

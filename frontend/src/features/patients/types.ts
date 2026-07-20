@@ -142,3 +142,18 @@ export interface AdditionalFoodLog {
   createdAt?: string;
   updatedAt?: string;
 }
+
+export interface PlanDeviationDay {
+  date: string;
+  plannedCalories: number;
+  consumedCalories: number;
+  deviationCalories: number;
+  deviationPercentage: number;
+}
+
+export interface PlanDeviationSummary {
+  patientId: string;
+  periodDays: number;
+  averageDeviationPercentage: number;
+  days: PlanDeviationDay[];
+}
