@@ -1,5 +1,6 @@
 export const ALERT_TYPES = [
   'meal_missed',
+  'meal_alert',
   'calorie_excess',
   'calorie_deficit',
   'weight_anomaly',
