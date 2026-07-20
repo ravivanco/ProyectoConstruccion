@@ -74,7 +74,42 @@ const generateMockAlerts = (patientId: string): PatientAlert[] => {
   ];
 };
 
+const generateGlobalMockAlerts = (): PatientAlert[] => {
+  const p1 = generateMockAlerts('paciente-1').map((a, idx) => ({
+    ...a,
+    id: `mock-p1-${idx}`,
+    patientId: 'paciente-1',
+    title: `[María Gómez] ${a.title}`,
+  }));
+  const p2 = generateMockAlerts('paciente-2').map((a, idx) => ({
+    ...a,
+    id: `mock-p2-${idx}`,
+    patientId: 'paciente-2',
+    title: `[Carlos López] ${a.title}`,
+  }));
+  const p3 = generateMockAlerts('paciente-3').map((a, idx) => ({
+    ...a,
+    id: `mock-p3-${idx}`,
+    patientId: 'paciente-3',
+    title: `[Ana Martínez] ${a.title}`,
+  }));
+  return [...p1, ...p2, ...p3];
+};
+
 export const alertsAPI = {
+  listAllAlerts: async (status?: string, patientId?: string): Promise<PatientAlert[]> => {
+    try {
+      const response = await api.get(endpoints.alerts.list(patientId, status));
+      if (Array.isArray(response.data) && response.data.length > 0) {
+        return response.data;
+      }
+      return generateGlobalMockAlerts();
+    } catch (error) {
+      console.warn('Error cargando alertas globales desde backend, utilizando generador global en frontend:', error);
+      return generateGlobalMockAlerts();
+    }
+  },
+
   listPatientAlerts: async (patientId: string, status?: string): Promise<PatientAlert[]> => {
     try {
       const response = await api.get(endpoints.alerts.list(patientId, status));
