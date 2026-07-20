@@ -13,6 +13,13 @@ function getMigrationsDir(): string {
   return found;
 }
 
+function splitSqlStatements(sql: string): string[] {
+  return sql
+    .split(';')
+    .map((statement) => statement.trim())
+    .filter(Boolean);
+}
+
 export async function runMigrations(): Promise<void> {
   await pool.query(`
     CREATE TABLE IF NOT EXISTS schema_migrations (
@@ -35,8 +42,20 @@ export async function runMigrations(): Promise<void> {
     if (applied.rowCount) continue;
 
     const sql = readFileSync(join(migrationsDir, file), 'utf8');
-    await pool.query(sql);
-    await pool.query('INSERT INTO schema_migrations (id) VALUES ($1)', [id]);
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      for (const statement of splitSqlStatements(sql)) {
+        await client.query(statement);
+      }
+      await client.query('INSERT INTO schema_migrations (id) VALUES ($1)', [id]);
+      await client.query('COMMIT');
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
     console.log(`Migración aplicada: ${file}`);
   }
 }
