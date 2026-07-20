@@ -25,6 +25,7 @@ import { exercisesRouter } from './routes/exercises.route.js';
 import { weightRecordsRouter } from './routes/weightRecords.route.js';
 import { adherenceRouter } from './routes/adherence.route.js';
 import { alertsRouter } from './routes/alerts.route.js';
+import { appointmentsRouter } from './routes/appointments.route.js';
 import { setupSwagger } from './swagger/swagger.js';
 
 export function createApp() {
@@ -57,6 +58,7 @@ export function createApp() {
   app.use(weightRecordsRouter);
   app.use(adherenceRouter);
   app.use(alertsRouter);
+  app.use(appointmentsRouter);
 
   setupSwagger(app);
 
