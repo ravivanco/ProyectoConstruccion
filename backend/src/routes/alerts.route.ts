@@ -8,9 +8,23 @@ import {
   updateAlertStatus,
 } from '../repositories/alertRepository.js';
 import { assertPatientBelongsToNutritionist } from '../repositories/appointmentRepository.js';
-import { ALERT_STATUSES } from '../types/alert.js';
+import { ALERT_STATUSES, ALERT_TYPES } from '../types/alert.js';
+import { ALERT_RULES } from '../utils/alertRules.js';
 
 export const alertsRouter = Router();
+
+alertsRouter.get('/alerts/rules', authenticate, (_req, res) => {
+  res.json({ rules: ALERT_RULES });
+});
+
+alertsRouter.get('/alerts/types', authenticate, (_req, res) => {
+  res.json({
+    types: ALERT_TYPES.map((type) => ({
+      type,
+      rule: ALERT_RULES.find((rule) => rule.alertType === type),
+    })),
+  });
+});
 
 alertsRouter.post('/alerts/generate', authenticate, async (req, res, next) => {
   try {
@@ -81,6 +95,16 @@ alertsRouter.get('/alerts/:id', authenticate, async (req, res, next) => {
         alertType: alert.alertType,
       },
     });
+  } catch (error) {
+    next(error);
+  }
+});
+
+alertsRouter.patch('/alerts/:id/review', authenticate, requireRole('nutricionista'), async (req, res, next) => {
+  try {
+    const updated = await updateAlertStatus(String(req.params.id), 'reviewed');
+    if (!updated) return res.status(404).json({ message: 'Alerta no encontrada' });
+    res.json(updated);
   } catch (error) {
     next(error);
   }

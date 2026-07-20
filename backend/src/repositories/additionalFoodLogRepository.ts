@@ -126,3 +126,55 @@ export async function deleteAdditionalFoodLog(
   );
   return (result.rowCount ?? 0) > 0;
 }
+
+export async function getAdditionalIntakeImpact(patientId: string, periodDays = 7) {
+  const planResult = await pool.query(
+    `SELECT daily_calories FROM nutrition_plans
+     WHERE patient_id = $1 AND status = 'active'
+     ORDER BY activated_at DESC NULLS LAST
+     LIMIT 1`,
+    [patientId],
+  );
+  const plannedCaloriesPerDay = planResult.rowCount
+    ? Number(planResult.rows[0].daily_calories)
+    : 2000;
+
+  const result = await pool.query(
+    `SELECT log_date::text AS log_date, COALESCE(SUM(calories), 0) AS additional_calories
+     FROM additional_food_logs
+     WHERE patient_id = $1
+       AND log_date >= CURRENT_DATE - (($2::int - 1) * INTERVAL '1 day')
+       AND status = 'confirmed'
+     GROUP BY log_date
+     ORDER BY log_date ASC`,
+    [patientId, periodDays],
+  );
+
+  const dailyImpact = result.rows.map((row) => {
+    const additionalCalories = Number(row.additional_calories);
+    const impactPercentage = plannedCaloriesPerDay > 0
+      ? Math.round((additionalCalories / plannedCaloriesPerDay) * 100)
+      : 0;
+    return {
+      date: String(row.log_date).slice(0, 10),
+      additionalCalories,
+      plannedCalories: plannedCaloriesPerDay,
+      impactPercentage,
+    };
+  });
+
+  const totalAdditionalCalories = dailyImpact.reduce((sum, day) => sum + day.additionalCalories, 0);
+  const totalPlannedCalories = plannedCaloriesPerDay * periodDays;
+  const overallImpactPercentage = totalPlannedCalories > 0
+    ? Math.round((totalAdditionalCalories / totalPlannedCalories) * 100)
+    : 0;
+
+  return {
+    patientId,
+    periodDays,
+    plannedCaloriesPerDay,
+    totalAdditionalCalories,
+    overallImpactPercentage,
+    dailyImpact,
+  };
+}
