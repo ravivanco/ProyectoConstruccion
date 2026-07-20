@@ -6,7 +6,7 @@ export interface Patient {
   email: string;
   generalState: GeneralState | 'Pendiente';
   treatmentState?: 'Pendiente' | 'Activo' | 'Suspendido' | 'Finalizado';
-  lastVisit: string;
+  lastVisit?: string;
 }
 
 export interface ClinicalEvaluation {
@@ -38,4 +38,69 @@ export interface PatientDetail {
   objective?: string;
   evaluations?: ClinicalEvaluation[];
   isPlanLocked?: boolean;
+}
+
+export type MealStatus = 'completed' | 'missed' | 'pending';
+
+export interface MealItem {
+  id: string;
+  mealType: 'desayuno' | 'almuerzo' | 'cena' | 'colacion_1' | 'colacion_2';
+  name: string;
+  scheduledTime: string;
+  status: MealStatus;
+  loggedAt?: string;
+  estimatedCalories: number;
+  consumedCalories?: number;
+  notes?: string;
+  photoUrl?: string;
+}
+
+export interface DailyMealCompliance {
+  patientId: string;
+  date: string;
+  totalAssigned: number;
+  completedCount: number;
+  missedCount: number;
+  pendingCount: number;
+  complianceRate: number;
+  meals: MealItem[];
+}
+
+export type ExerciseItemStatus = 'completed' | 'missed' | 'pending';
+
+export interface ExerciseComplianceItem {
+  id: string;
+  name: string;
+  category: string;
+  muscleGroup?: string;
+  scheduledTime: string;
+  durationMinutes: number;
+  caloriesBurned?: number;
+  status: ExerciseItemStatus;
+  loggedAt?: string;
+  notes?: string;
+  source: 'mobile_app' | 'manual';
+}
+
+export interface DailyPhysicalCompliance {
+  patientId: string;
+  date: string;
+  totalAssigned: number;
+  completedCount: number;
+  missedCount: number;
+  pendingCount: number;
+  complianceRate: number;
+  totalDurationMinutes: number;
+  totalCaloriesBurned: number;
+  exercises: ExerciseComplianceItem[];
+}
+
+export interface AdherenceIndicators {
+  patientId: string;
+  periodDays: number;
+  foodCompliancePercentage: number;
+  exerciseCompliancePercentage: number;
+  weightCompliancePercentage: number;
+  calorieAdherencePercentage: number;
+  overallScore: number;
 }

@@ -1,31 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Filter, MoreHorizontal, User, X } from 'lucide-react';
-import { patientAPI } from './services/patientApi';
-import type { Patient } from '../../shared/types';
+import { usePatients } from './hooks/usePatients';
+import { AdherenceLevelBadge } from './components/AdherenceLevelBadge';
 
 export default function Patients() {
   const navigate = useNavigate();
-  const [patients, setPatients] = useState<Patient[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { patients, isLoading, refetch } = usePatients();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('Todos');
-
-  useEffect(() => {
-    loadPatients();
-  }, []);
-
-  async function loadPatients() {
-    setIsLoading(true);
-    try {
-      const data = await patientAPI.getPatients();
-      setPatients(data);
-    } catch (error) {
-      console.error("Error al cargar pacientes", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const filteredPatients = patients.filter(p => {
     const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -36,15 +19,6 @@ export default function Patients() {
     
     return matchesSearch && matchesFilter;
   });
-
-  const getAdherenceColor = (state: string) => {
-    switch(state) {
-      case 'Alta Adherencia': return 'bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400';
-      case 'Media Adherencia': return 'bg-yellow-100 dark:bg-yellow-500/20 text-yellow-700 dark:text-yellow-400';
-      case 'Baja Adherencia': return 'bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400';
-      default: return 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300';
-    }
-  };
 
   const getTreatmentColor = (state?: string) => {
     switch(state) {
@@ -132,7 +106,7 @@ export default function Patients() {
               Parece que aún no tienes pacientes asignados a tu cuenta. Comienza añadiendo uno nuevo para empezar el seguimiento nutricional.
             </p>
             <button 
-              onClick={loadPatients}
+              onClick={() => refetch()}
               className="text-[#d97706] text-sm font-semibold hover:underline"
             >
               Recargar lista
@@ -173,9 +147,7 @@ export default function Patients() {
                       <span className="text-muted text-sm">{patient.email}</span>
                     </td>
                     <td className="py-3 px-6">
-                      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${getAdherenceColor(patient.generalState)}`}>
-                        {patient.generalState}
-                      </span>
+                      <AdherenceLevelBadge level={patient.generalState} size="sm" showScore={false} />
                     </td>
                     <td className="py-3 px-6">
                       <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border ${getTreatmentColor(patient.treatmentState).replace('bg-', 'border-').replace('text-', 'border-').split(' ')[0]} ${getTreatmentColor(patient.treatmentState)}`}>

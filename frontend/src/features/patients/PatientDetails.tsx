@@ -1,21 +1,26 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, User, Activity, AlertCircle, Phone, Mail, Weight, Ruler, FileText, HeartPulse, Ban, Apple, Target, Plus, Calendar, History, PlayCircle, Lock, Unlock } from 'lucide-react';
-import { patientAPI } from './services/patientApi';
-import type { PatientDetail } from './types';
+import { ArrowLeft, User, Activity, AlertCircle, Phone, Mail, Weight, Ruler, FileText, HeartPulse, Ban, Apple, Target, Plus, Calendar, History, PlayCircle, Lock, Unlock, Utensils, Dumbbell } from 'lucide-react';
+import { usePatientProfile } from './hooks/usePatientProfile';
+import { useActivatePlan } from './hooks/useActivatePlan';
 import { ClinicalEvaluationModal } from './components/ClinicalEvaluationModal';
 import { ActivatePlanModal } from './components/ActivatePlanModal';
+import { MealComplianceSection } from './components/MealComplianceSection';
+import { PhysicalComplianceSection } from './components/PhysicalComplianceSection';
+import { AdherenceIndicatorsSummary } from './components/AdherenceIndicatorsSummary';
+import { AdherenceLevelBadge } from './components/AdherenceLevelBadge';
+import { AdherenceTrafficLight } from './components/AdherenceTrafficLight';
 
 export function PatientDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   
-  const [patient, setPatient] = useState<PatientDetail | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { patient, isLoading, error } = usePatientProfile(id);
+  const { activatePlan, isActivating, lockPlan, isLocking, unlockPlan, isUnlocking } = useActivatePlan(id || '');
+
   const [isEvaluationModalOpen, setIsEvaluationModalOpen] = useState(false);
   const [isActivateModalOpen, setIsActivateModalOpen] = useState(false);
-  const [isTogglingLock, setIsTogglingLock] = useState(false);
+  const [activeTab, setActiveTab] = useState<'profile' | 'indicators' | 'compliance' | 'physical_compliance'>('profile');
 
   const getTreatmentColor = (state?: string) => {
     switch(state) {
@@ -27,57 +32,25 @@ export function PatientDetails() {
     }
   };
 
-  useEffect(() => {
-    const fetchPatient = async () => {
-      if (!id) return;
-      try {
-        setIsLoading(true);
-        setError(null);
-        const data = await patientAPI.getPatientById(id);
-        setPatient(data);
-      } catch (err: any) {
-        setError(err.message || 'Error al cargar el paciente');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchPatient();
-  }, [id]);
-
   const handleActivatePlan = async (startDate: string) => {
-    if (!patient) return;
-    
     try {
-      // Pasamos la fecha al API mock para poder simularlo
-      // PROYEC-468 y PROYEC-469
-      await patientAPI.activatePlan(patient.id, startDate);
-      setPatient({
-        ...patient,
-        treatmentState: 'Activo'
-      });
+      await activatePlan(startDate);
+      setIsActivateModalOpen(false);
     } catch (err) {
       console.error(err);
-      throw err;
     }
   };
 
   const handleToggleLock = async () => {
     if (!patient) return;
-    
-    setIsTogglingLock(true);
     try {
       if (patient.isPlanLocked) {
-        await patientAPI.unlockPlan(patient.id);
-        setPatient({ ...patient, isPlanLocked: false });
+        await unlockPlan();
       } else {
-        await patientAPI.lockPlan(patient.id);
-        setPatient({ ...patient, isPlanLocked: true });
+        await lockPlan();
       }
     } catch (err) {
       console.error(err);
-    } finally {
-      setIsTogglingLock(false);
     }
   };
 
@@ -97,7 +70,7 @@ export function PatientDetails() {
           <AlertCircle size={32} className="text-red-500" />
         </div>
         <h3 className="text-xl font-bold text-foreground mb-2">Paciente no encontrado</h3>
-        <p className="text-muted text-sm max-w-md mb-6">{error}</p>
+        <p className="text-muted text-sm max-w-md mb-6">{error?.message || 'Error al cargar el paciente'}</p>
         <button 
           onClick={() => navigate('/patients')}
           className="flex items-center gap-2 bg-primary hover:bg-primary-hover text-gray-900 font-semibold py-2 px-6 rounded-full transition-all text-sm"
@@ -155,16 +128,13 @@ export function PatientDetails() {
               </div>
               <h2 className="text-xl font-bold text-foreground">{patient.name}</h2>
               <div className="flex items-center gap-2 mt-3">
-                <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold ${
-                  patient.generalState === 'Alta Adherencia' ? 'bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400' :
-                  patient.generalState === 'Media Adherencia' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-500/20 dark:text-yellow-400' :
-                  'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400'
-                }`}>
-                  {patient.generalState}
-                </span>
+                <AdherenceLevelBadge level={patient.generalState} size="sm" showScore={false} />
                 <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold border ${getTreatmentColor(patient.treatmentState).replace('bg-', 'border-').replace('text-', 'border-').split(' ')[0]} ${getTreatmentColor(patient.treatmentState)}`}>
                   {patient.treatmentState || 'Pendiente'}
                 </span>
+              </div>
+              <div className="mt-3.5">
+                <AdherenceTrafficLight level={patient.generalState} compact={true} />
               </div>
               
               {/* PROYEC-463: Botón para Activar Plan */}
@@ -172,11 +142,11 @@ export function PatientDetails() {
                 <div className="mt-5 w-full">
                   <button 
                     onClick={() => setIsActivateModalOpen(true)}
-                    disabled={!patient.isProfileCompleted}
-                    className={`w-full flex justify-center items-center gap-2 font-semibold py-2.5 px-4 rounded-xl transition-all shadow-sm ${!patient.isProfileCompleted ? 'bg-surface-hover text-muted cursor-not-allowed border border-border' : 'bg-emerald-500 hover:bg-emerald-600 text-white'}`}
+                    disabled={!patient.isProfileCompleted || isActivating}
+                    className={`w-full flex justify-center items-center gap-2 font-semibold py-2.5 px-4 rounded-xl transition-all shadow-sm ${(!patient.isProfileCompleted || isActivating) ? 'bg-surface-hover text-muted cursor-not-allowed border border-border' : 'bg-emerald-500 hover:bg-emerald-600 text-white'}`}
                   >
                     <PlayCircle size={18} />
-                    Activar Plan Nutricional
+                    {isActivating ? 'Activando...' : 'Activar Plan Nutricional'}
                   </button>
                   <p className="text-[10px] text-muted text-center mt-2">
                     {!patient.isProfileCompleted ? 'El paciente debe completar el formulario inicial.' : 'Esto habilitará el plan en la app móvil del paciente.'}
@@ -224,11 +194,11 @@ export function PatientDetails() {
                 {/* Toggle Switch */}
                 <button 
                   onClick={handleToggleLock}
-                  disabled={isTogglingLock}
+                  disabled={isLocking || isUnlocking}
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface ${patient.isPlanLocked ? 'bg-red-500' : 'bg-emerald-500'} disabled:opacity-50 disabled:cursor-not-allowed`}
                 >
                   <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${patient.isPlanLocked ? 'translate-x-6' : 'translate-x-1'} flex items-center justify-center`}>
-                    {isTogglingLock && <span className="w-3 h-3 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></span>}
+                    {(isLocking || isUnlocking) && <span className="w-3 h-3 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></span>}
                   </span>
                 </button>
               </div>
@@ -236,9 +206,58 @@ export function PatientDetails() {
           </div>
         </div>
 
-        {/* Right Column: Nutritional Data */}
+        {/* Right Column: Nutritional Data & Monitoring */}
         <div className="col-span-2 space-y-6">
-          <div className="bg-surface rounded-3xl border border-border p-6 shadow-[0_8px_30px_rgba(0,0,0,0.03)] transition-colors h-full">
+          {/* Tabs header */}
+          <div className="flex items-center gap-2 bg-surface p-1.5 rounded-2xl border border-border">
+            <button
+              onClick={() => setActiveTab('profile')}
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold transition-all ${
+                activeTab === 'profile'
+                  ? 'bg-primary text-gray-900 shadow-sm'
+                  : 'text-muted hover:text-foreground hover:bg-surface-hover'
+              }`}
+            >
+              <Activity size={16} />
+              <span>Perfil y Evaluaciones</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('indicators')}
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold transition-all ${
+                activeTab === 'indicators'
+                  ? 'bg-primary text-gray-900 shadow-sm'
+                  : 'text-muted hover:text-foreground hover:bg-surface-hover'
+              }`}
+            >
+              <Target size={16} />
+              <span>Indicadores de Adherencia</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('compliance')}
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold transition-all ${
+                activeTab === 'compliance'
+                  ? 'bg-primary text-gray-900 shadow-sm'
+                  : 'text-muted hover:text-foreground hover:bg-surface-hover'
+              }`}
+            >
+              <Utensils size={16} />
+              <span>Cumplimiento Alimentario</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('physical_compliance')}
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold transition-all ${
+                activeTab === 'physical_compliance'
+                  ? 'bg-primary text-gray-900 shadow-sm'
+                  : 'text-muted hover:text-foreground hover:bg-surface-hover'
+              }`}
+            >
+              <Dumbbell size={16} />
+              <span>Cumplimiento Físico</span>
+            </button>
+          </div>
+
+          {activeTab === 'profile' ? (
+            <div className="bg-surface rounded-3xl border border-border p-6 shadow-[0_8px_30px_rgba(0,0,0,0.03)] transition-colors h-full">
             <h3 className="text-lg font-bold text-foreground mb-6 flex items-center gap-2">
               <Activity size={20} className="text-primary" />
               Perfil Nutricional Básico
@@ -421,6 +440,13 @@ export function PatientDetails() {
               )}
             </div>
           </div>
+          ) : activeTab === 'indicators' ? (
+            <AdherenceIndicatorsSummary patientId={patient.id} />
+          ) : activeTab === 'compliance' ? (
+            <MealComplianceSection patientId={patient.id} />
+          ) : (
+            <PhysicalComplianceSection patientId={patient.id} />
+          )}
         </div>
 
       </div>
@@ -428,16 +454,10 @@ export function PatientDetails() {
       <ClinicalEvaluationModal 
         isOpen={isEvaluationModalOpen} 
         onClose={() => setIsEvaluationModalOpen(false)} 
-        onSave={async (data) => {
+        onSave={async () => {
+          // TODO: Mover esto a useMutation cuando el endpoint POST esté listo
           return new Promise(resolve => {
             setTimeout(() => {
-              if (patient) {
-                const newEval = { ...data, id: 'ev_' + Date.now() };
-                setPatient({
-                  ...patient,
-                  evaluations: [newEval, ...(patient.evaluations || [])]
-                });
-              }
               resolve();
             }, 1000);
           });

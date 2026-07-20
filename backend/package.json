@@ -10,7 +10,9 @@
     "db:up": "docker compose up -d",
     "db:down": "docker compose down",
     "db:migrate": "tsx src/db/migrate-cli.ts",
-    "test:api": "tsx scripts/test-api.ts"
+    "test:api": "tsx scripts/test-api.ts",
+    "test:meal-tracking": "tsx scripts/test-meal-tracking.ts",
+    "test:exercise-tracking": "tsx scripts/test-exercise-tracking.ts"
   },
   "dependencies": {
     "cors": "^2.8.5",

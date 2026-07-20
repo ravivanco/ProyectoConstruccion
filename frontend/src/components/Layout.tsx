@@ -1,6 +1,6 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { Users, FileText, Activity, Apple, Bell, LogOut, Calendar, BarChart2, AlertCircle, Menu, Sun, Moon, Monitor } from 'lucide-react';
+import { Users, FileText, Activity, Apple, Dumbbell, Bell, LogOut, Calendar, BarChart2, AlertCircle, Menu, Sun, Moon, Monitor } from 'lucide-react';
 
 type Theme = 'light' | 'dark' | 'system';
 
@@ -16,8 +16,9 @@ export default function Layout() {
   const navItems = [
     { name: 'Dashboard', path: '/dashboard', icon: <Activity size={18} /> },
     { name: 'Pacientes', path: '/patients', icon: <Users size={18} /> },
-    { name: 'Planes Nutricionales', path: '#', icon: <FileText size={18} /> },
-    { name: 'Alimentos y Recetas', path: '#', icon: <Apple size={18} /> },
+    { name: 'Planes Nutricionales', path: '/plans', icon: <FileText size={18} /> },
+    { name: 'Alimentos y Recetas', path: '/foods', icon: <Apple size={18} /> },
+    { name: 'Ejercicios Físicos', path: '/exercises', icon: <Dumbbell size={18} /> },
     { name: 'Seguimiento', path: '#', icon: <BarChart2 size={18} /> },
     { name: 'Alertas', path: '#', icon: <AlertCircle size={18} /> },
     { name: 'Citas', path: '#', icon: <Calendar size={18} /> },
@@ -25,6 +26,7 @@ export default function Layout() {
 
   const [isPinned, setIsPinned] = useState(true);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [theme, setTheme] = useState<Theme>(() => {
     const saved = localStorage.getItem('theme');
     return (saved as Theme) || 'light';
@@ -46,11 +48,24 @@ export default function Layout() {
   }, [theme]);
 
   return (
-    <div className="flex h-screen bg-background font-sans transition-colors duration-300">
+    <div className="flex h-screen bg-background font-sans transition-colors duration-300 overflow-hidden relative">
+      
+      {/* Mobile Overlay */}
+      {isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black/60 z-40 md:hidden backdrop-blur-sm transition-opacity"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
       <aside 
         onMouseEnter={() => !isPinned && setIsExpanded(true)}
         onMouseLeave={() => !isPinned && setIsExpanded(false)}
-        className={`bg-surface-sidebar border-r border-border-sidebar flex flex-col hidden md:flex shrink-0 transition-all duration-300 relative ${expanded ? 'w-[260px]' : 'w-[80px] items-center'}`}
+        className={`bg-surface-sidebar border-r border-border-sidebar flex flex-col shrink-0 transition-all duration-300 z-50
+          ${expanded ? 'w-[260px]' : 'w-[80px] items-center'}
+          fixed inset-y-0 left-0 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} 
+          md:relative md:translate-x-0
+        `}
       >
         {/* Toggle Pin Botón */}
         <button 
@@ -89,6 +104,7 @@ export default function Layout() {
                     if(item.path !== '#') {
                        e.preventDefault();
                        navigate(item.path);
+                       setIsMobileMenuOpen(false); // Close on mobile click
                     }
                  }}
                  className={`flex items-center gap-4 py-3 rounded-full font-medium transition-colors text-[13px] ${expanded ? 'px-5' : 'justify-center w-12 h-12 mx-auto'} ${
@@ -153,9 +169,22 @@ export default function Layout() {
         </div>
       </aside>
 
-      <main className="flex-1 overflow-auto bg-background flex flex-col relative transition-colors duration-300">
-        <header className="flex justify-end items-center px-10 py-3 mb-2 border-b border-border">
-          <div className="flex items-center gap-6">
+      <main className="flex-1 overflow-auto bg-background flex flex-col relative transition-colors duration-300 w-full">
+        <header className="flex justify-between md:justify-end items-center px-6 md:px-10 py-3 mb-2 border-b border-border min-h-[64px]">
+          
+          {/* Mobile Menu Button */}
+          <div className="flex items-center gap-3 md:hidden">
+            <button 
+              onClick={() => setIsMobileMenuOpen(true)} 
+              className="text-foreground hover:bg-surface p-1.5 rounded-lg transition-colors"
+            >
+              <Menu size={22} />
+            </button>
+            <h2 className="font-bold text-foreground">DK Fitt</h2>
+          </div>
+
+          {/* Right Header Actions */}
+          <div className="flex items-center gap-4 md:gap-6 ml-auto">
             <button className="relative text-muted hover:text-foreground transition-colors">
               <Bell size={20} />
             </button>
