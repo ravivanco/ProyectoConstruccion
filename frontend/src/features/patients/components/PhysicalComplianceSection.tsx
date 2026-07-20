@@ -13,7 +13,9 @@ import {
   Filter,
 } from 'lucide-react';
 import { usePhysicalCompliance } from '../hooks/usePhysicalCompliance';
-import type { ExerciseItemStatus } from '../types';
+import type { ExerciseItemStatus, ExerciseComplianceItem } from '../types';
+import { ExerciseStatusCard } from './ExerciseStatusCard';
+import { ExerciseStatusModal } from './ExerciseStatusModal';
 
 interface PhysicalComplianceSectionProps {
   patientId: string;
@@ -24,6 +26,7 @@ export function PhysicalComplianceSection({ patientId }: PhysicalComplianceSecti
     new Date().toISOString().split('T')[0],
   );
   const [statusFilter, setStatusFilter] = useState<'all' | ExerciseItemStatus>('all');
+  const [selectedExercise, setSelectedExercise] = useState<ExerciseComplianceItem | null>(null);
 
   const {
     complianceData,
@@ -72,45 +75,6 @@ export function PhysicalComplianceSection({ patientId }: PhysicalComplianceSecti
     if (statusFilter === 'all') return true;
     return exercise.status === statusFilter;
   });
-
-  const getStatusBadge = (status: ExerciseItemStatus, loggedAt?: string) => {
-    switch (status) {
-      case 'completed':
-        return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 rounded-full text-xs font-bold border border-emerald-200 dark:border-emerald-500/30">
-            <CheckCircle2 size={13} className="text-emerald-600 dark:text-emerald-400" />
-            Completado {loggedAt ? `(${loggedAt})` : ''}
-          </span>
-        );
-      case 'missed':
-        return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400 rounded-full text-xs font-bold border border-red-200 dark:border-red-500/30">
-            <XCircle size={13} className="text-red-600 dark:text-red-400" />
-            No Completado
-          </span>
-        );
-      case 'pending':
-        return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400 rounded-full text-xs font-bold border border-amber-200 dark:border-amber-500/30">
-            <Clock size={13} className="text-amber-600 dark:text-amber-400" />
-            Pendiente
-          </span>
-        );
-    }
-  };
-
-  const getCategoryColor = (category: string) => {
-    switch (category) {
-      case 'Cardio':
-        return 'bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400';
-      case 'Fuerza':
-        return 'bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-400';
-      case 'Flexibilidad':
-        return 'bg-teal-100 dark:bg-teal-500/20 text-teal-700 dark:text-teal-400';
-      default:
-        return 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300';
-    }
-  };
 
   return (
     <div className="space-y-6">
@@ -343,72 +307,22 @@ export function PhysicalComplianceSection({ patientId }: PhysicalComplianceSecti
             </div>
           ) : (
             filteredExercises.map((exercise) => (
-              <div
+              <ExerciseStatusCard
                 key={exercise.id}
-                className={`p-5 rounded-2xl border transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 ${
-                  exercise.status === 'completed'
-                    ? 'bg-emerald-500/5 border-emerald-500/30 dark:bg-emerald-500/10'
-                    : exercise.status === 'missed'
-                    ? 'bg-red-500/5 border-red-500/30 dark:bg-red-500/10'
-                    : 'bg-surface-hover/40 border-border hover:border-primary/40'
-                }`}
-              >
-                <div className="flex items-start gap-4 flex-1">
-                  <div className="w-10 h-10 rounded-xl bg-surface border border-border flex items-center justify-center text-primary shrink-0 mt-0.5">
-                    <Activity size={20} />
-                  </div>
-                  <div className="space-y-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-black text-foreground text-sm">
-                        {exercise.name}
-                      </span>
-                      <span
-                        className={`px-2 py-0.5 rounded-md text-[11px] font-extrabold ${getCategoryColor(
-                          exercise.category,
-                        )}`}
-                      >
-                        {exercise.category}
-                      </span>
-                      {exercise.muscleGroup && (
-                        <span className="text-xs font-semibold text-muted bg-surface px-2 py-0.5 rounded-md border border-border">
-                          💪 {exercise.muscleGroup}
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-4 text-xs font-semibold text-muted">
-                      <span className="flex items-center gap-1">
-                        <Clock size={13} />
-                        Programado: <strong className="text-foreground">{exercise.scheduledTime}</strong> ({exercise.durationMinutes} min)
-                      </span>
-                      {exercise.caloriesBurned ? (
-                        <span className="flex items-center gap-1 text-orange-600 dark:text-orange-400 font-bold">
-                          <Flame size={13} />
-                          {exercise.caloriesBurned} kcal quemadas
-                        </span>
-                      ) : null}
-                      <span className="flex items-center gap-1 text-blue-600 dark:text-blue-400">
-                        <Smartphone size={13} />
-                        Origen: {exercise.source === 'mobile_app' ? 'App Móvil' : 'Manual'}
-                      </span>
-                    </div>
-
-                    {exercise.notes && (
-                      <p className="text-xs text-muted bg-surface/80 p-2.5 rounded-xl border border-border mt-2 leading-relaxed">
-                        📝 <strong>Nota App Móvil:</strong> {exercise.notes}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex items-center md:justify-end shrink-0">
-                  {getStatusBadge(exercise.status, exercise.loggedAt)}
-                </div>
-              </div>
+                exercise={exercise}
+                onSelect={setSelectedExercise}
+              />
             ))
           )}
         </div>
       </div>
+
+      {/* Modal de Detalle de Estado de Ejercicio */}
+      <ExerciseStatusModal
+        isOpen={Boolean(selectedExercise)}
+        onClose={() => setSelectedExercise(null)}
+        exercise={selectedExercise}
+      />
     </div>
   );
 }
