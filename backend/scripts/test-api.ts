@@ -62,6 +62,11 @@ async function main() {
       role: 'nutricionista',
     });
 
+    console.log('\n========================================================');
+    console.log('🔑 TU TOKEN JWT PARA POSTMAN ES:');
+    console.log(token);
+    console.log('========================================================\n');
+
     const response = await fetch(`${baseUrl}/api/me`, {
       headers: { Authorization: `Bearer ${token}` },
     });

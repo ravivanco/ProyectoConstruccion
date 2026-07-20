@@ -4,7 +4,23 @@ import {
   NutritionPlan,
   PlanStatusView,
   resolvePlanStatus,
+  WeeklyDayStructure,
+  AssignedMenuDTO,
+  AssignedMenu,
 } from '../types/nutritionPlan.js';
+
+function parseWeeklyStructure(raw: unknown): WeeklyDayStructure[] {
+  if (!raw) return [];
+  if (typeof raw === 'string') {
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return [];
+    }
+  }
+  if (Array.isArray(raw)) return raw as WeeklyDayStructure[];
+  return [];
+}
 
 function mapRow(row: Record<string, unknown>): NutritionPlan {
   return {
@@ -18,10 +34,16 @@ function mapRow(row: Record<string, unknown>): NutritionPlan {
     proteinG: Number(row.protein_g),
     carbsG: Number(row.carbs_g),
     fatG: Number(row.fat_g),
+    weeklyStructure: parseWeeklyStructure(row.weekly_structure),
     activatedAt: row.activated_at ? new Date(String(row.activated_at)).toISOString() : undefined,
     createdAt: new Date(String(row.created_at)).toISOString(),
     updatedAt: new Date(String(row.updated_at)).toISOString(),
   };
+}
+
+export async function getAllNutritionPlans(): Promise<NutritionPlan[]> {
+  const result = await pool.query('SELECT * FROM nutrition_plans ORDER BY created_at DESC');
+  return result.rows.map(mapRow);
 }
 
 export async function findNutritionPlanById(id: string): Promise<NutritionPlan | null> {
@@ -124,4 +146,76 @@ export async function createNutritionPlanSeed(
     [patientId, nutritionistId],
   );
   return mapRow(result.rows[0]);
+}
+
+// ===================== HU16 y HU17 =====================
+
+export async function updatePlanWeeklyStructure(
+  id: string,
+  weeklyStructure: WeeklyDayStructure[],
+): Promise<NutritionPlan | null> {
+  const result = await pool.query(
+    `UPDATE nutrition_plans
+     SET weekly_structure = $2::jsonb, updated_at = NOW()
+     WHERE id = $1
+     RETURNING *`,
+    [id, JSON.stringify(weeklyStructure)],
+  );
+  if (!result.rowCount) return null;
+  return mapRow(result.rows[0]);
+}
+
+export async function assignMenuToMealSlot(
+  planId: string,
+  dayName: string,
+  mealId: string,
+  dto: AssignedMenuDTO,
+): Promise<NutritionPlan | null> {
+  const plan = await findNutritionPlanById(planId);
+  if (!plan) return null;
+
+  const structure = plan.weeklyStructure || [];
+  const newMenu: AssignedMenu = {
+    ...dto,
+    id: `ass-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+  };
+
+  const updatedStructure = structure.map((dayObj) => {
+    if (dayObj.day.toLowerCase() !== dayName.toLowerCase()) return dayObj;
+    const updatedMeals = dayObj.meals.map((meal) => {
+      if (meal.id !== mealId) return meal;
+      return {
+        ...meal,
+        assignedMenus: [...(meal.assignedMenus || []), newMenu],
+      };
+    });
+    return { ...dayObj, meals: updatedMeals };
+  });
+
+  return updatePlanWeeklyStructure(planId, updatedStructure);
+}
+
+export async function removeAssignedMenuFromSlot(
+  planId: string,
+  dayName: string,
+  mealId: string,
+  menuId: string,
+): Promise<NutritionPlan | null> {
+  const plan = await findNutritionPlanById(planId);
+  if (!plan) return null;
+
+  const structure = plan.weeklyStructure || [];
+  const updatedStructure = structure.map((dayObj) => {
+    if (dayObj.day.toLowerCase() !== dayName.toLowerCase()) return dayObj;
+    const updatedMeals = dayObj.meals.map((meal) => {
+      if (meal.id !== mealId) return meal;
+      return {
+        ...meal,
+        assignedMenus: (meal.assignedMenus || []).filter((am) => am.id !== menuId),
+      };
+    });
+    return { ...dayObj, meals: updatedMeals };
+  });
+
+  return updatePlanWeeklyStructure(planId, updatedStructure);
 }

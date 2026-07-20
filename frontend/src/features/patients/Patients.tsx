@@ -1,31 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Filter, MoreHorizontal, User, X } from 'lucide-react';
-import { patientAPI } from './services/patientApi';
-import type { Patient } from '../../shared/types';
+import { usePatients } from './hooks/usePatients';
 
 export default function Patients() {
   const navigate = useNavigate();
-  const [patients, setPatients] = useState<Patient[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { patients, isLoading, refetch } = usePatients();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('Todos');
-
-  useEffect(() => {
-    loadPatients();
-  }, []);
-
-  async function loadPatients() {
-    setIsLoading(true);
-    try {
-      const data = await patientAPI.getPatients();
-      setPatients(data);
-    } catch (error) {
-      console.error("Error al cargar pacientes", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const filteredPatients = patients.filter(p => {
     const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -132,7 +114,7 @@ export default function Patients() {
               Parece que aún no tienes pacientes asignados a tu cuenta. Comienza añadiendo uno nuevo para empezar el seguimiento nutricional.
             </p>
             <button 
-              onClick={loadPatients}
+              onClick={() => refetch()}
               className="text-[#d97706] text-sm font-semibold hover:underline"
             >
               Recargar lista

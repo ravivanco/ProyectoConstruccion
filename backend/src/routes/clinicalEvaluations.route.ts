@@ -7,7 +7,7 @@ import { calculateMetabolism } from '../utils/metabolism.js';
 export const clinicalEvaluationsRouter = Router();
 
 clinicalEvaluationsRouter.post(
-  '/clinical-evaluations',
+  '/api/clinical-evaluations',
   authenticate,
   requireRole('nutricionista'),
   async (req, res, next) => {
@@ -48,7 +48,7 @@ clinicalEvaluationsRouter.post(
 );
 
 clinicalEvaluationsRouter.get(
-  '/clinical-evaluations/patient/:id',
+  '/api/clinical-evaluations/patient/:id',
   authenticate,
   requireRole('nutricionista'),
   async (req, res, next) => {
