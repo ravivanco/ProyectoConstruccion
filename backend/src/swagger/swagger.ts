@@ -7,8 +7,8 @@ const options: swaggerJsdoc.Options = {
     openapi: '3.0.0',
     info: {
       title: 'DK-FITT API',
-      version: '4.0.0',
-      description: 'API REST de nutrición activa DK-FITT — Sprint 4: tracking de comidas, ejercicios, peso, consumos adicionales y Gemini Vision',
+      version: '5.0.0',
+      description: 'API REST de nutrición activa DK-FITT — Sprint 5: adherencia, alertas automáticas, citas y dashboard nutricionista',
     },
     servers: [{ url: 'http://localhost:3000', description: 'Desarrollo local' }],
     components: {
@@ -483,6 +483,155 @@ const options: swaggerJsdoc.Options = {
           tags: ['Tracking'],
           security: [{ bearerAuth: [] }],
           responses: { 200: { description: 'Estimación nutricional' } },
+        },
+      },
+      '/adherence/patient/{patientId}': {
+        get: {
+          summary: 'Resumen completo de adherencia del paciente',
+          tags: ['Adherencia'],
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            { name: 'patientId', in: 'path', required: true, schema: { type: 'string' } },
+            { name: 'periodDays', in: 'query', schema: { type: 'integer', default: 7 } },
+          ],
+          responses: { 200: { description: 'Overview de adherencia' } },
+        },
+      },
+      '/adherence/patient/{patientId}/food-compliance': {
+        get: {
+          summary: 'Monitoreo de cumplimiento alimentario',
+          tags: ['Adherencia'],
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            { name: 'patientId', in: 'path', required: true, schema: { type: 'string' } },
+            { name: 'periodDays', in: 'query', schema: { type: 'integer', default: 7 } },
+          ],
+          responses: { 200: { description: 'Cumplimiento alimentario' } },
+        },
+      },
+      '/adherence/patient/{patientId}/exercise-compliance': {
+        get: {
+          summary: 'Monitoreo de cumplimiento físico',
+          tags: ['Adherencia'],
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            { name: 'patientId', in: 'path', required: true, schema: { type: 'string' } },
+          ],
+          responses: { 200: { description: 'Cumplimiento físico' } },
+        },
+      },
+      '/adherence/patient/{patientId}/weight-monitoring': {
+        get: {
+          summary: 'Monitoreo de peso diario',
+          tags: ['Adherencia'],
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            { name: 'patientId', in: 'path', required: true, schema: { type: 'string' } },
+          ],
+          responses: { 200: { description: 'Monitoreo de peso' } },
+        },
+      },
+      '/adherence/patient/{patientId}/plan-deviation': {
+        get: {
+          summary: 'Análisis de desviación del plan nutricional',
+          tags: ['Adherencia'],
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            { name: 'patientId', in: 'path', required: true, schema: { type: 'string' } },
+          ],
+          responses: { 200: { description: 'Desviación del plan' } },
+        },
+      },
+      '/adherence/patient/{patientId}/level': {
+        get: {
+          summary: 'Clasificación del nivel de adherencia',
+          tags: ['Adherencia'],
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            { name: 'patientId', in: 'path', required: true, schema: { type: 'string' } },
+          ],
+          responses: { 200: { description: 'Nivel de adherencia' } },
+        },
+      },
+      '/alerts': {
+        get: {
+          summary: 'Listar alertas',
+          tags: ['Alertas'],
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            { name: 'status', in: 'query', schema: { type: 'string' } },
+            { name: 'patientId', in: 'query', schema: { type: 'string' } },
+          ],
+          responses: { 200: { description: 'Listado de alertas' } },
+        },
+        post: {
+          summary: 'Crear alerta manual (nutricionista)',
+          tags: ['Alertas'],
+          security: [{ bearerAuth: [] }],
+          responses: { 201: { description: 'Alerta creada' } },
+        },
+      },
+      '/alerts/generate': {
+        post: {
+          summary: 'Generar alertas automáticas para un paciente',
+          tags: ['Alertas'],
+          security: [{ bearerAuth: [] }],
+          responses: { 201: { description: 'Alertas generadas' } },
+        },
+      },
+      '/alerts/{id}/status': {
+        patch: {
+          summary: 'Actualizar estado de una alerta',
+          tags: ['Alertas'],
+          security: [{ bearerAuth: [] }],
+          parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
+          responses: { 200: { description: 'Alerta actualizada' } },
+        },
+      },
+      '/appointments': {
+        get: {
+          summary: 'Listar citas',
+          tags: ['Citas'],
+          security: [{ bearerAuth: [] }],
+          responses: { 200: { description: 'Listado de citas' } },
+        },
+        post: {
+          summary: 'Crear cita',
+          tags: ['Citas'],
+          security: [{ bearerAuth: [] }],
+          responses: { 201: { description: 'Cita creada' } },
+        },
+      },
+      '/appointments/{id}': {
+        get: {
+          summary: 'Detalle de cita',
+          tags: ['Citas'],
+          security: [{ bearerAuth: [] }],
+          parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
+          responses: { 200: { description: 'Cita encontrada' }, 404: { description: 'No encontrada' } },
+        },
+        patch: {
+          summary: 'Actualizar cita',
+          tags: ['Citas'],
+          security: [{ bearerAuth: [] }],
+          responses: { 200: { description: 'Cita actualizada' } },
+        },
+        delete: {
+          summary: 'Eliminar cita',
+          tags: ['Citas'],
+          security: [{ bearerAuth: [] }],
+          responses: { 204: { description: 'Cita eliminada' } },
+        },
+      },
+      '/nutritionist/dashboard': {
+        get: {
+          summary: 'Dashboard agregado del nutricionista',
+          tags: ['Dashboard'],
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            { name: 'periodDays', in: 'query', schema: { type: 'integer', default: 7 } },
+          ],
+          responses: { 200: { description: 'Métricas del dashboard' } },
         },
       },
     },
