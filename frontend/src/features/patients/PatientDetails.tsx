@@ -10,6 +10,7 @@ import { PhysicalComplianceSection } from './components/PhysicalComplianceSectio
 import { AdherenceIndicatorsSummary } from './components/AdherenceIndicatorsSummary';
 import { AdherenceLevelBadge } from './components/AdherenceLevelBadge';
 import { AdherenceTrafficLight } from './components/AdherenceTrafficLight';
+import { WeightMonitoringSection } from './components/WeightMonitoringSection';
 
 export function PatientDetails() {
   const { id } = useParams<{ id: string }>();
@@ -20,7 +21,7 @@ export function PatientDetails() {
 
   const [isEvaluationModalOpen, setIsEvaluationModalOpen] = useState(false);
   const [isActivateModalOpen, setIsActivateModalOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'profile' | 'indicators' | 'compliance' | 'physical_compliance'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'indicators' | 'compliance' | 'physical_compliance' | 'weight_monitoring'>('profile');
 
   const getTreatmentColor = (state?: string) => {
     switch(state) {
@@ -254,6 +255,17 @@ export function PatientDetails() {
               <Dumbbell size={16} />
               <span>Cumplimiento Físico</span>
             </button>
+            <button
+              onClick={() => setActiveTab('weight_monitoring')}
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold transition-all ${
+                activeTab === 'weight_monitoring'
+                  ? 'bg-primary text-gray-900 shadow-sm'
+                  : 'text-muted hover:text-foreground hover:bg-surface-hover'
+              }`}
+            >
+              <Weight size={16} />
+              <span>Monitoreo de Peso</span>
+            </button>
           </div>
 
           {activeTab === 'profile' ? (
@@ -444,8 +456,10 @@ export function PatientDetails() {
             <AdherenceIndicatorsSummary patientId={patient.id} />
           ) : activeTab === 'compliance' ? (
             <MealComplianceSection patientId={patient.id} />
-          ) : (
+          ) : activeTab === 'physical_compliance' ? (
             <PhysicalComplianceSection patientId={patient.id} />
+          ) : (
+            <WeightMonitoringSection patientId={patient.id} />
           )}
         </div>
 

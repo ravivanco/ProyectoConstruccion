@@ -25,5 +25,16 @@ export const endpoints = {
   },
   adherenceIndicators: {
     byPeriod: (patientId: string, periodDays = 7) => `/adherence/patient/${patientId}/indicators?periodDays=${periodDays}`,
-  }
+  },
+  weightRecords: {
+    list: (patientId: string, fromDate?: string, toDate?: string) => {
+      let url = `/weight-logs/patient/${patientId}`;
+      const params = new URLSearchParams();
+      if (fromDate) params.append('fromDate', fromDate);
+      if (toDate) params.append('toDate', toDate);
+      if (params.toString()) url += `?${params.toString()}`;
+      return url;
+    },
+    chart: (patientId: string, days = 30) => `/weight-records/patient/${patientId}/chart?days=${days}`,
+  },
 };

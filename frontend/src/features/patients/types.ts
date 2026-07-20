@@ -104,3 +104,25 @@ export interface AdherenceIndicators {
   calorieAdherencePercentage: number;
   overallScore: number;
 }
+
+export interface WeightLog {
+  id: string;
+  patientId: string;
+  weightKg: number;
+  logDate: string;
+  notes?: string;
+  createdAt?: string;
+}
+
+export interface WeightChartResponse {
+  patientId: string;
+  points: Array<{ date: string; weightKg: number }>;
+  summary: {
+    latestWeightKg: number | null;
+    minWeightKg: number;
+    maxWeightKg: number;
+    changeKg: number;
+    trend: 'up' | 'down' | 'stable';
+    daysTracked: number;
+  };
+}
