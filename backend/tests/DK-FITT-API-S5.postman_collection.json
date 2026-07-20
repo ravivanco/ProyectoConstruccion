@@ -1,0 +1,184 @@
+{
+  "info": {
+    "name": "DK-FITT API Sprint 5",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Meal tracking",
+      "item": [
+        {
+          "name": "GET meal-tracking/patient/:id",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{nutritionistToken}}" }],
+            "url": "{{baseUrl}}/meal-tracking/patient/p-1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Exercise tracking",
+      "item": [
+        {
+          "name": "GET exercise-tracking/patient/:id",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{nutritionistToken}}" }],
+            "url": "{{baseUrl}}/exercise-tracking/patient/p-1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Adherence",
+      "item": [
+        {
+          "name": "GET adherence/patient/:id",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{nutritionistToken}}" }],
+            "url": "{{baseUrl}}/adherence/patient/p-1"
+          }
+        },
+        {
+          "name": "GET adherence/patient/:id/calculate",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{nutritionistToken}}" }],
+            "url": "{{baseUrl}}/adherence/patient/p-1/calculate"
+          }
+        },
+        {
+          "name": "GET adherence/classification-rules",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{nutritionistToken}}" }],
+            "url": "{{baseUrl}}/adherence/classification-rules"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Weight records",
+      "item": [
+        {
+          "name": "GET weight-records/patient/:id/chart",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{nutritionistToken}}" }],
+            "url": "{{baseUrl}}/weight-records/patient/p-1/chart"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Additional intake",
+      "item": [
+        {
+          "name": "GET additional-intake/patient/:id",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{nutritionistToken}}" }],
+            "url": "{{baseUrl}}/additional-intake/patient/p-1"
+          }
+        },
+        {
+          "name": "GET additional-intake/patient/:id/impact",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{nutritionistToken}}" }],
+            "url": "{{baseUrl}}/additional-intake/patient/p-1/impact"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Alerts",
+      "item": [
+        {
+          "name": "GET alerts/rules",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{nutritionistToken}}" }],
+            "url": "{{baseUrl}}/alerts/rules"
+          }
+        },
+        {
+          "name": "POST alerts/generate",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{nutritionistToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"patientId\": \"p-1\"\n}" },
+            "url": "{{baseUrl}}/alerts/generate"
+          }
+        },
+        {
+          "name": "GET alerts",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{nutritionistToken}}" }],
+            "url": "{{baseUrl}}/alerts"
+          }
+        },
+        {
+          "name": "PATCH alerts/:id/review",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{nutritionistToken}}" }],
+            "url": "{{baseUrl}}/alerts/{{alertId}}/review"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Meal alerts",
+      "item": [
+        {
+          "name": "GET meal-alerts/schedules",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{patientToken}}" }],
+            "url": "{{baseUrl}}/meal-alerts/schedules"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Appointments",
+      "item": [
+        {
+          "name": "POST appointments",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{nutritionistToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"patientId\": \"p-1\",\n  \"scheduledAt\": \"2026-06-25T10:00:00.000Z\",\n  \"durationMinutes\": 30\n}"
+            },
+            "url": "{{baseUrl}}/appointments"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Nutritionist dashboard",
+      "item": [
+        {
+          "name": "GET nutritionist/dashboard",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{nutritionistToken}}" }],
+            "url": "{{baseUrl}}/nutritionist/dashboard"
+          }
+        }
+      ]
+    }
+  ]
+}
