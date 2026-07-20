@@ -12,6 +12,7 @@ import {
 } from '../types/adherence.js';
 import { TreatmentStatus } from '../types/patient.js';
 import { MEAL_TYPES } from '../types/tracking.js';
+import { classifyScore } from '../utils/adherenceRules.js';
 
 const EXPECTED_MEALS_PER_DAY = MEAL_TYPES.length;
 
@@ -20,9 +21,7 @@ function clampPercentage(value: number): number {
 }
 
 function scoreToLevel(score: number): AdherenceLevel {
-  if (score >= 80) return 'alta';
-  if (score >= 50) return 'media';
-  return 'baja';
+  return classifyScore(score).level;
 }
 
 function levelToTreatmentStatus(level: AdherenceLevel): TreatmentStatus {

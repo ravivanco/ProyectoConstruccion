@@ -11,6 +11,7 @@ import {
   getWeightMonitoring,
 } from '../repositories/adherenceRepository.js';
 import { resolvePatientAccess } from '../utils/patientAccess.js';
+import { ADHERENCE_CLASSIFICATION_RULES } from '../utils/adherenceRules.js';
 
 export const adherenceRouter = Router();
 
@@ -35,6 +36,42 @@ adherenceRouter.get(
       const periodDays = parsePeriodDays(req.query.periodDays);
       const overview = await getPatientAdherenceOverview(access.patientId, periodDays);
       res.json(overview);
+    } catch (error) {
+      next(error);
+    }
+  },
+);
+
+adherenceRouter.get('/adherence/classification-rules', authenticate, (_req, res) => {
+  res.json({ rules: ADHERENCE_CLASSIFICATION_RULES });
+});
+
+adherenceRouter.get(
+  '/adherence/patient/:patientId/calculate',
+  authenticate,
+  async (req, res, next) => {
+    try {
+      const access = resolvePatientAccess(req, patientIdParam(req.params.patientId));
+      if (!access.ok) return res.status(access.status).json({ message: access.message });
+
+      const indicators = await getAdherenceIndicators(access.patientId, parsePeriodDays(req.query.periodDays));
+      res.json(indicators);
+    } catch (error) {
+      next(error);
+    }
+  },
+);
+
+adherenceRouter.get(
+  '/nutrition-plans/deviation/patient/:patientId',
+  authenticate,
+  async (req, res, next) => {
+    try {
+      const access = resolvePatientAccess(req, patientIdParam(req.params.patientId));
+      if (!access.ok) return res.status(access.status).json({ message: access.message });
+
+      const summary = await getPlanDeviation(access.patientId, parsePeriodDays(req.query.periodDays));
+      res.json(summary);
     } catch (error) {
       next(error);
     }
