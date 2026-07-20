@@ -18,5 +18,9 @@ export const endpoints = {
   mealCompliance: {
     byDate: (patientId: string, date: string) => `/patients/${patientId}/meal-compliance?date=${date}`,
     summary: (patientId: string) => `/patients/${patientId}/meal-compliance/summary`,
+  },
+  physicalCompliance: {
+    byDate: (patientId: string, date: string) => `/adherence/patient/${patientId}/exercise-compliance?date=${date}`,
+    summary: (patientId: string) => `/adherence/patient/${patientId}/exercise-compliance/summary`,
   }
 };

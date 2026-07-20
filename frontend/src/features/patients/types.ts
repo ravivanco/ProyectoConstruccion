@@ -65,3 +65,32 @@ export interface DailyMealCompliance {
   complianceRate: number;
   meals: MealItem[];
 }
+
+export type ExerciseItemStatus = 'completed' | 'missed' | 'pending';
+
+export interface ExerciseComplianceItem {
+  id: string;
+  name: string;
+  category: string;
+  muscleGroup?: string;
+  scheduledTime: string;
+  durationMinutes: number;
+  caloriesBurned?: number;
+  status: ExerciseItemStatus;
+  loggedAt?: string;
+  notes?: string;
+  source: 'mobile_app' | 'manual';
+}
+
+export interface DailyPhysicalCompliance {
+  patientId: string;
+  date: string;
+  totalAssigned: number;
+  completedCount: number;
+  missedCount: number;
+  pendingCount: number;
+  complianceRate: number;
+  totalDurationMinutes: number;
+  totalCaloriesBurned: number;
+  exercises: ExerciseComplianceItem[];
+}

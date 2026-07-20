@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, User, Activity, AlertCircle, Phone, Mail, Weight, Ruler, FileText, HeartPulse, Ban, Apple, Target, Plus, Calendar, History, PlayCircle, Lock, Unlock, Utensils } from 'lucide-react';
+import { ArrowLeft, User, Activity, AlertCircle, Phone, Mail, Weight, Ruler, FileText, HeartPulse, Ban, Apple, Target, Plus, Calendar, History, PlayCircle, Lock, Unlock, Utensils, Dumbbell } from 'lucide-react';
 import { usePatientProfile } from './hooks/usePatientProfile';
 import { useActivatePlan } from './hooks/useActivatePlan';
 import { ClinicalEvaluationModal } from './components/ClinicalEvaluationModal';
 import { ActivatePlanModal } from './components/ActivatePlanModal';
 import { MealComplianceSection } from './components/MealComplianceSection';
+import { PhysicalComplianceSection } from './components/PhysicalComplianceSection';
 
 export function PatientDetails() {
   const { id } = useParams<{ id: string }>();
@@ -16,7 +17,7 @@ export function PatientDetails() {
 
   const [isEvaluationModalOpen, setIsEvaluationModalOpen] = useState(false);
   const [isActivateModalOpen, setIsActivateModalOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'profile' | 'compliance'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'compliance' | 'physical_compliance'>('profile');
 
   const getTreatmentColor = (state?: string) => {
     switch(state) {
@@ -231,6 +232,17 @@ export function PatientDetails() {
               <Utensils size={16} />
               <span>Cumplimiento Alimentario</span>
             </button>
+            <button
+              onClick={() => setActiveTab('physical_compliance')}
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold transition-all ${
+                activeTab === 'physical_compliance'
+                  ? 'bg-primary text-gray-900 shadow-sm'
+                  : 'text-muted hover:text-foreground hover:bg-surface-hover'
+              }`}
+            >
+              <Dumbbell size={16} />
+              <span>Cumplimiento Físico</span>
+            </button>
           </div>
 
           {activeTab === 'profile' ? (
@@ -417,8 +429,10 @@ export function PatientDetails() {
               )}
             </div>
           </div>
-          ) : (
+          ) : activeTab === 'compliance' ? (
             <MealComplianceSection patientId={patient.id} />
+          ) : (
+            <PhysicalComplianceSection patientId={patient.id} />
           )}
         </div>
 
