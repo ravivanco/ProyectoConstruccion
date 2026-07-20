@@ -163,12 +163,15 @@ export type AlertType =
   | 'calorie_excess'
   | 'calorie_deficit'
   | 'weight_anomaly'
+  | 'weight_plateau'
+  | 'weight_change'
+  | 'weight_target_missed'
   | 'exercise_missed'
   | 'plan_deviation'
   | 'additional_intake';
 
 export type AlertSeverity = 'low' | 'medium' | 'high' | 'critical';
-export type AlertClassification = 'nutritional' | 'behavioral' | 'clinical';
+export type AlertClassification = 'nutritional' | 'behavioral' | 'clinical' | 'adherence' | 'weight' | 'additional_consumption';
 export type AlertStatus = 'pending' | 'reviewed' | 'resolved' | 'dismissed';
 
 export interface PatientAlert {

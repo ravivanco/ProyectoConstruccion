@@ -13,13 +13,18 @@ import {
   Filter,
   Search,
   Check,
+  Weight,
+  Target,
+  HeartPulse,
 } from 'lucide-react';
 import { useAllAlerts } from './hooks/useAllAlerts';
 import { useAlertMutations } from '../patients/hooks/useAlertMutations';
 import type { PatientAlert, AlertSeverity, AlertStatus } from '../patients/types';
+import { classifyAlertCategory, type AlertCategoryType } from '../patients/services/alertsApi';
 
 export default function AlertsDashboard() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [categoryFilter, setCategoryFilter] = useState<AlertCategoryType | 'all'>('all');
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [selectedAlert, setSelectedAlert] = useState<PatientAlert | null>(null);
 
@@ -29,6 +34,9 @@ export default function AlertsDashboard() {
 
   const filteredAlerts = useMemo(() => {
     return alerts.filter((alert) => {
+      if (categoryFilter !== 'all' && classifyAlertCategory(alert) !== categoryFilter) {
+        return false;
+      }
       if (searchTerm.trim() !== '') {
         const term = searchTerm.toLowerCase();
         const matchTitle = alert.title.toLowerCase().includes(term);
@@ -38,13 +46,17 @@ export default function AlertsDashboard() {
       }
       return true;
     });
-  }, [alerts, searchTerm]);
+  }, [alerts, searchTerm, categoryFilter]);
 
-  // Contadores de estado para el panel principal
+  // Contadores de estado y categoría para el panel principal
   const pendingCount = alerts.filter((a) => a.status === 'pending').length;
   const reviewedCount = alerts.filter((a) => a.status === 'reviewed').length;
   const resolvedCount = alerts.filter((a) => a.status === 'resolved').length;
   const criticalCount = alerts.filter((a) => a.severity === 'critical' && a.status === 'pending').length;
+
+  const adherenceCount = alerts.filter((a) => classifyAlertCategory(a) === 'adherence').length;
+  const weightCount = alerts.filter((a) => classifyAlertCategory(a) === 'weight').length;
+  const calorieCount = alerts.filter((a) => classifyAlertCategory(a) === 'additional_consumption').length;
 
   const handleUpdateStatus = async (alertId: string, status: AlertStatus) => {
     try {
@@ -122,6 +134,35 @@ export default function AlertsDashboard() {
         return (
           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-gray-500/15 text-gray-600 border border-gray-500/20">
             <Bell size={12} /> Evento Clínico
+          </span>
+        );
+    }
+  };
+
+  const getCategoryBadge = (c: AlertCategoryType) => {
+    switch (c) {
+      case 'adherence':
+        return (
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider bg-purple-500/15 text-purple-600 dark:text-purple-400 border border-purple-500/30">
+            <Target size={12} /> Categoría: Adherencia
+          </span>
+        );
+      case 'weight':
+        return (
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/30">
+            <Weight size={12} /> Categoría: Monitoreo de Peso
+          </span>
+        );
+      case 'additional_consumption':
+        return (
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">
+            <Flame size={12} /> Categoría: Consumo Adicional
+          </span>
+        );
+      default:
+        return (
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30">
+            <HeartPulse size={12} /> Categoría: Evento Clínico
           </span>
         );
     }
@@ -296,7 +337,90 @@ export default function AlertsDashboard() {
 
         <div className="flex items-center gap-2 text-xs text-muted font-bold self-end sm:self-center">
           <Filter size={15} className="text-primary" />
-          <span>Filtro de Estado: {statusFilter.toUpperCase()}</span>
+          <span>Estado: {statusFilter.toUpperCase()} | Categoría: {categoryFilter === 'all' ? 'TODAS' : categoryFilter.toUpperCase()}</span>
+        </div>
+      </div>
+
+      {/* Filtros por Categoría de Alerta (HU38: Clasificar y Filtrar por adherencia, peso, consumo adicional) */}
+      <div className="bg-surface rounded-2xl border border-border p-4">
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-xs font-black text-foreground flex items-center gap-2">
+            <Filter size={16} className="text-primary" />
+            Clasificación por Tipo de Alerta:
+          </span>
+          {categoryFilter !== 'all' && (
+            <button
+              onClick={() => setCategoryFilter('all')}
+              className="text-[11px] font-bold text-primary hover:underline"
+            >
+              Ver Todas ({alerts.length})
+            </button>
+          )}
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <button
+            onClick={() => setCategoryFilter('all')}
+            className={`py-3 px-4 rounded-xl border font-bold text-xs flex items-center justify-between transition-all ${
+              categoryFilter === 'all'
+                ? 'bg-primary/15 border-primary text-foreground ring-1 ring-primary/30 shadow-sm'
+                : 'bg-surface-hover border-border text-muted hover:text-foreground'
+            }`}
+          >
+            <span className="flex items-center gap-2">
+              <Bell size={15} /> Todas las Categorías
+            </span>
+            <span className="text-xs font-black px-2 py-0.5 rounded-full bg-surface border border-border">
+              {alerts.length}
+            </span>
+          </button>
+
+          <button
+            onClick={() => setCategoryFilter('adherence')}
+            className={`py-3 px-4 rounded-xl border font-bold text-xs flex items-center justify-between transition-all ${
+              categoryFilter === 'adherence'
+                ? 'bg-purple-500/15 border-purple-500 text-purple-600 dark:text-purple-400 ring-1 ring-purple-500/30 shadow-sm'
+                : 'bg-surface-hover border-border text-muted hover:text-foreground'
+            }`}
+          >
+            <span className="flex items-center gap-2">
+              <Target size={15} /> Por Adherencia
+            </span>
+            <span className="text-xs font-black px-2 py-0.5 rounded-full bg-surface border border-border text-purple-600 dark:text-purple-400">
+              {adherenceCount}
+            </span>
+          </button>
+
+          <button
+            onClick={() => setCategoryFilter('weight')}
+            className={`py-3 px-4 rounded-xl border font-bold text-xs flex items-center justify-between transition-all ${
+              categoryFilter === 'weight'
+                ? 'bg-blue-500/15 border-blue-500 text-blue-600 dark:text-blue-400 ring-1 ring-blue-500/30 shadow-sm'
+                : 'bg-surface-hover border-border text-muted hover:text-foreground'
+            }`}
+          >
+            <span className="flex items-center gap-2">
+              <Weight size={15} /> Por Peso
+            </span>
+            <span className="text-xs font-black px-2 py-0.5 rounded-full bg-surface border border-border text-blue-600 dark:text-blue-400">
+              {weightCount}
+            </span>
+          </button>
+
+          <button
+            onClick={() => setCategoryFilter('additional_consumption')}
+            className={`py-3 px-4 rounded-xl border font-bold text-xs flex items-center justify-between transition-all ${
+              categoryFilter === 'additional_consumption'
+                ? 'bg-amber-500/15 border-amber-500 text-amber-600 dark:text-amber-400 ring-1 ring-amber-500/30 shadow-sm'
+                : 'bg-surface-hover border-border text-muted hover:text-foreground'
+            }`}
+          >
+            <span className="flex items-center gap-2">
+              <Flame size={15} /> Consumo Adicional
+            </span>
+            <span className="text-xs font-black px-2 py-0.5 rounded-full bg-surface border border-border text-amber-600 dark:text-amber-400">
+              {calorieCount}
+            </span>
+          </button>
         </div>
       </div>
 
@@ -314,6 +438,7 @@ export default function AlertsDashboard() {
           <div className="space-y-4">
             {filteredAlerts.map((alert) => {
               const sev = getSeverityStyles(alert.severity);
+              const category = classifyAlertCategory(alert);
               return (
                 <div
                   key={alert.id}
@@ -332,6 +457,7 @@ export default function AlertsDashboard() {
                         <span className={`px-2.5 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider border ${sev.bg} ${sev.text} ${sev.border}`}>
                           {sev.badgeText}
                         </span>
+                        {getCategoryBadge(category)}
                         {getReasonBadge(alert.alertType)}
                         {getStatusBadge(alert.status)}
                         <span className="text-[11px] font-bold text-muted flex items-center gap-1">

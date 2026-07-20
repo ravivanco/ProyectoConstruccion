@@ -12,10 +12,14 @@ import {
   Info,
   Calendar,
   Filter,
+  Weight,
+  Target,
+  HeartPulse,
 } from 'lucide-react';
 import { usePatientAlerts } from '../hooks/usePatientAlerts';
 import { useAlertMutations } from '../hooks/useAlertMutations';
 import type { PatientAlert, AlertSeverity } from '../types';
+import { classifyAlertCategory, type AlertCategoryType } from '../services/alertsApi';
 
 interface PatientAlertsSectionProps {
   patientId: string;
@@ -31,29 +35,33 @@ export function PatientAlertsSection({ patientId }: PatientAlertsSectionProps) {
   );
   const { generateAlerts, isGenerating, updateStatus, isUpdatingStatus } = useAlertMutations(patientId);
 
-  // Filtrado interno adicional
+  // Filtrado interno por causas o categorías de alerta (HU38)
   const filteredAlerts = useMemo(() => {
     return alerts.filter((alert) => {
       if (selectedReasonFilter === 'all') return true;
       if (selectedReasonFilter === 'adherence') {
-        return alert.alertType === 'plan_deviation' || alert.alertType === 'meal_missed';
+        return classifyAlertCategory(alert) === 'adherence';
       }
       if (selectedReasonFilter === 'inactivity') {
         return alert.alertType === 'exercise_missed';
       }
+      if (selectedReasonFilter === 'weight') {
+        return classifyAlertCategory(alert) === 'weight';
+      }
       if (selectedReasonFilter === 'calorie_excess') {
-        return alert.alertType === 'calorie_excess' || alert.alertType === 'additional_intake';
+        return classifyAlertCategory(alert) === 'additional_consumption';
       }
       return true;
     });
   }, [alerts, selectedReasonFilter]);
 
-  // Contadores de severidad y causas para HU36
+  // Contadores de severidad, causas y categorías para HU36 / HU38
   const criticalCount = alerts.filter((a) => a.severity === 'critical' && a.status === 'pending').length;
   const highCount = alerts.filter((a) => a.severity === 'high' && a.status === 'pending').length;
-  const adherenceCount = alerts.filter((a) => a.alertType === 'plan_deviation' || a.alertType === 'meal_missed').length;
+  const adherenceCount = alerts.filter((a) => classifyAlertCategory(a) === 'adherence').length;
   const inactivityCount = alerts.filter((a) => a.alertType === 'exercise_missed').length;
-  const calorieCount = alerts.filter((a) => a.alertType === 'calorie_excess').length;
+  const weightCount = alerts.filter((a) => classifyAlertCategory(a) === 'weight').length;
+  const calorieCount = alerts.filter((a) => classifyAlertCategory(a) === 'additional_consumption').length;
 
   const handleGenerateAlerts = async () => {
     try {
@@ -116,6 +124,14 @@ export function PatientAlertsSection({ patientId }: PatientAlertsSectionProps) {
             <Dumbbell size={12} /> Inactividad Física
           </span>
         );
+      case 'weight_plateau':
+      case 'weight_change':
+      case 'weight_target_missed':
+        return (
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/20">
+            <Weight size={12} /> Monitoreo de Peso
+          </span>
+        );
       case 'calorie_excess':
       case 'additional_intake':
         return (
@@ -127,6 +143,35 @@ export function PatientAlertsSection({ patientId }: PatientAlertsSectionProps) {
         return (
           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-gray-500/15 text-gray-600 border border-gray-500/20">
             <Bell size={12} /> Evento Clínico
+          </span>
+        );
+    }
+  };
+
+  const getCategoryBadge = (c: AlertCategoryType) => {
+    switch (c) {
+      case 'adherence':
+        return (
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider bg-purple-500/15 text-purple-600 dark:text-purple-400 border border-purple-500/30">
+            <Target size={12} /> Categoría: Adherencia
+          </span>
+        );
+      case 'weight':
+        return (
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/30">
+            <Weight size={12} /> Categoría: Monitoreo de Peso
+          </span>
+        );
+      case 'additional_consumption':
+        return (
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">
+            <Flame size={12} /> Categoría: Consumo Adicional
+          </span>
+        );
+      default:
+        return (
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30">
+            <HeartPulse size={12} /> Categoría: Evento Clínico
           </span>
         );
     }
@@ -199,8 +244,8 @@ export function PatientAlertsSection({ patientId }: PatientAlertsSectionProps) {
         </div>
       </div>
 
-      {/* Tarjetas de Resumen Rápido por Tipo de Alertas Generadas (HU36 Criterios) */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      {/* Tarjetas de Resumen Rápido por Categoría de Alertas Generadas (HU36 / HU38 Criterios) */}
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
         <div
           onClick={() => setSelectedReasonFilter('all')}
           className={`p-4.5 rounded-2xl border transition-all cursor-pointer flex items-center gap-3.5 ${
@@ -232,11 +277,28 @@ export function PatientAlertsSection({ patientId }: PatientAlertsSectionProps) {
           }`}
         >
           <div className="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-500 flex items-center justify-center shrink-0">
-            <Activity size={20} />
+            <Target size={20} />
           </div>
           <div>
-            <span className="text-[11px] font-bold text-muted uppercase block tracking-wider">Por Baja Adherencia</span>
+            <span className="text-[11px] font-bold text-muted uppercase block tracking-wider">Por Adherencia</span>
             <span className="text-xl font-black text-purple-600 dark:text-purple-400">{adherenceCount}</span>
+          </div>
+        </div>
+
+        <div
+          onClick={() => setSelectedReasonFilter(selectedReasonFilter === 'weight' ? 'all' : 'weight')}
+          className={`p-4.5 rounded-2xl border transition-all cursor-pointer flex items-center gap-3.5 ${
+            selectedReasonFilter === 'weight'
+              ? 'bg-blue-500/15 border-blue-500 ring-1 ring-blue-500/30'
+              : 'bg-surface border-border hover:border-border/80'
+          }`}
+        >
+          <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center shrink-0">
+            <Weight size={20} />
+          </div>
+          <div>
+            <span className="text-[11px] font-bold text-muted uppercase block tracking-wider">Por Peso</span>
+            <span className="text-xl font-black text-blue-600 dark:text-blue-400">{weightCount}</span>
           </div>
         </div>
 
@@ -269,7 +331,7 @@ export function PatientAlertsSection({ patientId }: PatientAlertsSectionProps) {
             <Flame size={20} />
           </div>
           <div>
-            <span className="text-[11px] font-bold text-muted uppercase block tracking-wider">Por Exceso Calórico</span>
+            <span className="text-[11px] font-bold text-muted uppercase block tracking-wider">Consumo Adicional</span>
             <span className="text-xl font-black text-amber-600 dark:text-amber-400">{calorieCount}</span>
           </div>
         </div>
@@ -335,8 +397,9 @@ export function PatientAlertsSection({ patientId }: PatientAlertsSectionProps) {
                     <div className="space-y-1.5">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className={`px-2.5 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider border ${sev.bg} ${sev.text} ${sev.border}`}>
-                          Severidad: {sev.badgeText}
+                          {sev.badgeText}
                         </span>
+                        {getCategoryBadge(classifyAlertCategory(alert))}
                         {getReasonBadge(alert.alertType)}
                         <span className="text-[11px] font-bold text-muted flex items-center gap-1">
                           <Calendar size={12} /> Disparada: {alert.triggeredDate}

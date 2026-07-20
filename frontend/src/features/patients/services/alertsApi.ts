@@ -20,7 +20,7 @@ const generateMockAlerts = (patientId: string): PatientAlert[] => {
       patientId,
       alertType: 'plan_deviation',
       severity: 'high',
-      classification: 'nutritional',
+      classification: 'adherence',
       title: 'Adherencia general baja (45%)',
       message: 'El paciente presenta un puntaje global de adherencia por debajo del umbral mínimo recomendado (< 50%) en los últimos 7 días.',
       status: 'pending',
@@ -34,7 +34,7 @@ const generateMockAlerts = (patientId: string): PatientAlert[] => {
       patientId,
       alertType: 'exercise_missed',
       severity: 'medium',
-      classification: 'behavioral',
+      classification: 'adherence',
       title: 'Bajo cumplimiento e inactividad física',
       message: 'No se han registrado sesiones completadas de las rutinas prescritas en los últimos 4 días (cumplimiento 30%).',
       status: 'pending',
@@ -48,7 +48,7 @@ const generateMockAlerts = (patientId: string): PatientAlert[] => {
       patientId,
       alertType: 'calorie_excess',
       severity: 'critical',
-      classification: 'nutritional',
+      classification: 'additional_consumption',
       title: 'Exceso calórico detectado (+650 kcal)',
       message: 'Desviación calórica de +32.5% respecto al plan diario prescrito debido a consumos adicionales fuera de plan.',
       status: 'pending',
@@ -62,7 +62,7 @@ const generateMockAlerts = (patientId: string): PatientAlert[] => {
       patientId,
       alertType: 'meal_missed',
       severity: 'medium',
-      classification: 'behavioral',
+      classification: 'adherence',
       title: 'Comidas incompletas registradas',
       message: 'El paciente registró solo 2 de 5 comidas esperadas en el día de ayer.',
       status: 'reviewed',
@@ -70,6 +70,20 @@ const generateMockAlerts = (patientId: string): PatientAlert[] => {
       metadata: { mealsLogged: 2, mealsExpected: 5 },
       createdAt: d2.toISOString(),
       updatedAt: d2.toISOString(),
+    },
+    {
+      id: 'mock-alert-5',
+      patientId,
+      alertType: 'weight_plateau',
+      severity: 'high',
+      classification: 'weight',
+      title: 'Estancamiento o desviación en el progreso de peso',
+      message: 'El peso del paciente se ha mantenido sin cambios o se desvía de la curva objetivo (< 0.2 kg de pérdida) durante las últimas 3 semanas.',
+      status: 'pending',
+      triggeredDate: yesterdayStr,
+      metadata: { currentWeight: 84.5, targetWeight: 78.0, weeksStagnant: 3, reason: 'peso' },
+      createdAt: d1.toISOString(),
+      updatedAt: d1.toISOString(),
     },
   ];
 };
@@ -95,6 +109,24 @@ const generateGlobalMockAlerts = (): PatientAlert[] => {
   }));
   return [...p1, ...p2, ...p3];
 };
+
+export type AlertCategoryType = 'adherence' | 'weight' | 'additional_consumption' | 'clinical';
+
+export function classifyAlertCategory(alert: { alertType?: string; classification?: string; metadata?: Record<string, unknown> }): AlertCategoryType {
+  const type = alert.alertType || '';
+  const classif = alert.classification || '';
+  
+  if (type.includes('weight') || classif === 'weight' || alert.metadata?.reason === 'peso') {
+    return 'weight';
+  }
+  if (type.includes('calorie') || type.includes('additional') || classif === 'additional_consumption' || alert.metadata?.reason === 'exceso_calorico') {
+    return 'additional_consumption';
+  }
+  if (type.includes('deviation') || type.includes('missed') || classif === 'adherence' || classif === 'behavioral' || alert.metadata?.reason === 'baja_adherencia' || alert.metadata?.reason === 'inactividad') {
+    return 'adherence';
+  }
+  return 'clinical';
+}
 
 export const alertsAPI = {
   listAllAlerts: async (status?: string, patientId?: string): Promise<PatientAlert[]> => {
