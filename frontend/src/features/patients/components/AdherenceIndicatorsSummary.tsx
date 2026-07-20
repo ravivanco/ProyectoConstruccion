@@ -7,10 +7,9 @@ import {
   Weight,
   Flame,
   AlertCircle,
-  Activity,
-  CheckCircle2,
 } from 'lucide-react';
 import { useAdherenceIndicators } from '../hooks/useAdherenceIndicators';
+import { AdherenceLevelBadge } from './AdherenceLevelBadge';
 
 interface AdherenceIndicatorsSummaryProps {
   patientId: string;
@@ -22,28 +21,6 @@ export function AdherenceIndicatorsSummary({ patientId }: AdherenceIndicatorsSum
     patientId,
     periodDays,
   );
-
-  const getAdherenceBadge = (percentage: number) => {
-    if (percentage >= 80) {
-      return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-xs font-black border border-emerald-200 dark:border-emerald-500/30">
-          <CheckCircle2 size={12} /> Alta ({percentage}%)
-        </span>
-      );
-    }
-    if (percentage >= 60) {
-      return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400 text-xs font-black border border-amber-200 dark:border-amber-500/30">
-          <Activity size={12} /> Media ({percentage}%)
-        </span>
-      );
-    }
-    return (
-      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400 text-xs font-black border border-red-200 dark:border-red-500/30">
-        <AlertCircle size={12} /> Baja ({percentage}%)
-      </span>
-    );
-  };
 
   if (isLoading) {
     return (
@@ -164,7 +141,7 @@ export function AdherenceIndicatorsSummary({ patientId }: AdherenceIndicatorsSum
               </span>
             </div>
           </div>
-          {getAdherenceBadge(indicators.overallScore)}
+          <AdherenceLevelBadge score={indicators.overallScore} size="sm" showScore={false} />
         </div>
 
         {/* Barras de Desglose de Adherencia Específica */}

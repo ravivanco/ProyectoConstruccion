@@ -8,6 +8,7 @@ import { ActivatePlanModal } from './components/ActivatePlanModal';
 import { MealComplianceSection } from './components/MealComplianceSection';
 import { PhysicalComplianceSection } from './components/PhysicalComplianceSection';
 import { AdherenceIndicatorsSummary } from './components/AdherenceIndicatorsSummary';
+import { AdherenceLevelBadge } from './components/AdherenceLevelBadge';
 
 export function PatientDetails() {
   const { id } = useParams<{ id: string }>();
@@ -126,13 +127,7 @@ export function PatientDetails() {
               </div>
               <h2 className="text-xl font-bold text-foreground">{patient.name}</h2>
               <div className="flex items-center gap-2 mt-3">
-                <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold ${
-                  patient.generalState === 'Alta Adherencia' ? 'bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400' :
-                  patient.generalState === 'Media Adherencia' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-500/20 dark:text-yellow-400' :
-                  'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400'
-                }`}>
-                  {patient.generalState}
-                </span>
+                <AdherenceLevelBadge level={patient.generalState} size="sm" showScore={false} />
                 <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold border ${getTreatmentColor(patient.treatmentState).replace('bg-', 'border-').replace('text-', 'border-').split(' ')[0]} ${getTreatmentColor(patient.treatmentState)}`}>
                   {patient.treatmentState || 'Pendiente'}
                 </span>
