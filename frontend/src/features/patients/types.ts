@@ -39,3 +39,29 @@ export interface PatientDetail {
   evaluations?: ClinicalEvaluation[];
   isPlanLocked?: boolean;
 }
+
+export type MealStatus = 'completed' | 'missed' | 'pending';
+
+export interface MealItem {
+  id: string;
+  mealType: 'desayuno' | 'almuerzo' | 'cena' | 'colacion_1' | 'colacion_2';
+  name: string;
+  scheduledTime: string;
+  status: MealStatus;
+  loggedAt?: string;
+  estimatedCalories: number;
+  consumedCalories?: number;
+  notes?: string;
+  photoUrl?: string;
+}
+
+export interface DailyMealCompliance {
+  patientId: string;
+  date: string;
+  totalAssigned: number;
+  completedCount: number;
+  missedCount: number;
+  pendingCount: number;
+  complianceRate: number;
+  meals: MealItem[];
+}
