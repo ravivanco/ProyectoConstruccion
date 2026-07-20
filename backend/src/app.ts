@@ -27,6 +27,8 @@ import { adherenceRouter } from './routes/adherence.route.js';
 import { alertsRouter } from './routes/alerts.route.js';
 import { appointmentsRouter } from './routes/appointments.route.js';
 import { nutritionistDashboardRouter } from './routes/nutritionistDashboard.route.js';
+import { mealTrackingRouter } from './routes/mealTracking.route.js';
+import { exerciseTrackingRouter } from './routes/exerciseTracking.route.js';
 import { setupSwagger } from './swagger/swagger.js';
 
 export function createApp() {
@@ -61,6 +63,8 @@ export function createApp() {
   app.use(alertsRouter);
   app.use(appointmentsRouter);
   app.use(nutritionistDashboardRouter);
+  app.use(mealTrackingRouter);
+  app.use(exerciseTrackingRouter);
 
   setupSwagger(app);
 
