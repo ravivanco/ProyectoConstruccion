@@ -26,10 +26,7 @@ export const MenuSelectorModal: React.FC<MenuSelectorModalProps> = ({
   const [selectedDishId, setSelectedDishId] = useState<string | null>(null);
   const [notes, setNotes] = useState('');
 
-  if (!isOpen) return null;
-
   const categories = ['Todos', 'Desayunos', 'Almuerzos / Cenas', 'Colaciones', 'Bebidas y Batidos'];
-
   const targetCals = Number(mealConfig.targetCalories) || 400;
 
   // Filtrado dinámico
@@ -76,6 +73,8 @@ export const MenuSelectorModal: React.FC<MenuSelectorModalProps> = ({
     onAssignDish(dish, mult, notes.trim() || undefined);
     onClose();
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">

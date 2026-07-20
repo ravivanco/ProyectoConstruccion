@@ -1,4 +1,4 @@
-import type { WeeklyPlan, DayPlanStructure, DayOfWeek, MealConfig, DishTemplate } from '../types';
+import type { WeeklyPlan, DayPlanStructure, DayOfWeek, MealConfig, DishTemplate, AssignedMenu } from '../types';
 
 export const DISH_CATALOG: DishTemplate[] = [
   // Desayunos
@@ -197,7 +197,7 @@ export const createDefaultWeekStructure = (multiplier = 1, populateSampleMenus =
   return DAYS_OF_WEEK.map((day, dayIndex) => {
     const meals = createDefaultMeals(multiplier).map((meal, mealIndex) => {
       const mealId = `${day}-${meal.id}-${Math.random().toString(36).substring(2, 6)}`;
-      let assignedMenus = [];
+      const assignedMenus: AssignedMenu[] = [];
 
       // Si populateSampleMenus es true, asignamos menús por defecto a Lunes y Martes para que la grilla no esté vacía
       if (populateSampleMenus && (dayIndex === 0 || dayIndex === 1)) {

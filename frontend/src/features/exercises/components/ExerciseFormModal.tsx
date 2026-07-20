@@ -38,24 +38,26 @@ export function ExerciseFormModal({
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (initialData) {
-      setName(initialData.name);
-      setCategory(initialData.category);
-      setMuscleGroup(initialData.muscleGroup);
-      setDifficulty(initialData.difficulty);
-      setMetValue(String(initialData.metValue));
-      setRecommendedDurationMin(String(initialData.recommendedDurationMin));
-      setDescription(initialData.description || '');
-    } else {
-      setName('');
-      setCategory('Fuerza');
-      setMuscleGroup('Cuerpo Completo');
-      setDifficulty('Principiante');
-      setMetValue('5.0');
-      setRecommendedDurationMin('20');
-      setDescription('');
-    }
-    setError('');
+    queueMicrotask(() => {
+      if (initialData) {
+        setName(initialData.name);
+        setCategory(initialData.category);
+        setMuscleGroup(initialData.muscleGroup);
+        setDifficulty(initialData.difficulty);
+        setMetValue(String(initialData.metValue));
+        setRecommendedDurationMin(String(initialData.recommendedDurationMin));
+        setDescription(initialData.description || '');
+      } else {
+        setName('');
+        setCategory('Fuerza');
+        setMuscleGroup('Cuerpo Completo');
+        setDifficulty('Principiante');
+        setMetValue('5.0');
+        setRecommendedDurationMin('20');
+        setDescription('');
+      }
+      setError('');
+    });
   }, [initialData, isOpen]);
 
   if (!isOpen) return null;

@@ -30,24 +30,26 @@ export function FoodFormModal({ isOpen, onClose, onSave, initialData, prefillNam
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (initialData) {
-      setName(initialData.name);
-      setCategory(initialData.category);
-      setServingSize(initialData.servingSize);
-      setCalories(initialData.calories);
-      setProtein(initialData.protein);
-      setCarbs(initialData.carbs);
-      setFat(initialData.fat);
-    } else {
-      setName(prefillName || '');
-      setCategory('Proteínas');
-      setServingSize('100g');
-      setCalories(0);
-      setProtein(0);
-      setCarbs(0);
-      setFat(0);
-    }
-    setError(null);
+    queueMicrotask(() => {
+      if (initialData) {
+        setName(initialData.name);
+        setCategory(initialData.category);
+        setServingSize(initialData.servingSize);
+        setCalories(initialData.calories);
+        setProtein(initialData.protein);
+        setCarbs(initialData.carbs);
+        setFat(initialData.fat);
+      } else {
+        setName(prefillName || '');
+        setCategory('Proteínas');
+        setServingSize('100g');
+        setCalories(0);
+        setProtein(0);
+        setCarbs(0);
+        setFat(0);
+      }
+      setError(null);
+    });
   }, [initialData, isOpen, prefillName]);
 
   if (!isOpen) return null;

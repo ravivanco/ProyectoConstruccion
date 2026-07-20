@@ -43,11 +43,13 @@ export function ExerciseSelectorModal({
       exerciseApi.getExercises().then((list) => {
         setExercises(list.filter((e) => e.isActive));
       });
-      setDayOfWeek(defaultDay);
-      setSelectedExercise(null);
-      setSearch('');
-      setSelectedCategory('Todos');
-      setNotes('');
+      queueMicrotask(() => {
+        setDayOfWeek(defaultDay);
+        setSelectedExercise(null);
+        setSearch('');
+        setSelectedCategory('Todos');
+        setNotes('');
+      });
     }
   }, [isOpen, defaultDay]);
 

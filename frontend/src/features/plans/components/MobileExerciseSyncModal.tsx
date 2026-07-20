@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   Smartphone,
   X,
@@ -55,7 +55,7 @@ export function MobileExerciseSyncModal({
     Domingo: [],
   });
 
-  const loadMobileData = async () => {
+  const loadMobileData = useCallback(async () => {
     setLoading(true);
     try {
       const schedule = await assignedExerciseApi.getMobileSchedule(patientId);
@@ -80,13 +80,15 @@ export function MobileExerciseSyncModal({
     } finally {
       setLoading(false);
     }
-  };
+  }, [patientId]);
 
   useEffect(() => {
     if (isOpen) {
-      loadMobileData();
+      queueMicrotask(() => {
+        loadMobileData();
+      });
     }
-  }, [isOpen, patientId]);
+  }, [isOpen, loadMobileData]);
 
   if (!isOpen) return null;
 

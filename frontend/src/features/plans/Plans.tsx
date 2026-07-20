@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { FileText, Calendar, Clock, Flame, Plus, Copy, Save, Sparkles, User, Target, Check, Trash2, LayoutGrid, ListFilter, Dumbbell } from 'lucide-react';
-import type { WeeklyPlan, DayOfWeek, MealConfig } from './types';
+import type { WeeklyPlan, DayOfWeek, MealConfig, DishTemplate } from './types';
 import { INITIAL_PLANS, createDefaultWeekStructure, DISH_CATALOG } from './services/mockPlans';
 import { WeeklyGrid, MenuSelectorModal, ExerciseSelectorModal, WeeklyExerciseSchedule, MobileExerciseSyncModal } from './components';
 import { assignedExerciseApi, type AssignedExerciseItem, type CreateAssignedExerciseInput } from './services/assignedExerciseApi';
@@ -52,7 +52,10 @@ export function Plans() {
 
   useEffect(() => {
     if (activePlan?.id) {
-      loadAssignedExercises(activePlan.id);
+      const planId = activePlan.id;
+      queueMicrotask(() => {
+        loadAssignedExercises(planId);
+      });
     }
   }, [activePlan?.id, loadAssignedExercises]);
 
@@ -76,7 +79,9 @@ export function Plans() {
   useEffect(() => {
     if (activePlan && !activePlan.includeWeekends) {
       if (selectedDay === 'Sábado' || selectedDay === 'Domingo') {
-        setSelectedDay('Lunes');
+        queueMicrotask(() => {
+          setSelectedDay('Lunes');
+        });
       }
     }
   }, [activePlan, selectedDay]);
@@ -197,7 +202,7 @@ export function Plans() {
     showToast(`Plato eliminado de la toma.`);
   };
 
-  const handleAssignDish = (dish: any, portionMultiplier: number, notes?: string) => {
+  const handleAssignDish = (dish: DishTemplate, portionMultiplier: number, notes?: string) => {
     if (!activePlan || !selectedSlotForMenu) return;
     const { day, meal } = selectedSlotForMenu;
 
