@@ -6,17 +6,19 @@ import { AuthScreen } from './src/presentation/screens/AuthScreen';
 import { CalorieControlScreen } from './src/presentation/screens/CalorieControlScreen';
 import { ExercisesScreen } from './src/presentation/screens/ExercisesScreen';
 import { HomeScreen } from './src/presentation/screens/HomeScreen';
+import { MealAlertsScreen } from './src/presentation/screens/MealAlertsScreen';
 import { MyPlanScreen } from './src/presentation/screens/MyPlanScreen';
 import { OnboardingScreen } from './src/presentation/screens/OnboardingScreen';
 import { ProgressScreen } from './src/presentation/screens/ProgressScreen';
 
 function PatientArea() {
-  const [screen, setScreen] = useState<'home' | 'plan' | 'calories' | 'exercises' | 'progress'>('home');
+  const [screen, setScreen] = useState<'home' | 'plan' | 'calories' | 'exercises' | 'progress' | 'mealAlerts'>('home');
   if (screen === 'plan') return <MyPlanScreen onBack={() => setScreen('home')} />;
   if (screen === 'calories') return <CalorieControlScreen onBack={() => setScreen('home')} />;
   if (screen === 'exercises') return <ExercisesScreen onBack={() => setScreen('home')} />;
   if (screen === 'progress') return <ProgressScreen onBack={() => setScreen('home')} />;
-  return <HomeScreen onOpenPlan={() => setScreen('plan')} onOpenCalories={() => setScreen('calories')} onOpenExercises={() => setScreen('exercises')} onOpenProgress={() => setScreen('progress')} />;
+  if (screen === 'mealAlerts') return <MealAlertsScreen onBack={() => setScreen('home')} />;
+  return <HomeScreen onOpenPlan={() => setScreen('plan')} onOpenCalories={() => setScreen('calories')} onOpenExercises={() => setScreen('exercises')} onOpenProgress={() => setScreen('progress')} onOpenMealAlerts={() => setScreen('mealAlerts')} />;
 }
 
 function AppContent() {
