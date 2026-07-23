@@ -1,18 +1,16 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { FileText, Calendar, Clock, Flame, Plus, Copy, Save, Sparkles, User, Target, Check, Trash2, LayoutGrid, ListFilter, Dumbbell } from 'lucide-react';
-import type { WeeklyPlan, DayOfWeek, MealConfig } from './types';
+import type { WeeklyPlan, DayOfWeek, MealConfig, DishTemplate } from './types';
 import { INITIAL_PLANS, createDefaultWeekStructure, DISH_CATALOG } from './services/mockPlans';
 import { WeeklyGrid, MenuSelectorModal, ExerciseSelectorModal, WeeklyExerciseSchedule, MobileExerciseSyncModal } from './components';
 import { assignedExerciseApi, type AssignedExerciseItem, type CreateAssignedExerciseInput } from './services/assignedExerciseApi';
+import { plansApi } from './services/plansApi';
+import { foodApi } from '../foods/services/foodApi';
+import { patientsAPI } from '../patients/services/patientsApi';
+import type { Patient } from '../../shared/types';
 
 export function Plans() {
-  const [plans, setPlans] = useState<WeeklyPlan[]>(() => {
-    const saved = localStorage.getItem('dkfitt_plans');
-    if (saved) {
-      try { return JSON.parse(saved); } catch (e) { console.error(e); }
-    }
-    return INITIAL_PLANS;
-  });
+  const [plans, setPlans] = useState<WeeklyPlan[]>([]);
 
   const [activePlanId, setActivePlanId] = useState<string>(() => plans[0]?.id || 'plan-101');
   const [selectedDay, setSelectedDay] = useState<DayOfWeek>('Lunes');
@@ -31,6 +29,66 @@ export function Plans() {
   const [newPlanTitle, setNewPlanTitle] = useState('');
   const [newPlanPatient, setNewPlanPatient] = useState('');
   const [newPlanObjective, setNewPlanObjective] = useState('');
+
+  // Estado para catálogo de platos dinámico desde Foods API
+  const [dishCatalog, setDishCatalog] = useState<DishTemplate[]>(DISH_CATALOG);
+
+  // Estado para pacientes reales del sistema
+  const [availablePatients, setAvailablePatients] = useState<Patient[]>([]);
+
+  // Cargar planes desde el backend al montar el componente
+  useEffect(() => {
+    const loadPlans = async () => {
+      try {
+        const backendPlans = await plansApi.getPlans();
+        setPlans(backendPlans.length > 0 ? backendPlans : INITIAL_PLANS);
+      } catch {
+        setPlans(INITIAL_PLANS);
+      }
+    };
+    loadPlans();
+  }, []);
+
+  // Cargar catálogo de alimentos reales desde foodApi para el MenuSelectorModal
+  useEffect(() => {
+    const loadFoodCatalog = async () => {
+      try {
+        const foods = await foodApi.getFoods();
+        if (foods.length > 0) {
+          const mapped: DishTemplate[] = foods
+            .filter((f) => f.isActive)
+            .map((f) => ({
+              id: f.id,
+              name: f.name,
+              category: mapFoodCategoryToDishCategory(f.category),
+              defaultPortion: f.servingSize || '1 porción',
+              calories: f.calories,
+              protein: f.protein,
+              carbs: f.carbs,
+              fat: f.fat,
+              tags: [f.category],
+            }));
+          setDishCatalog(mapped.length > 0 ? mapped : DISH_CATALOG);
+        }
+      } catch {
+        // Fallback: mantener DISH_CATALOG estático
+      }
+    };
+    loadFoodCatalog();
+  }, []);
+
+  // Cargar lista de pacientes reales
+  useEffect(() => {
+    const loadPatients = async () => {
+      try {
+        const pts = await patientsAPI.getPatients();
+        setAvailablePatients(pts);
+      } catch {
+        // Sin conexión al backend, no bloquear la UI
+      }
+    };
+    loadPatients();
+  }, []);
 
   useEffect(() => {
     localStorage.setItem('dkfitt_plans', JSON.stringify(plans));
@@ -234,25 +292,48 @@ export function Plans() {
     showToast(`✨ Plato "${dish.name}" asignado a ${day} - ${meal.name}`);
   };
 
-  const handleSaveConfiguration = () => {
+  const handleSaveConfiguration = async () => {
     localStorage.setItem('dkfitt_plans', JSON.stringify(plans));
+    // También persistir en backend si el plan existe
+    if (activePlan) {
+      await plansApi.updateWeeklyStructure(activePlan.id, activePlan.days);
+    }
     showToast('💾 Estructura semanal del plan guardada correctamente en el sistema.');
   };
 
-  const handleCreateNewPlan = (e: React.FormEvent) => {
+  const handleCreateNewPlan = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newPlanTitle.trim()) return;
 
-    const newPlan: WeeklyPlan = {
+    // Intentar crear en el backend primero
+    const selectedPatient = availablePatients.find((p) => p.id === newPlanPatient || p.name === newPlanPatient);
+    const backendPlan = await plansApi.createPlan({
+      patientId: selectedPatient?.id || newPlanPatient.trim() || 'sin-asignar',
+      title: newPlanTitle.trim(),
+      dailyCalories: 2000,
+      proteinG: 150,
+      carbsG: 200,
+      fatG: 65,
+    });
+
+    const newPlan: WeeklyPlan = backendPlan || {
       id: `plan-${Date.now()}`,
       title: newPlanTitle.trim(),
-      patientName: newPlanPatient.trim() || 'Paciente Sin Asignar',
+      patientName: selectedPatient?.name || newPlanPatient.trim() || 'Paciente Sin Asignar',
       objective: newPlanObjective.trim() || 'Estructuración alimenticia equilibrada',
       includeWeekends: true,
       days: createDefaultWeekStructure(1.0),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
+
+    // Enriquecer con campos del formulario
+    newPlan.patientName = selectedPatient?.name || newPlanPatient.trim() || newPlan.patientName || 'Paciente Sin Asignar';
+    newPlan.objective = newPlanObjective.trim() || 'Estructuración alimenticia equilibrada';
+    newPlan.includeWeekends = true;
+    if (!newPlan.days || newPlan.days.length === 0) {
+      newPlan.days = createDefaultWeekStructure(1.0);
+    }
 
     setPlans((prev) => [newPlan, ...prev]);
     setActivePlanId(newPlan.id);
@@ -661,15 +742,28 @@ export function Plans() {
 
               <div>
                 <label className="block text-xs font-extrabold text-muted uppercase tracking-wider mb-1.5">
-                  Nombre del Paciente (Opcional)
+                  Paciente Asignado
                 </label>
-                <input
-                  type="text"
-                  placeholder="ej. Laura Vásquez"
-                  value={newPlanPatient}
-                  onChange={(e) => setNewPlanPatient(e.target.value)}
-                  className="w-full bg-surface-hover border border-border rounded-xl px-4 py-2.5 text-sm font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
-                />
+                {availablePatients.length > 0 ? (
+                  <select
+                    value={newPlanPatient}
+                    onChange={(e) => setNewPlanPatient(e.target.value)}
+                    className="w-full bg-surface-hover border border-border rounded-xl px-4 py-2.5 text-sm font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+                  >
+                    <option value="">— Selecciona un paciente —</option>
+                    {availablePatients.map((p) => (
+                      <option key={p.id} value={p.id}>{p.name} ({p.email})</option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    type="text"
+                    placeholder="ej. Laura Vásquez"
+                    value={newPlanPatient}
+                    onChange={(e) => setNewPlanPatient(e.target.value)}
+                    className="w-full bg-surface-hover border border-border rounded-xl px-4 py-2.5 text-sm font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+                  />
+                )}
               </div>
 
               <div>
@@ -712,7 +806,7 @@ export function Plans() {
           onClose={() => setSelectedSlotForMenu(null)}
           dayName={selectedSlotForMenu.day}
           mealConfig={selectedSlotForMenu.meal}
-          catalog={DISH_CATALOG}
+          catalog={dishCatalog}
           onAssignDish={handleAssignDish}
         />
       )}
@@ -727,4 +821,21 @@ export function Plans() {
       />
     </div>
   );
+}
+
+// Función auxiliar para mapear categorías del módulo Alimentos a categorías del módulo Planes
+function mapFoodCategoryToDishCategory(foodCategory: string): import('./types').DishCategory {
+  switch (foodCategory) {
+    case 'Proteínas':
+    case 'Verduras':
+      return 'Almuerzos / Cenas';
+    case 'Frutas':
+    case 'Lácteos':
+      return 'Colaciones';
+    case 'Carbohidratos':
+    case 'Grasas':
+      return 'Desayunos';
+    default:
+      return 'Almuerzos / Cenas';
+  }
 }

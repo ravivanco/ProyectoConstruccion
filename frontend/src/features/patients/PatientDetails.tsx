@@ -5,6 +5,7 @@ import { usePatientProfile } from './hooks/usePatientProfile';
 import { useActivatePlan } from './hooks/useActivatePlan';
 import { ClinicalEvaluationModal } from './components/ClinicalEvaluationModal';
 import { ActivatePlanModal } from './components/ActivatePlanModal';
+import { AdherencePanel } from './components/AdherencePanel';
 
 export function PatientDetails() {
   const { id } = useParams<{ id: string }>();
@@ -388,6 +389,10 @@ export function PatientDetails() {
               )}
             </div>
           </div>
+          
+          {/* Panel de Adherencia - Sprint 5 */}
+          <AdherencePanel patientId={patient.id} />
+          
         </div>
 
       </div>
