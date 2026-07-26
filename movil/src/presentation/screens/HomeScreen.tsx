@@ -6,7 +6,7 @@ import { Button, Card } from '../components/ui';
 import { useApp } from '../context/AppContext';
 import { colors } from '../theme';
 
-export function HomeScreen({ onOpenPlan, onOpenCalories, onOpenExercises, onOpenProgress }: { onOpenPlan(): void; onOpenCalories(): void; onOpenExercises(): void; onOpenProgress(): void }) {
+export function HomeScreen({ onOpenPlan, onOpenCalories, onOpenExercises, onOpenProgress, onOpenMealAlerts }: { onOpenPlan(): void; onOpenCalories(): void; onOpenExercises(): void; onOpenProgress(): void; onOpenMealAlerts(): void }) {
   const { getPlanStatus, reset } = useApp();
   const [status, setStatus] = useState<NutritionPlanStatus | null>(null);
   const [loading, setLoading] = useState(true);
@@ -42,6 +42,11 @@ export function HomeScreen({ onOpenPlan, onOpenCalories, onOpenExercises, onOpen
       <Text style={styles.cardTitle}>Progreso</Text>
       <Text style={styles.text}>Registra tu peso diario y revisa tu evolución.</Text>
       <Button label="Ver progreso" onPress={onOpenProgress} />
+    </Card>
+    <Card>
+      <Text style={styles.cardTitle}>Alertas de comidas</Text>
+      <Text style={styles.text}>Activa recordatorios locales para desayuno, colaciones, almuerzo y cena.</Text>
+      <Button label="Configurar alertas" onPress={onOpenMealAlerts} />
     </Card>
     <Button secondary label="Cerrar sesión" onPress={reset} />
   </ScrollView>;
