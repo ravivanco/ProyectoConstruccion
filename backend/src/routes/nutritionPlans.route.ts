@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { authenticate, requireRole } from '../middleware/authenticate.js';
 import {
   activateNutritionPlan,
+  createNutritionPlan,
   findNutritionPlanById,
   getActivePlanForPatient,
   getAllNutritionPlans,
@@ -166,6 +167,33 @@ nutritionPlansRouter.get(
     try {
       const plans = await getAllNutritionPlans();
       res.json(plans);
+    } catch (error) {
+      next(error);
+    }
+  },
+);
+
+// POST /api/nutrition-plans - Crear un nuevo plan nutricional
+nutritionPlansRouter.post(
+  '/api/nutrition-plans',
+  authenticate,
+  requireRole('nutricionista'),
+  async (req, res, next) => {
+    try {
+      const { patientId, dailyCalories, proteinG, carbsG, fatG, weeklyStructure } = req.body;
+      if (!patientId) {
+        return res.status(400).json({ message: 'patientId es requerido' });
+      }
+      const newPlan = await createNutritionPlan({
+        patientId,
+        nutritionistId: req.user?.id || 'nutri-101',
+        dailyCalories,
+        proteinG,
+        carbsG,
+        fatG,
+        weeklyStructure,
+      });
+      res.status(201).json(newPlan);
     } catch (error) {
       next(error);
     }

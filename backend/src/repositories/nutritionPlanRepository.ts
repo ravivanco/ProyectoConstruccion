@@ -148,6 +148,34 @@ export async function createNutritionPlanSeed(
   return mapRow(result.rows[0]);
 }
 
+export async function createNutritionPlan(data: {
+  patientId: string;
+  nutritionistId?: string;
+  dailyCalories?: number;
+  proteinG?: number;
+  carbsG?: number;
+  fatG?: number;
+  weeklyStructure?: WeeklyDayStructure[];
+}): Promise<NutritionPlan> {
+  const result = await pool.query(
+    `INSERT INTO nutrition_plans (
+      patient_id, nutritionist_id, daily_calories, protein_g, carbs_g, fat_g, weekly_structure
+    )
+    VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb)
+    RETURNING *`,
+    [
+      data.patientId,
+      data.nutritionistId || 'nutri-101',
+      data.dailyCalories ?? 2000,
+      data.proteinG ?? 150,
+      data.carbsG ?? 200,
+      data.fatG ?? 65,
+      JSON.stringify(data.weeklyStructure || []),
+    ],
+  );
+  return mapRow(result.rows[0]);
+}
+
 // ===================== HU16 y HU17 =====================
 
 export async function updatePlanWeeklyStructure(
