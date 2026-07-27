@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { api } from '../../../lib/axios';
-import { endpoints } from '../../../lib/endpoints';
+import { api } from '../../lib/axios';
+import { endpoints } from '../../lib/endpoints';
 import { Calendar, Plus, Clock, User, Search, X, Edit2, Trash2, Link2, CheckCircle, XCircle } from 'lucide-react';
 
 export interface Appointment {
