@@ -37,5 +37,9 @@ export const endpoints = {
     summary: (patientId: string) => `/adherence/patient/${patientId}/summary`, // GET
     log: (patientId: string) => `/adherence/patient/${patientId}/log`, // POST
     extraConsumption: (patientId: string) => `/adherence/patient/${patientId}/extra-consumption`, // POST
+    weightTrend: (patientId: string) => `/adherence/patient/${patientId}/weight-trend`, // GET
+  },
+  calorieControl: {
+    today: (patientId: string) => `/calorie-control/patient/${patientId}/today`, // GET
   }
 };

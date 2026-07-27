@@ -7,6 +7,7 @@ import { ClinicalEvaluationModal } from './components/ClinicalEvaluationModal';
 import { ActivatePlanModal } from './components/ActivatePlanModal';
 import { AdherencePanel } from './components/AdherencePanel';
 import { ClinicalComparePanel } from './components/ClinicalComparePanel';
+import { CalorieControlPanel } from './components/CalorieControlPanel';
 import { ClinicalTrendsPanel } from './components/ClinicalTrendsPanel';
 import { DailyWeightChart } from './components/DailyWeightChart';
 
@@ -400,11 +401,14 @@ export function PatientDetails() {
             )}
           </div>
           
-          {/* Panel de Evolución Diaria de Peso (HU32) */}
-          <DailyWeightChart patientId={patient.id} />
-          
-          {/* Panel de Adherencia - Sprint 5 */}
-          <AdherencePanel patientId={patient.id} />
+          {/* Pestaña de Adherencia */}
+          {activeTab === 'adherencia' && (
+            <div className="grid grid-cols-1 gap-6">
+              <CalorieControlPanel patientId={patient.id} />
+              <DailyWeightChart patientId={patient.id} />
+              <AdherencePanel patientId={patient.id} />
+            </div>
+          )}
           
         </div>
 
