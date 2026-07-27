@@ -71,3 +71,27 @@ calorieControlRouter.get(
     }
   },
 );
+
+// HU34 - Endpoint para Nutricionistas
+calorieControlRouter.get(
+  '/api/calorie-control/patient/:id/today',
+  authenticate,
+  async (req, res, next) => {
+    try {
+      const patientId = String(req.params.id ?? '').trim();
+      
+      if (!patientId) {
+        return res.status(400).json({ message: 'patientId requerido' });
+      }
+
+      if (req.user?.role === 'paciente' && patientId !== req.user.id) {
+        return res.status(403).json({ message: 'No autorizado para consultar otro paciente' });
+      }
+
+      const dashboard = await getCalorieDashboard(patientId);
+      res.json(dashboard);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
