@@ -16,6 +16,23 @@ adherenceRouter.get('/api/adherence/patient/:patientId/summary', async (req, res
   }
 });
 
+// GET /api/adherence/patient/:patientId/weight-trend
+adherenceRouter.get('/api/adherence/patient/:patientId/weight-trend', async (req, res) => {
+  try {
+    const patientId = req.params.patientId;
+    const logs = await getAdherenceLogs(patientId, 30);
+    // Filtrar solo los que tienen peso y ordenarlos cronológicamente ascendente (para gráficas)
+    const trend = logs
+      .filter(l => l.dailyWeightKg !== null && l.dailyWeightKg !== undefined)
+      .map(l => ({ date: l.logDate, weight: l.dailyWeightKg }))
+      .reverse(); 
+    res.json(trend);
+  } catch (error) {
+    console.error('Error fetching weight trend:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // POST /api/adherence/patient/:patientId/log
 adherenceRouter.post('/api/adherence/patient/:patientId/log', async (req, res) => {
   try {
