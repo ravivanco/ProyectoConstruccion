@@ -26,41 +26,24 @@ export function useDashboardStats(): DashboardStats {
   });
 
   useEffect(() => {
-    const fetchAll = async () => {
+    const fetchStats = async () => {
       try {
-        // Peticiones en paralelo a los módulos principales
-        const [patientsRes, foodsRes, exercisesRes, plansRes] = await Promise.allSettled([
-          api.get(endpoints.patients.list),
-          api.get('/foods'),
-          api.get('/exercises'),
-          api.get(endpoints.nutritionPlans.list),
-        ]);
-
-        const patients = patientsRes.status === 'fulfilled' ? patientsRes.value.data : [];
-        const foods = foodsRes.status === 'fulfilled' ? foodsRes.value.data : [];
-        const exercises = exercisesRes.status === 'fulfilled' ? exercisesRes.value.data : [];
-        const plans = plansRes.status === 'fulfilled' ? plansRes.value.data : [];
-
-        const patientList = Array.isArray(patients) ? patients : [];
-        const foodList = Array.isArray(foods) ? foods : [];
-        const exerciseList = Array.isArray(exercises) ? exercises : [];
-        const planList = Array.isArray(plans) ? plans : [];
-
+        const res = await api.get(endpoints.dashboard.nutritionist);
         setStats({
-          totalPatients: patientList.length,
-          activePatients: patientList.filter((p: any) => p.treatmentState === 'Activo').length,
-          pendingPatients: patientList.filter((p: any) => !p.treatmentState || p.treatmentState === 'Pendiente').length,
-          totalFoods: foodList.filter((f: any) => f.isActive !== false).length,
-          totalExercises: exerciseList.filter((e: any) => e.isActive !== false).length,
-          totalPlans: planList.length,
-          activePlans: planList.filter((p: any) => p.status === 'active').length,
+          totalPatients: res.data.totalPatients || 0,
+          activePatients: res.data.activePatients || 0,
+          pendingPatients: res.data.pendingPatients || 0,
+          totalFoods: res.data.totalFoods || 0,
+          totalExercises: res.data.totalExercises || 0,
+          totalPlans: res.data.totalPlans || 0,
+          activePlans: res.data.activePlans || 0,
           isLoading: false,
         });
       } catch {
         setStats((prev) => ({ ...prev, isLoading: false }));
       }
     };
-    fetchAll();
+    fetchStats();
   }, []);
 
   return stats;
