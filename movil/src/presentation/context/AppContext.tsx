@@ -20,6 +20,7 @@ interface AppContextValue {
   login(input: LoginInput): Promise<void>;
   updateProfile(changes: Partial<PatientProfile>): void;
   completeProfile(): Promise<void>;
+  saveProfile(profile: PatientProfile): Promise<void>;
   getProfile(): Promise<PatientProfile | null>;
   getPlanStatus(): Promise<NutritionPlanStatus | null>;
   getActivePlan(): Promise<ActiveNutritionPlan | null>;
@@ -68,6 +69,7 @@ export function AppProvider({ children }: PropsWithChildren) {
     login: async (input) => { const result = await services.login.execute(input); setSession({ authenticated: true, completed: result.profileCompleted }); },
     updateProfile: (changes) => setProfile((current) => ({ ...current, ...changes })),
     completeProfile: async () => { await services.complete.execute(profile); setSession({ authenticated: true, completed: true }); },
+    saveProfile: async (updatedProfile) => { await services.complete.execute(updatedProfile); setProfile(updatedProfile); setSession({ authenticated: true, completed: true }); },
     getProfile: async () => { const loaded = await services.profiles.getMe(); if (loaded) setProfile((current) => ({ ...current, ...loaded })); return loaded; },
     getPlanStatus: () => services.plans.getStatus(),
     getActivePlan: () => services.plans.getActive(),
