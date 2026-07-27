@@ -1,19 +1,25 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { PatientProfile } from '../../domain/models/Profile';
-import { Button, Card } from '../components/ui';
+import { Button, Card, Field } from '../components/ui';
 import { useApp } from '../context/AppContext';
 import { colors } from '../theme';
 
 export function ProfileScreen({ onBack }: { onBack(): void }) {
-  const { getProfile, profile } = useApp();
+  const { getProfile, profile, saveProfile } = useApp();
   const [loadedProfile, setLoadedProfile] = useState<PatientProfile | null>(profile);
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState<PatientProfile>(profile);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   const load = useCallback(async () => {
     setLoading(true); setError('');
-    try { setLoadedProfile(await getProfile()); }
+    try {
+      const loaded = await getProfile();
+      setLoadedProfile(loaded);
+      setDraft(loaded ?? profile);
+    }
     catch (requestError) { setError(requestError instanceof Error ? requestError.message : 'No se pudo consultar tu perfil.'); }
     finally { setLoading(false); }
   }, [getProfile]);
@@ -21,6 +27,12 @@ export function ProfileScreen({ onBack }: { onBack(): void }) {
   useEffect(() => { void load(); }, [load]);
 
   const current = loadedProfile ?? profile;
+
+  async function save() {
+    await saveProfile(draft);
+    setLoadedProfile(draft);
+    setEditing(false);
+  }
 
   return <ScrollView contentContainerStyle={styles.container}>
     <Text style={styles.title}>Mi perfil</Text>
@@ -45,12 +57,24 @@ export function ProfileScreen({ onBack }: { onBack(): void }) {
       </Card>
       <Card>
         <Text style={styles.cardTitle}>Hábitos y preferencias</Text>
-        <Info label="Condiciones" value={joinList(current.medicalConditions)} />
-        <Info label="Alergias" value={joinList(current.allergies)} />
-        <Info label="Intolerancias" value={joinList(current.intolerances)} />
-        <Info label="Deportes" value={joinList(current.sports)} />
-        <Info label="Preferencias" value={joinList(current.foodPreferences)} />
-        <Info label="Restricciones" value={joinList(current.foodRestrictions)} />
+        {editing ? <>
+          <Field label="Condiciones médicas" value={joinList(draft.medicalConditions) ?? ''} onChangeText={(text) => setDraft((value) => ({ ...value, medicalConditions: splitList(text) }))} />
+          <Field label="Alergias" value={joinList(draft.allergies) ?? ''} onChangeText={(text) => setDraft((value) => ({ ...value, allergies: splitList(text) }))} />
+          <Field label="Intolerancias" value={joinList(draft.intolerances) ?? ''} onChangeText={(text) => setDraft((value) => ({ ...value, intolerances: splitList(text) }))} />
+          <Field label="Deportes o actividad" value={joinList(draft.sports) ?? ''} onChangeText={(text) => setDraft((value) => ({ ...value, sports: splitList(text) }))} />
+          <Field label="Preferencias alimenticias" value={joinList(draft.foodPreferences) ?? ''} onChangeText={(text) => setDraft((value) => ({ ...value, foodPreferences: splitList(text) }))} />
+          <Field label="Restricciones alimenticias" value={joinList(draft.foodRestrictions) ?? ''} onChangeText={(text) => setDraft((value) => ({ ...value, foodRestrictions: splitList(text) }))} />
+          <Button label="Guardar cambios" onPress={() => { void save(); }} />
+          <Button secondary label="Cancelar edición" onPress={() => { setDraft(current); setEditing(false); }} />
+        </> : <>
+          <Info label="Condiciones" value={joinList(current.medicalConditions)} />
+          <Info label="Alergias" value={joinList(current.allergies)} />
+          <Info label="Intolerancias" value={joinList(current.intolerances)} />
+          <Info label="Deportes" value={joinList(current.sports)} />
+          <Info label="Preferencias" value={joinList(current.foodPreferences)} />
+          <Info label="Restricciones" value={joinList(current.foodRestrictions)} />
+          <Button label="Editar perfil inicial" onPress={() => { setDraft(current); setEditing(true); }} />
+        </>}
       </Card>
     </> : null}
     <Button secondary label="Volver al inicio" onPress={onBack} />
@@ -63,6 +87,10 @@ function Info({ label, value }: { label: string; value?: string }) {
 
 function joinList(values: string[]) {
   return values.length ? values.join(', ') : undefined;
+}
+
+function splitList(value: string) {
+  return value.split(',').map((item) => item.trim()).filter(Boolean);
 }
 
 const styles = StyleSheet.create({
