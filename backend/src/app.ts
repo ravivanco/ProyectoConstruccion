@@ -7,6 +7,7 @@ import { healthRouter } from './routes/health.route.js';
 import { meRouter } from './routes/me.route.js';
 import { clinicalEvaluationsRouter } from './routes/clinicalEvaluations.route.js';
 import { nutritionPlansRouter } from './routes/nutritionPlans.route.js';
+import { dashboardRouter } from './routes/dashboard.route.js';
 import { calorieControlRouter } from './routes/calorieControl.route.js';
 import { patientsRouter } from './routes/patients.route.js';
 import { patientProfileRouter } from './routes/patientProfile.route.js';
@@ -32,6 +33,7 @@ export function createApp() {
   app.use(meRouter);
   app.use(clinicalEvaluationsRouter);
   app.use(nutritionPlansRouter);
+  app.use(dashboardRouter);
   app.use(calorieControlRouter);
   app.use(patientsRouter);
   app.use(patientProfileRouter);

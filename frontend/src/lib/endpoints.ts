@@ -2,6 +2,9 @@ export const endpoints = {
   auth: {
     me: "/me",
   },
+  dashboard: {
+    nutritionist: "/dashboard/nutritionist",
+  },
   patients: {
     list: "/patients", // GET /api/patients
     profile: (patientId: string) => `/patient-profile/${patientId}`, // GET /api/patient-profile/:patientId
