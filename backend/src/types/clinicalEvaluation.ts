@@ -6,6 +6,7 @@ export interface ClinicalEvaluation {
   heightCm: number;
   bmi: number;
   bodyFatPercentage?: number;
+  muscleMassPercentage?: number;
   waistCm?: number;
   notes?: string;
   evaluationDate: string;
@@ -17,6 +18,7 @@ export interface CreateClinicalEvaluationInput {
   weightKg: number;
   heightCm: number;
   bodyFatPercentage?: number;
+  muscleMassPercentage?: number;
   waistCm?: number;
   notes?: string;
   evaluationDate?: string;

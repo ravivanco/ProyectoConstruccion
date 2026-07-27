@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { authenticate, requireRole } from '../middleware/authenticate.js';
-import { createClinicalEvaluation, listClinicalEvaluationsByPatient } from '../repositories/clinicalEvaluationRepository.js';
+import { createClinicalEvaluation, listClinicalEvaluationsByPatient, getClinicalEvaluationById } from '../repositories/clinicalEvaluationRepository.js';
 import { CreateClinicalEvaluationInput } from '../types/clinicalEvaluation.js';
 import { calculateMetabolism } from '../utils/metabolism.js';
 
@@ -60,6 +60,54 @@ clinicalEvaluationsRouter.get(
 
       const evaluations = await listClinicalEvaluationsByPatient(patientId);
       res.json({ patientId, evaluations });
+    } catch (error) {
+      next(error);
+    }
+  },
+);
+
+clinicalEvaluationsRouter.get(
+  '/api/clinical-evaluations/patient/:id/compare',
+  authenticate,
+  requireRole('nutricionista'),
+  async (req, res, next) => {
+    try {
+      const patientId = String(req.params.id ?? '').trim();
+      const baseId = String(req.query.baseId ?? '').trim();
+      const targetId = String(req.query.targetId ?? '').trim();
+
+      if (!patientId || !baseId || !targetId) {
+        return res.status(400).json({ message: 'patientId, baseId y targetId son requeridos' });
+      }
+
+      const [baseEval, targetEval] = await Promise.all([
+        getClinicalEvaluationById(baseId),
+        getClinicalEvaluationById(targetId)
+      ]);
+
+      if (!baseEval || !targetEval) {
+        return res.status(404).json({ message: 'Una o ambas evaluaciones no existen' });
+      }
+      
+      if (baseEval.patientId !== patientId || targetEval.patientId !== patientId) {
+        return res.status(400).json({ message: 'Las evaluaciones no pertenecen al paciente indicado' });
+      }
+
+      const differences = {
+        weightKg: Number((targetEval.weightKg - baseEval.weightKg).toFixed(2)),
+        bodyFatPercentage: targetEval.bodyFatPercentage != null && baseEval.bodyFatPercentage != null 
+          ? Number((targetEval.bodyFatPercentage - baseEval.bodyFatPercentage).toFixed(2)) 
+          : null,
+        muscleMassPercentage: targetEval.muscleMassPercentage != null && baseEval.muscleMassPercentage != null 
+          ? Number((targetEval.muscleMassPercentage - baseEval.muscleMassPercentage).toFixed(2)) 
+          : null,
+      };
+
+      res.json({
+        base: baseEval,
+        target: targetEval,
+        differences
+      });
     } catch (error) {
       next(error);
     }
