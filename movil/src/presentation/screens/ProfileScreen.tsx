@@ -45,6 +45,7 @@ export function ProfileScreen({ onBack }: { onBack(): void }) {
         <Info label="Correo" value={current.email} />
         <Info label="Teléfono" value={current.phone} />
         <Info label="Formulario inicial" value={current.completed ? 'Completo' : 'Pendiente'} />
+        <Info label="Tratamiento nutricional" value={formatTreatmentStatus(current.treatmentStatus)} />
       </Card>
       <Card>
         <Text style={styles.cardTitle}>Datos clínicos básicos</Text>
@@ -91,6 +92,13 @@ function joinList(values: string[]) {
 
 function splitList(value: string) {
   return value.split(',').map((item) => item.trim()).filter(Boolean);
+}
+
+function formatTreatmentStatus(status?: string) {
+  if (status === 'active') return 'Activo';
+  if (status === 'suspended') return 'Suspendido';
+  if (status === 'finished') return 'Finalizado';
+  return 'Pendiente';
 }
 
 const styles = StyleSheet.create({
