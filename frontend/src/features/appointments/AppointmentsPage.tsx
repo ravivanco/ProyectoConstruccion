@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { api } from '../../../lib/axios';
 import { endpoints } from '../../../lib/endpoints';
-import { Calendar, Plus, Clock, User, Search, X, Edit2, Trash2, Link2 } from 'lucide-react';
+import { Calendar, Plus, Clock, User, Search, X, Edit2, Trash2, Link2, CheckCircle, XCircle } from 'lucide-react';
 
 export interface Appointment {
   id: string;
@@ -105,6 +105,15 @@ export function AppointmentsPage() {
       await loadAppointments();
     } catch (err) {
       console.error('Error cancelling appointment:', err);
+    }
+  };
+
+  const handleMarkStatus = async (id: string, status: 'ATENDIDA' | 'CANCELADA') => {
+    try {
+      await api.patch(`/api/appointments/${id}/status`, { status });
+      await loadAppointments();
+    } catch (err) {
+      console.error('Error marking appointment:', err);
     }
   };
 
@@ -234,6 +243,16 @@ export function AppointmentsPage() {
                             </button>
                             <button onClick={() => handleCancel(apt.id)} className="p-1.5 text-muted hover:text-red-500 rounded-lg hover:bg-red-500/10 transition-colors" title="Cancelar">
                               <Trash2 size={14} />
+                            </button>
+                          </>
+                        )}
+                        {(apt.status === 'PROGRAMADA' || apt.status === 'REPROGRAMADA') && (
+                          <>
+                            <button onClick={() => handleMarkStatus(apt.id, 'ATENDIDA')} className="p-1.5 text-muted hover:text-emerald-500 rounded-lg hover:bg-emerald-500/10 transition-colors" title="Marcar como atendida">
+                              <CheckCircle size={14} />
+                            </button>
+                            <button onClick={() => handleMarkStatus(apt.id, 'CANCELADA')} className="p-1.5 text-muted hover:text-orange-500 rounded-lg hover:bg-orange-500/10 transition-colors" title="Marcar como no atendida">
+                              <XCircle size={14} />
                             </button>
                           </>
                         )}
