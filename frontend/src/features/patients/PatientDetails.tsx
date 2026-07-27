@@ -401,14 +401,11 @@ export function PatientDetails() {
             )}
           </div>
           
-          {/* Pestaña de Adherencia */}
-          {activeTab === 'adherencia' && (
-            <div className="grid grid-cols-1 gap-6">
-              <CalorieControlPanel patientId={patient.id} />
-              <DailyWeightChart patientId={patient.id} />
-              <AdherencePanel patientId={patient.id} />
-            </div>
-          )}
+          <div className="grid grid-cols-1 gap-6">
+            <CalorieControlPanel patientId={patient.id} />
+            <DailyWeightChart patientId={patient.id} />
+            <AdherencePanel patientId={patient.id} />
+          </div>
           
         </div>
 
