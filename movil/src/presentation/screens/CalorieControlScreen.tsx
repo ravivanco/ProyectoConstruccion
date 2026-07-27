@@ -111,12 +111,12 @@ export function CalorieControlScreen({ onBack }: { onBack(): void }) {
 
   return <ScrollView contentContainerStyle={styles.container}>
     <Text style={styles.title}>Control calórico</Text>
-    <Text style={styles.subtitle}>Hoy: {today}. Solo puedes registrar comidas del día actual.</Text>
+    <Text style={styles.subtitle}>Hoy: {today}. Se consulta el requerimiento actualizado desde backend al abrir esta pantalla.</Text>
     {loading ? <Card><ActivityIndicator color={colors.primary} /><Text style={styles.center}>Calculando tu meta…</Text></Card> : null}
     {!loading && error ? <Card><Text style={styles.cardTitle}>No pudimos cargar tu meta</Text><Text style={styles.center}>{error}</Text><Button label="Reintentar" onPress={loadDashboard} /></Card> : null}
     {!loading && !error && !dashboard ? <Card><Text style={styles.cardTitle}>Meta aún no disponible</Text><Text style={styles.center}>Necesitas una evaluación clínica para calcular tu requerimiento calórico diario.</Text></Card> : null}
     {!loading && !error && dashboard ? <>
-      <Card><Text style={styles.label}>Tu meta diaria</Text><Text style={styles.calories}>{Math.round(dashboard.plannedCalories)}</Text><Text style={styles.unit}>kcal</Text></Card>
+      <Card><Text style={styles.label}>Tu requerimiento actualizado</Text><Text style={styles.calories}>{Math.round(dashboard.plannedCalories)}</Text><Text style={styles.unit}>kcal</Text><Text style={styles.center}>Calculado con tu última evolución clínica disponible.</Text></Card>
       <Card>
         <View style={styles.row}><Metric label="Consumidas" value={dashboard.consumedToday} /><Metric label="Restantes" value={dashboard.remainingToday} danger={dashboard.remainingToday < 0} /></View>
         <View style={styles.track}><View style={[styles.progress, { width: `${Math.min(Math.max(dashboard.adherencePercentage, 0), 100)}%` }]} /></View>

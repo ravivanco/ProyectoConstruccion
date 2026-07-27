@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { CalorieDashboard } from '../../domain/models/CalorieDashboard';
 import { NutritionPlanStatus } from '../../domain/models/NutritionPlan';
 import { PlanStatusCard } from '../components/PlanStatusCard';
 import { Button, Card } from '../components/ui';
@@ -7,19 +8,24 @@ import { useApp } from '../context/AppContext';
 import { colors } from '../theme';
 
 export function HomeScreen({ onOpenPlan, onOpenCalories, onOpenExercises, onOpenProgress, onOpenMealAlerts }: { onOpenPlan(): void; onOpenCalories(): void; onOpenExercises(): void; onOpenProgress(): void; onOpenMealAlerts(): void }) {
-  const { getPlanStatus, reset } = useApp();
+  const { getCalorieDashboard, getPlanStatus, reset } = useApp();
   const [status, setStatus] = useState<NutritionPlanStatus | null>(null);
+  const [calorieDashboard, setCalorieDashboard] = useState<CalorieDashboard | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const loadStatus = useCallback(async () => {
     setLoading(true); setError('');
-    try { setStatus(await getPlanStatus()); }
+    try {
+      const [planStatus, dashboard] = await Promise.all([getPlanStatus(), getCalorieDashboard()]);
+      setStatus(planStatus);
+      setCalorieDashboard(dashboard);
+    }
     catch { setError('No se pudo actualizar el estado de Mi Plan.'); }
     finally { setLoading(false); }
-  }, [getPlanStatus]);
+  }, [getCalorieDashboard, getPlanStatus]);
   useEffect(() => { void loadStatus(); }, [loadStatus]);
 
-  return <ScrollView contentContainerStyle={styles.container}>
+  return <ScrollView contentContainerStyle={styles.container} refreshControl={<RefreshControl refreshing={loading} onRefresh={loadStatus} />}>
     <Text style={styles.brand}>DK-FITT</Text>
     <Text style={styles.title}>Hola, este es tu espacio</Text>
     <Card>
@@ -31,6 +37,7 @@ export function HomeScreen({ onOpenPlan, onOpenCalories, onOpenExercises, onOpen
     <Card>
       <Text style={styles.cardTitle}>Control calórico</Text>
       <Text style={styles.text}>Revisa tu meta energética, comidas y alimentos adicionales de hoy.</Text>
+      {calorieDashboard ? <Text style={styles.highlight}>Requerimiento actualizado: {Math.round(calorieDashboard.plannedCalories)} kcal</Text> : <Text style={styles.text}>Sin actualización calórica disponible todavía.</Text>}
       <Button label="Ver control calórico" onPress={onOpenCalories} />
     </Card>
     <Card>
@@ -58,6 +65,7 @@ const styles = StyleSheet.create({
   title: { color: colors.text, fontSize: 28, fontWeight: '900', marginTop: 8, marginBottom: 24 },
   cardTitle: { color: colors.text, fontSize: 22, fontWeight: '800' },
   text: { color: colors.muted, lineHeight: 21, marginTop: 8 },
+  highlight: { color: colors.primaryDark, fontWeight: '900', marginTop: 10 },
   status: { marginTop: 16 },
   empty: { color: colors.muted, textAlign: 'center', paddingVertical: 12 },
 });
