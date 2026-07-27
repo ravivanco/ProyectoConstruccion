@@ -1,6 +1,8 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { Users, FileText, Activity, Apple, Dumbbell, Bell, LogOut, Calendar, BarChart2, AlertCircle, Menu, Sun, Moon, Monitor } from 'lucide-react';
+import { AlertsDrawer } from './AlertsDrawer';
+import { TrackingDrawer } from './TrackingDrawer';
 
 type Theme = 'light' | 'dark' | 'system';
 
@@ -27,6 +29,8 @@ export default function Layout() {
   const [isPinned, setIsPinned] = useState(true);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isAlertsOpen, setIsAlertsOpen] = useState(false);
+  const [isTrackingOpen, setIsTrackingOpen] = useState(false);
   const [theme, setTheme] = useState<Theme>(() => {
     const saved = localStorage.getItem('theme');
     return (saved as Theme) || 'light';
@@ -101,7 +105,15 @@ export default function Layout() {
                  href={item.path !== '#' ? item.path : undefined}
                  title={!expanded ? item.name : undefined}
                  onClick={(e) => {
-                    if(item.path !== '#') {
+                    if (item.name === 'Seguimiento') {
+                       e.preventDefault();
+                       setIsTrackingOpen(true);
+                       setIsMobileMenuOpen(false);
+                    } else if (item.name === 'Alertas') {
+                       e.preventDefault();
+                       setIsAlertsOpen(true);
+                       setIsMobileMenuOpen(false);
+                    } else if(item.path !== '#') {
                        e.preventDefault();
                        navigate(item.path);
                        setIsMobileMenuOpen(false); // Close on mobile click
@@ -205,6 +217,9 @@ export default function Layout() {
           <Outlet />
         </div>
       </main>
+
+      <TrackingDrawer isOpen={isTrackingOpen} onClose={() => setIsTrackingOpen(false)} />
+      <AlertsDrawer isOpen={isAlertsOpen} onClose={() => setIsAlertsOpen(false)} />
     </div>
   );
 }
