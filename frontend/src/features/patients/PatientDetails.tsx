@@ -7,6 +7,7 @@ import { ClinicalEvaluationModal } from './components/ClinicalEvaluationModal';
 import { ActivatePlanModal } from './components/ActivatePlanModal';
 import { AdherencePanel } from './components/AdherencePanel';
 import { ClinicalComparePanel } from './components/ClinicalComparePanel';
+import { ClinicalTrendsPanel } from './components/ClinicalTrendsPanel';
 
 export function PatientDetails() {
   const { id } = useParams<{ id: string }>();
@@ -391,8 +392,9 @@ export function PatientDetails() {
             </div>
             
             {patient.evaluations && patient.evaluations.length >= 2 && (
-              <div className="mt-8">
+              <div className="mt-8 space-y-8">
                 <ClinicalComparePanel patientId={patient.id} evaluations={patient.evaluations} />
+                <ClinicalTrendsPanel patientId={patient.id} />
               </div>
             )}
           </div>
