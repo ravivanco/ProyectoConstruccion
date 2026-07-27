@@ -2,27 +2,30 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { CalorieDashboard } from '../../domain/models/CalorieDashboard';
 import { NutritionPlanStatus } from '../../domain/models/NutritionPlan';
+import { PatientProfile } from '../../domain/models/Profile';
 import { PlanStatusCard } from '../components/PlanStatusCard';
 import { Button, Card } from '../components/ui';
 import { useApp } from '../context/AppContext';
 import { colors } from '../theme';
 
 export function HomeScreen({ onOpenPlan, onOpenCalories, onOpenExercises, onOpenProgress, onOpenMealAlerts, onOpenProfile }: { onOpenPlan(): void; onOpenCalories(): void; onOpenExercises(): void; onOpenProgress(): void; onOpenMealAlerts(): void; onOpenProfile(): void }) {
-  const { getCalorieDashboard, getPlanStatus, reset } = useApp();
+  const { getCalorieDashboard, getPlanStatus, getProfile, reset } = useApp();
   const [status, setStatus] = useState<NutritionPlanStatus | null>(null);
   const [calorieDashboard, setCalorieDashboard] = useState<CalorieDashboard | null>(null);
+  const [patientProfile, setPatientProfile] = useState<PatientProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const loadStatus = useCallback(async () => {
     setLoading(true); setError('');
     try {
-      const [planStatus, dashboard] = await Promise.all([getPlanStatus(), getCalorieDashboard()]);
+      const [planStatus, dashboard, loadedProfile] = await Promise.all([getPlanStatus(), getCalorieDashboard(), getProfile()]);
       setStatus(planStatus);
       setCalorieDashboard(dashboard);
+      setPatientProfile(loadedProfile);
     }
     catch { setError('No se pudo actualizar el estado de Mi Plan.'); }
     finally { setLoading(false); }
-  }, [getCalorieDashboard, getPlanStatus]);
+  }, [getCalorieDashboard, getPlanStatus, getProfile]);
   useEffect(() => { void loadStatus(); }, [loadStatus]);
 
   return <ScrollView contentContainerStyle={styles.container} refreshControl={<RefreshControl refreshing={loading} onRefresh={loadStatus} />}>
@@ -31,6 +34,7 @@ export function HomeScreen({ onOpenPlan, onOpenCalories, onOpenExercises, onOpen
     <Card>
       <Text style={styles.cardTitle}>Mi Plan</Text>
       <Text style={styles.text}>Consulta el estado de tu planificación nutricional.</Text>
+      <Text style={styles.highlight}>Tratamiento: {formatTreatmentStatus(patientProfile?.treatmentStatus)}</Text>
       <View style={styles.status}>{loading ? <ActivityIndicator color={colors.primary} /> : status ? <PlanStatusCard status={status} /> : <Text style={styles.empty}>{error || 'Aún no tienes un plan asignado.'}</Text>}</View>
       <Button label="Ver Mi Plan" onPress={onOpenPlan} />
     </Card>
@@ -74,3 +78,10 @@ const styles = StyleSheet.create({
   status: { marginTop: 16 },
   empty: { color: colors.muted, textAlign: 'center', paddingVertical: 12 },
 });
+
+function formatTreatmentStatus(status?: string) {
+  if (status === 'active') return 'Activo';
+  if (status === 'suspended') return 'Suspendido';
+  if (status === 'finished') return 'Finalizado';
+  return 'Pendiente';
+}
