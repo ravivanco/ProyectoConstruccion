@@ -166,6 +166,39 @@ export function AppointmentsPage() {
         </button>
       </div>
 
+      {/* Cumplimiento de Citas (HU41) */}
+      {!isLoading && appointments.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+          <div className="bg-surface border border-border p-4 rounded-2xl flex items-center gap-4">
+            <div className="p-3 bg-emerald-500/10 text-emerald-500 rounded-xl">
+              <CheckCircle size={24} />
+            </div>
+            <div>
+              <p className="text-xs text-muted uppercase font-bold tracking-wider mb-0.5">Atendidas</p>
+              <p className="text-xl font-bold text-foreground">{appointments.filter(a => a.status === 'ATENDIDA').length}</p>
+            </div>
+          </div>
+          <div className="bg-surface border border-border p-4 rounded-2xl flex items-center gap-4">
+            <div className="p-3 bg-red-500/10 text-red-500 rounded-xl">
+              <XCircle size={24} />
+            </div>
+            <div>
+              <p className="text-xs text-muted uppercase font-bold tracking-wider mb-0.5">No Atendidas / Canceladas</p>
+              <p className="text-xl font-bold text-foreground">{appointments.filter(a => a.status === 'CANCELADA').length}</p>
+            </div>
+          </div>
+          <div className="bg-surface border border-border p-4 rounded-2xl flex items-center gap-4">
+            <div className="p-3 bg-blue-500/10 text-blue-500 rounded-xl">
+              <Calendar size={24} />
+            </div>
+            <div>
+              <p className="text-xs text-muted uppercase font-bold tracking-wider mb-0.5">Programadas</p>
+              <p className="text-xl font-bold text-foreground">{appointments.filter(a => a.status === 'PROGRAMADA' || a.status === 'REPROGRAMADA').length}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-4 mb-6">
         <div className="relative flex-1">
