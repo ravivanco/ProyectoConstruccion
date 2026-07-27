@@ -7,7 +7,7 @@ import { Button, Card } from '../components/ui';
 import { useApp } from '../context/AppContext';
 import { colors } from '../theme';
 
-export function HomeScreen({ onOpenPlan, onOpenCalories, onOpenExercises, onOpenProgress, onOpenMealAlerts }: { onOpenPlan(): void; onOpenCalories(): void; onOpenExercises(): void; onOpenProgress(): void; onOpenMealAlerts(): void }) {
+export function HomeScreen({ onOpenPlan, onOpenCalories, onOpenExercises, onOpenProgress, onOpenMealAlerts, onOpenProfile }: { onOpenPlan(): void; onOpenCalories(): void; onOpenExercises(): void; onOpenProgress(): void; onOpenMealAlerts(): void; onOpenProfile(): void }) {
   const { getCalorieDashboard, getPlanStatus, reset } = useApp();
   const [status, setStatus] = useState<NutritionPlanStatus | null>(null);
   const [calorieDashboard, setCalorieDashboard] = useState<CalorieDashboard | null>(null);
@@ -54,6 +54,11 @@ export function HomeScreen({ onOpenPlan, onOpenCalories, onOpenExercises, onOpen
       <Text style={styles.cardTitle}>Alertas de comidas</Text>
       <Text style={styles.text}>Activa recordatorios locales para desayuno, colaciones, almuerzo y cena.</Text>
       <Button label="Configurar alertas" onPress={onOpenMealAlerts} />
+    </Card>
+    <Card>
+      <Text style={styles.cardTitle}>Mi perfil</Text>
+      <Text style={styles.text}>Consulta tu información personal, clínica básica y estado del formulario.</Text>
+      <Button label="Ver perfil" onPress={onOpenProfile} />
     </Card>
     <Button secondary label="Cerrar sesión" onPress={reset} />
   </ScrollView>;
