@@ -113,3 +113,31 @@ clinicalEvaluationsRouter.get(
     }
   },
 );
+
+clinicalEvaluationsRouter.get(
+  '/api/clinical-evaluations/patient/:id/trends',
+  authenticate,
+  requireRole('nutricionista'),
+  async (req, res, next) => {
+    try {
+      const patientId = String(req.params.id ?? '').trim();
+      if (!patientId) {
+        return res.status(400).json({ message: 'patientId es requerido' });
+      }
+
+      const evaluations = await listClinicalEvaluationsByPatient(patientId);
+
+      const trends = [...evaluations].reverse().map(e => ({
+        id: e.id,
+        date: e.evaluationDate,
+        weightKg: e.weightKg,
+        bodyFatPercentage: e.bodyFatPercentage ?? null,
+        muscleMassPercentage: e.muscleMassPercentage ?? null,
+      }));
+
+      res.json({ patientId, trends });
+    } catch (error) {
+      next(error);
+    }
+  },
+);
