@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getAppointments, getAppointmentsByPatient, createAppointment, updateAppointmentStatus } from '../repositories/appointmentRepository.js';
+import { getAppointments, getAppointmentsByPatient, createAppointment, updateAppointmentStatus, updateAppointment, deleteAppointment } from '../repositories/appointmentRepository.js';
 
 export const appointmentsRouter = Router();
 
@@ -51,6 +51,31 @@ appointmentsRouter.patch('/api/appointments/:id/status', async (req, res) => {
     res.json(updated);
   } catch (error) {
     console.error('Error updating appointment status:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// PUT /api/appointments/:id (editar cita)
+appointmentsRouter.put('/api/appointments/:id', async (req, res) => {
+  try {
+    const { patientId, dateTime, reason } = req.body;
+    const updated = await updateAppointment(req.params.id, { patientId, dateTime, reason });
+    if (!updated) return res.status(404).json({ error: 'Cita no encontrada' });
+    res.json(updated);
+  } catch (error) {
+    console.error('Error updating appointment:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// DELETE /api/appointments/:id (eliminar cita)
+appointmentsRouter.delete('/api/appointments/:id', async (req, res) => {
+  try {
+    const deleted = await deleteAppointment(req.params.id);
+    if (!deleted) return res.status(404).json({ error: 'Cita no encontrada' });
+    res.json({ message: 'Cita eliminada' });
+  } catch (error) {
+    console.error('Error deleting appointment:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

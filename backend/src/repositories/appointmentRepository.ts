@@ -80,3 +80,38 @@ export async function updateAppointmentStatus(id: string, status: string): Promi
     updatedAt: String(row.updated_at),
   };
 }
+
+export async function updateAppointment(
+  id: string,
+  data: { patientId?: string; dateTime?: string; reason?: string },
+): Promise<Appointment | null> {
+  const result = await pool.query(
+    `UPDATE appointments 
+     SET patient_id = COALESCE($1, patient_id),
+         date_time = COALESCE($2, date_time),
+         reason = COALESCE($3, reason),
+         updated_at = CURRENT_TIMESTAMP
+     WHERE id = $4 
+     RETURNING *`,
+    [data.patientId, data.dateTime, data.reason, id],
+  );
+  if (!result.rowCount) return null;
+  const row = result.rows[0];
+  return {
+    id: String(row.id),
+    patientId: String(row.patient_id),
+    dateTime: String(row.date_time),
+    reason: String(row.reason),
+    status: row.status as any,
+    createdAt: String(row.created_at),
+    updatedAt: String(row.updated_at),
+  };
+}
+
+export async function deleteAppointment(id: string): Promise<boolean> {
+  const result = await pool.query(
+    `DELETE FROM appointments WHERE id = $1`,
+    [id],
+  );
+  return (result.rowCount ?? 0) > 0;
+}
