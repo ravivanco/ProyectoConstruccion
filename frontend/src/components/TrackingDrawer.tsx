@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { X, Activity, User, ChevronRight, BarChart2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { patientsAPI } from '../../features/patients/services/patientsApi';
-import type { Patient } from '../../features/patients/types';
+import { patientsAPI } from '../features/patients/services/patientsApi';
+import type { Patient } from '../features/patients/types';
 
 interface TrackingDrawerProps {
   isOpen: boolean;
