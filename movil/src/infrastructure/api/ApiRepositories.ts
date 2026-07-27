@@ -23,6 +23,10 @@ export class AuthApiRepository implements AuthRepository {
 }
 export class ProfileApiRepository implements ProfileRepository {
   constructor(private readonly client: HttpClient) {}
+  async getMe(): Promise<PatientProfile | null> {
+    try { return await this.client.request<PatientProfile>('/api/patient-profile/me'); }
+    catch (error) { if (error instanceof ApiError && error.status === 404) return null; throw error; }
+  }
   async complete(profile: PatientProfile) { await this.client.request('/patient-profile/me', { method: 'PUT', body: JSON.stringify({ ...profile, completed: true }) }); }
 }
 export class NutritionPlanApiRepository implements NutritionPlanRepository {
