@@ -6,6 +6,7 @@ import { useActivatePlan } from './hooks/useActivatePlan';
 import { ClinicalEvaluationModal } from './components/ClinicalEvaluationModal';
 import { ActivatePlanModal } from './components/ActivatePlanModal';
 import { AdherencePanel } from './components/AdherencePanel';
+import { ClinicalComparePanel } from './components/ClinicalComparePanel';
 
 export function PatientDetails() {
   const { id } = useParams<{ id: string }>();
@@ -388,6 +389,12 @@ export function PatientDetails() {
                 </div>
               )}
             </div>
+            
+            {patient.evaluations && patient.evaluations.length >= 2 && (
+              <div className="mt-8">
+                <ClinicalComparePanel patientId={patient.id} evaluations={patient.evaluations} />
+              </div>
+            )}
           </div>
           
           {/* Panel de Adherencia - Sprint 5 */}

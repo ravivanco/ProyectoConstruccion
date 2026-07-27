@@ -37,7 +37,14 @@ export function usePatientProfile(patientId: string | undefined) {
         preferences: profileData.foodPreferences || [],
         restrictions: profileData.foodRestrictions || [],
         objective: profileData.nutritionGoal || '',
-        evaluations: evaluationsData?.evaluations || [],
+        evaluations: evaluationsData?.evaluations.map((e: any) => ({
+          id: e.id,
+          date: e.evaluationDate,
+          weight: e.weightKg,
+          height: e.heightCm,
+          bodyFat: e.bodyFatPercentage || 0,
+          muscleMass: e.muscleMassPercentage || 0,
+        })) || [],
         isPlanLocked: false,
       };
     },
