@@ -21,7 +21,7 @@ export default function Layout() {
     { name: 'Ejercicios Físicos', path: '/exercises', icon: <Dumbbell size={18} /> },
     { name: 'Seguimiento', path: '#', icon: <BarChart2 size={18} /> },
     { name: 'Alertas', path: '#', icon: <AlertCircle size={18} /> },
-    { name: 'Citas', path: '#', icon: <Calendar size={18} /> },
+    { name: 'Citas', path: '/appointments', icon: <Calendar size={18} /> },
   ];
 
   const [isPinned, setIsPinned] = useState(true);
