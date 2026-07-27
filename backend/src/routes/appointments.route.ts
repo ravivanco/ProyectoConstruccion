@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getAppointments, getAppointmentsByPatient, createAppointment, updateAppointmentStatus, updateAppointment, deleteAppointment } from '../repositories/appointmentRepository.js';
+import { getAppointments, getAppointmentsByPatient, createAppointment, updateAppointmentStatus, updateAppointment, deleteAppointment, linkEvaluation } from '../repositories/appointmentRepository.js';
 
 export const appointmentsRouter = Router();
 
@@ -76,6 +76,19 @@ appointmentsRouter.delete('/api/appointments/:id', async (req, res) => {
     res.json({ message: 'Cita eliminada' });
   } catch (error) {
     console.error('Error deleting appointment:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// PATCH /api/appointments/:id/link-evaluation (HU40)
+appointmentsRouter.patch('/api/appointments/:id/link-evaluation', async (req, res) => {
+  try {
+    const { evaluationId } = req.body;
+    const updated = await linkEvaluation(req.params.id, evaluationId || null);
+    if (!updated) return res.status(404).json({ error: 'Cita no encontrada' });
+    res.json(updated);
+  } catch (error) {
+    console.error('Error linking evaluation:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

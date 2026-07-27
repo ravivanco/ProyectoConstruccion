@@ -6,6 +6,7 @@ export interface Appointment {
   dateTime: string;
   reason: string;
   status: 'PROGRAMADA' | 'ATENDIDA' | 'CANCELADA' | 'REPROGRAMADA';
+  evaluationId?: string | null;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -24,6 +25,7 @@ export async function createAppointment(data: Omit<Appointment, 'id' | 'createdA
     dateTime: String(row.date_time),
     reason: String(row.reason),
     status: row.status as any,
+    evaluationId: row.evaluation_id ? String(row.evaluation_id) : null,
     createdAt: String(row.created_at),
     updatedAt: String(row.updated_at),
   };
@@ -39,6 +41,7 @@ export async function getAppointments(): Promise<Appointment[]> {
     dateTime: String(row.date_time),
     reason: String(row.reason),
     status: row.status as any,
+    evaluationId: row.evaluation_id ? String(row.evaluation_id) : null,
     createdAt: String(row.created_at),
     updatedAt: String(row.updated_at),
   }));
@@ -114,4 +117,26 @@ export async function deleteAppointment(id: string): Promise<boolean> {
     [id],
   );
   return (result.rowCount ?? 0) > 0;
+}
+
+export async function linkEvaluation(id: string, evaluationId: string | null): Promise<Appointment | null> {
+  const result = await pool.query(
+    `UPDATE appointments 
+     SET evaluation_id = $1, updated_at = CURRENT_TIMESTAMP 
+     WHERE id = $2 
+     RETURNING *`,
+    [evaluationId, id],
+  );
+  if (!result.rowCount) return null;
+  const row = result.rows[0];
+  return {
+    id: String(row.id),
+    patientId: String(row.patient_id),
+    dateTime: String(row.date_time),
+    reason: String(row.reason),
+    status: row.status as any,
+    evaluationId: row.evaluation_id ? String(row.evaluation_id) : null,
+    createdAt: String(row.created_at),
+    updatedAt: String(row.updated_at),
+  };
 }

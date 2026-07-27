@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { api } from '../../../lib/axios';
 import { endpoints } from '../../../lib/endpoints';
-import { Calendar, Plus, Clock, User, Search, X, Edit2, Trash2 } from 'lucide-react';
+import { Calendar, Plus, Clock, User, Search, X, Edit2, Trash2, Link2 } from 'lucide-react';
 
 export interface Appointment {
   id: string;
@@ -40,6 +40,8 @@ export function AppointmentsPage() {
   });
   const [patients, setPatients] = useState<{ id: string; name: string }[]>([]);
   const [isSaving, setIsSaving] = useState(false);
+  const [linkingAppointment, setLinkingAppointment] = useState<Appointment | null>(null);
+  const [evaluations, setEvaluations] = useState<{ id: string; date: string; weightKg: number }[]>([]);
 
   useEffect(() => {
     loadAppointments();
@@ -110,6 +112,26 @@ export function AppointmentsPage() {
     setEditingAppointment(null);
     setFormData({ patientId: '', dateTime: '', reason: '' });
     setShowModal(true);
+  };
+
+  const handleLinkEvaluation = async (appointmentId: string, evaluationId: string | null) => {
+    try {
+      await api.patch(`/api/appointments/${appointmentId}/link-evaluation`, { evaluationId });
+      setLinkingAppointment(null);
+      await loadAppointments();
+    } catch (err) {
+      console.error('Error linking evaluation:', err);
+    }
+  };
+
+  const openLinkModal = async (apt: Appointment) => {
+    setLinkingAppointment(apt);
+    try {
+      const response = await api.get(endpoints.clinicalEvaluations.history(apt.patientId));
+      setEvaluations(response.data.map((e: any) => ({ id: e.id, date: e.evaluation_date || e.date, weightKg: e.weight_kg || e.weight })));
+    } catch {
+      setEvaluations([]);
+    }
   };
 
   const filtered = appointments.filter(apt => {
@@ -215,6 +237,12 @@ export function AppointmentsPage() {
                             </button>
                           </>
                         )}
+                        <button onClick={() => openLinkModal(apt)} className="p-1.5 text-muted hover:text-blue-500 rounded-lg hover:bg-blue-500/10 transition-colors" title="Vincular evaluación">
+                          <Link2 size={14} />
+                        </button>
+                        {apt.evaluationId && (
+                          <span className="text-[10px] px-1.5 py-0.5 bg-emerald-500/10 text-emerald-500 rounded font-bold">Vinculada</span>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -281,6 +309,47 @@ export function AppointmentsPage() {
                 {isSaving ? 'Guardando...' : editingAppointment ? 'Actualizar Cita' : 'Crear Cita'}
               </button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Link Evaluation Modal (HU40) */}
+      {linkingAppointment && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-surface border border-border rounded-2xl p-6 w-full max-w-md shadow-2xl">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-lg font-bold text-foreground">Vincular Evaluación</h2>
+              <button onClick={() => setLinkingAppointment(null)} className="text-muted hover:text-foreground">
+                <X size={20} />
+              </button>
+            </div>
+            <p className="text-sm text-muted mb-4">Selecciona la evaluación clínica a vincular con esta cita:</p>
+            {evaluations.length === 0 ? (
+              <p className="text-sm text-muted text-center py-4">No hay evaluaciones para este paciente.</p>
+            ) : (
+              <div className="space-y-2 max-h-60 overflow-y-auto">
+                {evaluations.map(ev => (
+                  <button
+                    key={ev.id}
+                    onClick={() => handleLinkEvaluation(linkingAppointment.id, ev.id)}
+                    className={`w-full text-left p-3 rounded-xl border transition-colors ${linkingAppointment.evaluationId === ev.id ? 'border-primary bg-primary/10' : 'border-border hover:bg-surface-hover'}`}
+                  >
+                    <p className="text-sm font-bold text-foreground">
+                      {new Date(ev.date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
+                    </p>
+                    <p className="text-xs text-muted">Peso: {ev.weightKg} kg</p>
+                  </button>
+                ))}
+              </div>
+            )}
+            {linkingAppointment.evaluationId && (
+              <button
+                onClick={() => handleLinkEvaluation(linkingAppointment.id, null)}
+                className="w-full mt-4 py-2 text-sm text-red-500 hover:bg-red-500/10 rounded-xl transition-colors font-bold"
+              >
+                Desvincular evaluación
+              </button>
+            )}
           </div>
         </div>
       )}
