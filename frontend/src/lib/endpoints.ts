@@ -9,6 +9,9 @@ export const endpoints = {
   clinicalEvaluations: {
     history: (patientId: string) => `/clinical-evaluations/patient/${patientId}`, // GET
     create: "/clinical-evaluations", // POST
+    compare: (patientId: string, baseId: string, targetId: string) => 
+      `/clinical-evaluations/patient/${patientId}/compare?baseId=${baseId}&targetId=${targetId}`, // GET
+    trends: (patientId: string) => `/clinical-evaluations/patient/${patientId}/trends`, // GET
   },
   nutritionPlans: {
     list: "/nutrition-plans", // GET /api/nutrition-plans

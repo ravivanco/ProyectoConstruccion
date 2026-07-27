@@ -3,7 +3,7 @@
 -- Tabla para el registro de adherencia diaria del paciente
 CREATE TABLE IF NOT EXISTS adherence_logs (
     id SERIAL PRIMARY KEY,
-    patient_id UUID NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
+    patient_id VARCHAR(64) NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
     log_date DATE NOT NULL DEFAULT CURRENT_DATE,
     meal_adherence_percent NUMERIC(5,2) DEFAULT 0,
     physical_adherence_percent NUMERIC(5,2) DEFAULT 0,
@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS adherence_logs (
 -- Tabla para consumos adicionales (fuera del plan)
 CREATE TABLE IF NOT EXISTS extra_consumptions (
     id SERIAL PRIMARY KEY,
-    patient_id UUID NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
+    patient_id VARCHAR(64) NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
     log_date DATE NOT NULL DEFAULT CURRENT_DATE,
     food_description TEXT NOT NULL,
     calories INTEGER NOT NULL,
@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS extra_consumptions (
 -- Tabla para alertas clínicas automáticas (Nutricionista)
 CREATE TABLE IF NOT EXISTS alerts (
     id SERIAL PRIMARY KEY,
-    patient_id UUID NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
+    patient_id VARCHAR(64) NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
     type VARCHAR(50) NOT NULL CHECK (type IN ('ADHERENCIA', 'PESO', 'EXCESO_CALORICO', 'INACTIVIDAD')),
     severity VARCHAR(20) NOT NULL CHECK (severity IN ('INFO', 'WARNING', 'CRITICAL')),
     message TEXT NOT NULL,
@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS alerts (
 -- Tabla para citas del nutricionista
 CREATE TABLE IF NOT EXISTS appointments (
     id SERIAL PRIMARY KEY,
-    patient_id UUID NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
+    patient_id VARCHAR(64) NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
     date_time TIMESTAMP WITH TIME ZONE NOT NULL,
     reason TEXT NOT NULL,
     status VARCHAR(20) NOT NULL CHECK (status IN ('PROGRAMADA', 'ATENDIDA', 'CANCELADA', 'REPROGRAMADA')),
