@@ -42,12 +42,16 @@ appointmentsRouter.post('/api/appointments', async (req, res) => {
   }
 });
 
-// PATCH /api/appointments/:id/status
+// PATCH /api/appointments/:id/status (HU41 - Control cumplimiento / HU42 - Estado de citas)
 appointmentsRouter.patch('/api/appointments/:id/status', async (req, res) => {
   try {
     const { status } = req.body;
+    const validStatuses = ['PROGRAMADA', 'ATENDIDA', 'CANCELADA', 'REPROGRAMADA'];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ error: `Estado inválido. Estados permitidos: ${validStatuses.join(', ')}` });
+    }
     const updated = await updateAppointmentStatus(req.params.id, status);
-    if (!updated) return res.status(404).json({ error: 'Not found' });
+    if (!updated) return res.status(404).json({ error: 'Cita no encontrada' });
     res.json(updated);
   } catch (error) {
     console.error('Error updating appointment status:', error);

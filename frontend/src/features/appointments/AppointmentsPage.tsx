@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { api } from '../../../lib/axios';
 import { endpoints } from '../../../lib/endpoints';
-import { Calendar, Plus, Clock, User, Search, X, Edit2, Trash2, Link2 } from 'lucide-react';
+import { Calendar, Plus, Clock, User, Search, X, Edit2, Trash2, Link2, CheckCircle, XCircle } from 'lucide-react';
 
 export interface Appointment {
   id: string;
@@ -108,6 +108,15 @@ export function AppointmentsPage() {
     }
   };
 
+  const handleMarkStatus = async (id: string, status: 'ATENDIDA' | 'CANCELADA') => {
+    try {
+      await api.patch(`/api/appointments/${id}/status`, { status });
+      await loadAppointments();
+    } catch (err) {
+      console.error('Error marking appointment:', err);
+    }
+  };
+
   const openNewModal = () => {
     setEditingAppointment(null);
     setFormData({ patientId: '', dateTime: '', reason: '' });
@@ -156,6 +165,39 @@ export function AppointmentsPage() {
           <Plus size={18} /> Nueva Cita
         </button>
       </div>
+
+      {/* Cumplimiento de Citas (HU41) */}
+      {!isLoading && appointments.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+          <div className="bg-surface border border-border p-4 rounded-2xl flex items-center gap-4">
+            <div className="p-3 bg-emerald-500/10 text-emerald-500 rounded-xl">
+              <CheckCircle size={24} />
+            </div>
+            <div>
+              <p className="text-xs text-muted uppercase font-bold tracking-wider mb-0.5">Atendidas</p>
+              <p className="text-xl font-bold text-foreground">{appointments.filter(a => a.status === 'ATENDIDA').length}</p>
+            </div>
+          </div>
+          <div className="bg-surface border border-border p-4 rounded-2xl flex items-center gap-4">
+            <div className="p-3 bg-red-500/10 text-red-500 rounded-xl">
+              <XCircle size={24} />
+            </div>
+            <div>
+              <p className="text-xs text-muted uppercase font-bold tracking-wider mb-0.5">No Atendidas / Canceladas</p>
+              <p className="text-xl font-bold text-foreground">{appointments.filter(a => a.status === 'CANCELADA').length}</p>
+            </div>
+          </div>
+          <div className="bg-surface border border-border p-4 rounded-2xl flex items-center gap-4">
+            <div className="p-3 bg-blue-500/10 text-blue-500 rounded-xl">
+              <Calendar size={24} />
+            </div>
+            <div>
+              <p className="text-xs text-muted uppercase font-bold tracking-wider mb-0.5">Programadas</p>
+              <p className="text-xl font-bold text-foreground">{appointments.filter(a => a.status === 'PROGRAMADA' || a.status === 'REPROGRAMADA').length}</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-4 mb-6">
@@ -234,6 +276,16 @@ export function AppointmentsPage() {
                             </button>
                             <button onClick={() => handleCancel(apt.id)} className="p-1.5 text-muted hover:text-red-500 rounded-lg hover:bg-red-500/10 transition-colors" title="Cancelar">
                               <Trash2 size={14} />
+                            </button>
+                          </>
+                        )}
+                        {(apt.status === 'PROGRAMADA' || apt.status === 'REPROGRAMADA') && (
+                          <>
+                            <button onClick={() => handleMarkStatus(apt.id, 'ATENDIDA')} className="p-1.5 text-muted hover:text-emerald-500 rounded-lg hover:bg-emerald-500/10 transition-colors" title="Marcar como atendida">
+                              <CheckCircle size={14} />
+                            </button>
+                            <button onClick={() => handleMarkStatus(apt.id, 'CANCELADA')} className="p-1.5 text-muted hover:text-orange-500 rounded-lg hover:bg-orange-500/10 transition-colors" title="Marcar como no atendida">
+                              <XCircle size={14} />
                             </button>
                           </>
                         )}
